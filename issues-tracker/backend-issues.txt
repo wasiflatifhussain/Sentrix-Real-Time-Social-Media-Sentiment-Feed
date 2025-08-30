@@ -1,0 +1,1 @@
+- posts are NOT all in English; might need a translator or ensure the AI model/filters are able to filter non-english texts
