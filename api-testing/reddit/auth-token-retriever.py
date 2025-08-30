@@ -33,26 +33,37 @@ def search_posts(token, base_headers, subreddit, query, limit=10, sort="new", ti
         "q": query,
         "sort": sort,
         "limit": limit,
-        "t": time,
-        "restrict_sr": "true"
+        "t": time
     }
 
     res = requests.get(search_url, headers=headers, params=params)
     res.raise_for_status()
     return res.json()
 
+def extract_post_ids(search_json):
+    """
+    Returns a simple list of post IDs (short ids like '1n3vpov')
+    from a /search response JSON.
+    """
+    children = search_json.get("data", {}).get("children", [])
+    ids = [item.get("data", {}).get("id") for item in children if item.get("kind") == "t3"]
+    return [i for i in ids if i]
+
 
 def main():
     # Load variables from .env.local
     load_dotenv(".env.local")
 
-    # Step 1: get token
+    # Get token
     token, headers = get_access_token()
     print("Access token:", token)
 
-    # Step 2: search posts
-    results = search_posts(token, headers, "stocks", "Tesla", limit=10, sort="new", time="day")
+    # Search posts
+    results = search_posts(token, headers, "stocks", "Tesla", limit=10, sort="new", time="hour")
     print(results)
+    
+    ids = extract_post_ids(results)
+    print("Post IDs:", ids)
 
 
 if __name__ == "__main__":
