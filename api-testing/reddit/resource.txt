@@ -1,0 +1,36 @@
+# search:
+GET [/r/subreddit]/search
+Search links page.
+This endpoint is a listing.
+after	- fullname of a thing
+before	- fullname of a thing
+category	- a string no longer than 5 characters
+count	- a positive integer (default: 0)
+include_facets	- boolean value
+limit	- the maximum number of items desired (default: 25, maximum: 100)
+q	- a string no longer than 512 characters
+restrict_sr	- boolean value
+show	- (optional) the string all
+sort - one of (relevance, hot, top, new, comments)
+t - one of (hour, day, week, month, year, all)
+type - (optional) comma-delimited list of result types (sr, link, user)
+curl =>
+GET https://oauth.reddit.com/search?q=TSLA%20OR%20%24TSLA%20OR%20Tesla&sort=new&limit=50&t=week
+Authorization: bearer <your_access_token>
+User-Agent: yourapp/0.1 by yourusername
+
+
+# comments:
+GET [/r/subreddit]/comments/article
+Get the comment tree for a given Link article.
+If supplied, comment is the ID36 of a comment in the comment tree for article. This comment will be the (highlighted) focal point of the returned view and context will be the number of parents shown. 
+- depth is the maximum depth of subtrees in the thread.
+- limit is the maximum number of comments to return.
+
+# search under specific subreddits
+
+
+
+steps:
+call search by subreddits for /stock, /investing, /wallstreetbets, /Superstock, etc
+collect posts and then for each, make an object and use the post ids to make further call to collect all comments
