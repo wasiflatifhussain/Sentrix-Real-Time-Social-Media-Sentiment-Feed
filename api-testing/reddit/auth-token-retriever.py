@@ -26,7 +26,7 @@ def get_access_token():
 
 
 def search_posts(token, base_headers, subreddit, query, limit=10, sort="new", time="day"):
-    """Search posts in a subreddit for a query."""
+    """Search posts in a subreddit for a query and return normalized dicts."""
     headers = {**base_headers, "Authorization": f"bearer {token}"}
     search_url = f"https://oauth.reddit.com/r/{subreddit}/search"
     params = {
@@ -38,32 +38,93 @@ def search_posts(token, base_headers, subreddit, query, limit=10, sort="new", ti
 
     res = requests.get(search_url, headers=headers, params=params)
     res.raise_for_status()
+    data = res.json()
+    return normalize_posts(data)
+
+
+def normalize_posts(search_json) -> list[dict]:
+    """Convert Reddit JSON into a list of plain dictionaries."""
+    posts: list[dict] = []
+    for child in search_json.get("data", {}).get("children", []):
+        d = child.get("data", {}) or {}
+        pid = d.get("id")
+        if not pid:
+            continue
+        post = {
+            "id": pid,
+            "fullname": d.get("name", ""),
+            "subreddit": d.get("subreddit", ""),
+            "title": d.get("title", ""),
+            "selftext": d.get("selftext", ""),
+            "url": d.get("url", ""),
+            "permalink": d.get("permalink", ""),
+            "author": d.get("author"),
+            "score": d.get("score"),
+            "created_utc": d.get("created_utc"),
+        }
+        posts.append(post)
+    return posts
+
+def fetch_comments_json(token: str, base_headers: dict, post_id: str, sort: str = "new"):
+    """GET /comments/{id} -> returns [post_listing, comments_listing]."""
+    headers = {**base_headers, "Authorization": f"bearer {token}"}
+    url = f"https://oauth.reddit.com/comments/{post_id}"
+    res = requests.get(url, headers=headers, params={"sort": sort})
+    res.raise_for_status()
     return res.json()
 
-def extract_post_ids(search_json):
+def flatten_comment_tree(comments_listing_json) -> list[dict]:
     """
-    Returns a simple list of post IDs (short ids like '1n3vpov')
-    from a /search response JSON.
+    Flatten comment tree into a list of dicts.
+    Skips 'more' objects (TODO: add /api/morechildren if you need 100% depth).
     """
-    children = search_json.get("data", {}).get("children", [])
-    ids = [item.get("data", {}).get("id") for item in children if item.get("kind") == "t3"]
-    return [i for i in ids if i]
+    flat: list[dict] = []
 
+    if not isinstance(comments_listing_json, list) or len(comments_listing_json) < 2:
+        return flat
+
+    comments_listing = comments_listing_json[1]  # index 1 holds the comment tree
+
+    def walk(children):
+        for node in children:
+            kind = node.get("kind")
+            data = node.get("data", {})
+            if kind == "t1":  # comment
+                flat.append({
+                    "id": data.get("id"),
+                    "author": data.get("author"),
+                    "body": data.get("body") or "",
+                    "score": data.get("score"),
+                    "created_utc": data.get("created_utc"),
+                    "parent_id": data.get("parent_id"),
+                })
+                replies = data.get("replies")
+                if isinstance(replies, dict):
+                    walk(replies.get("data", {}).get("children", []))
+            # kind == "more" gets skipped here
+
+    walk(comments_listing.get("data", {}).get("children", []))
+    return flat
 
 def main():
-    # Load variables from .env.local
     load_dotenv(".env.local")
 
-    # Get token
     token, headers = get_access_token()
     print("Access token:", token)
 
-    # Search posts
-    results = search_posts(token, headers, "stocks", "Tesla", limit=10, sort="new", time="hour")
-    print(results)
-    
-    ids = extract_post_ids(results)
-    print("Post IDs:", ids)
+    results = search_posts(token, headers, "stocks", 'title:TSLA OR title:$TSLA OR title:"Tesla"', limit=10, sort="new", time="day")
+
+    for post in results:
+        pid = post["id"]
+        try:
+            cj = fetch_comments_json(token, headers, pid, sort="new")
+            post["comments"] = flatten_comment_tree(cj)
+        except requests.HTTPError as e:
+            print(f"{pid}: failed to fetch comments ({e})")
+
+    for i in range(len(results)):
+        p = results[i]
+        print(i, "=>",p["id"], p["title"][:60], p["selftext"][:60], p["url"], f"(comments: {len(p['comments'])})")
 
 
 if __name__ == "__main__":
