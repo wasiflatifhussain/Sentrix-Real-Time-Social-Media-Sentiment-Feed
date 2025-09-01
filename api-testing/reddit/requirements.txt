@@ -1,2 +1,11 @@
 python-dotenv
 requests
+googletrans==4.0.0-rc1
+httpx==0.13.3
+httpcore==0.9.1
+transformers    # if we go with model for post relevance prediction
+
+
+# for compatibility with the translator
+# pip install "googletrans==4.0.0-rc1" "httpx==0.13.3" "httpcore==0.9.1"
+# conda install pytorch torchvision torchaudio cpuonly -c pytorch

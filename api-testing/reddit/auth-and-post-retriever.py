@@ -1,6 +1,8 @@
 import requests
 import os
 from dotenv import load_dotenv
+import json
+from datetime import datetime
 
 
 def get_access_token():
@@ -106,13 +108,23 @@ def flatten_comment_tree(comments_listing_json) -> list[dict]:
     walk(comments_listing.get("data", {}).get("children", []))
     return flat
 
+def save_results_to_file(results):
+    """Save the Reddit search results to a dated JSON file in ./result/."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    folder = "./result"
+    os.makedirs(folder, exist_ok=True)
+    filename = f"{folder}/reddit_results_{today}.json"
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+    print(f"Results saved to {filename}")
+            
 def main():
     load_dotenv(".env.local")
 
     token, headers = get_access_token()
     print("Access token:", token)
 
-    results = search_posts(token, headers, "stocks", 'title:TSLA OR title:$TSLA OR title:"Tesla"', limit=10, sort="new", time="day")
+    results = search_posts(token, headers, "stocks", 'title:TSLA OR title:$TSLA OR title:"Tesla"', limit=100, sort="new", time="day")
 
     for post in results:
         pid = post["id"]
@@ -126,6 +138,7 @@ def main():
         p = results[i]
         print(i, "=>",p["id"], p["title"][:60], p["selftext"][:60], p["url"], f"(comments: {len(p['comments'])})")
 
+    save_results_to_file(results)
 
 if __name__ == "__main__":
     main()
