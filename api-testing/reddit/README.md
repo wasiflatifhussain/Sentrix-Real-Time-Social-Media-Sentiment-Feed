@@ -1,12 +1,32 @@
-tutorial: https://www.youtube.com/watch?v=x9boO9x3TDA&ab_channel=Andy%27sTechTutorials
+# Reddit API with Postman
 
-repo: https://github.com/reddit-archive/reddit/wiki/OAuth2-Quick-Start-Example
+## Follow:
+- Yt Tutorial: https://www.youtube.com/watch?v=x9boO9x3TDA&ab_channel=Andy%27sTechTutorials
+- Make Reddit account  
+- A Reddit developer app (script type) → [Create one here](https://www.reddit.com/prefs/apps)  
+- Postman installed  
+- [Reddit Postman collection & environment](https://github.com/AndyUGA/Reddit_API_Postman_Collection_and_Environment_Variables) cloned/imported  
 
-postman api calls (clone and import to Postman): https://github.com/AndyUGA/Reddit_API_Postman_Collection_and_Environment_Variables
 
-steps:
-- use POST access_token on Postman to get access token
-- use GET reddit-about-me for info about user (your account)
-- now make any API call from: https://www.reddit.com/dev/api/
+## Environment Variables
+Set these variables in **Postman environment** (or in an `.env.local` file if running locally):
 
-- note: the postman token expires every 1 hour - so request renewal and use it as bearer <token> to get api request succwaa
+```bash
+CLIENT_ID=<reddit app's personal use script>
+CLIENT_SECRET=<reddit app's secret>
+REDDIT_USERNAME=<your reddit username>
+REDDIT_PASSWORD=<your reddit password>
+```
+
+## Steps:
+- Use POST access_token on Postman to get access token [follow the Youtube tutorial]
+    POST -> https://www.reddit.com/api/v1/access_token
+         Authorization: Basic Auth -> Username = Reddit App's Personal User Script
+                                   -> Password = Reddit App's Secret
+         Body: use x-www-form-urlencoded and put these fields ->
+               grant_type: password
+               username: Your Reddit Username
+               password: Your Reddit Password
+- Use GET requests similar to those on Postman
+
+- Note: the postman token expires every 1 hour - so request renewal and use it as bearer <token> to get api request succwaa
