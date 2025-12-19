@@ -1,3 +1,0 @@
-{
-  "/(root)/stocks/[symbol]/page": "app/(root)/stocks/[symbol]/page.js"
-}
