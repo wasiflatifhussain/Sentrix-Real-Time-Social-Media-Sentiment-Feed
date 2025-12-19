@@ -12,52 +12,69 @@ node_modules/
 .env
 .env.local
 .env*.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Next.js
-.next/
-out/
-build/
+# Build outputs
 dist/
+/build
+/.next/
+/out/
 
 # Testing
 /coverage
 
 # Production
-/build
+*.tsbuildinfo
+next-env.d.ts
 
-# Misc
-.DS_Store
-*.pem
-.vscode/
-.idea/
-
-# Debug logs
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Vercel
+# OS files
+.DS_Store
+*.pem
+
+# IDE
+.vscode/
+/.idea/
+
+# Deployment
 .vercel
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Python
+# Python (for model/backend work)
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
 venv/
 ENV/
+env/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
 *.egg-info/
+dist/
+build/
 
-# Reddit API output
-api-testing/reddit/poc/out/
-api-testing/reddit/result/
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Model files (optional - uncomment if models should not be tracked)
+# *.h5
+# *.pkl
+# *.pt
+# *.pth
+# *.onnx
+
+# Data files (optional - uncomment if data should not be tracked)
+# *.csv
+# *.json
+# *.parquet
+# /data/
