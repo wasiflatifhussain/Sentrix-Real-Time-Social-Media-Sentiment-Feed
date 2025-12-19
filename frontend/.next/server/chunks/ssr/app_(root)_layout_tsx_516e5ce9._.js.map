@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/wasiflatifhussain/Documents/9.%20COMP4801-FYP/real-time-social-media-sentiment-by-tickers/frontend/app/%28root%29/layout.tsx"],"sourcesContent":["import Header from \"@/components/Header\";\nimport { auth } from \"@/lib/better-auth/auth\";\nimport { headers } from \"next/headers\";\nimport { redirect } from \"next/navigation\";\n\nconst Layout = async ({ children }: { children: React.ReactNode }) => {\n  return (\n    <main className=\"min-h-screen text-gray-400\">\n      <div className=\"container py-10\">{children}</div>\n    </main>\n  );\n};\nexport default Layout;\n"],"names":[],"mappings":";;;;;;AAKA,MAAM,SAAS,OAAO,EAAE,QAAQ,EAAiC;IAC/D,qBACE,8OAAC;QAAK,WAAU;kBACd,cAAA,8OAAC;YAAI,WAAU;sBAAmB;;;;;;;;;;;AAGxC;uCACe","debugId":null}}]
+}

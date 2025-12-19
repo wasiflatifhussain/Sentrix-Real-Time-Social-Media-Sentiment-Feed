@@ -1,0 +1,50 @@
+{
+  "node": {
+    "40b4791e02e84fda887882ebf551d1846aec4f4f6e": {
+      "workers": {
+        "app/(root)/stocks/[symbol]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(root)/stocks/[symbol]/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/finnhub.actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNews",
+          "filename": "lib/actions/finnhub.actions.ts"
+        }
+      },
+      "layer": {
+        "app/(root)/stocks/[symbol]/page": "rsc"
+      },
+      "exportedName": "getNews",
+      "filename": "lib/actions/finnhub.actions.ts"
+    },
+    "7f17f0aacf90b35be9fe5b3740eabde04e438bb91e": {
+      "workers": {
+        "app/(root)/stocks/[symbol]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(root)/stocks/[symbol]/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/finnhub.actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "fetchJSON",
+          "filename": "lib/actions/finnhub.actions.ts"
+        }
+      },
+      "layer": {
+        "app/(root)/stocks/[symbol]/page": "rsc"
+      },
+      "exportedName": "fetchJSON",
+      "filename": "lib/actions/finnhub.actions.ts"
+    },
+    "7f534d58e9aab927dcc984f4841ea4e79742b5567b": {
+      "workers": {
+        "app/(root)/stocks/[symbol]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(root)/stocks/[symbol]/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/finnhub.actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "searchStocks",
+          "filename": "lib/actions/finnhub.actions.ts"
+        }
+      },
+      "layer": {
+        "app/(root)/stocks/[symbol]/page": "action-browser"
+      },
+      "exportedName": "searchStocks",
+      "filename": "lib/actions/finnhub.actions.ts"
+    }
+  },
+  "edge": {}
+}
