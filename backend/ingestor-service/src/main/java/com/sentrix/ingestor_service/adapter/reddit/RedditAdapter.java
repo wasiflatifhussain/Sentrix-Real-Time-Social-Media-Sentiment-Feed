@@ -1,5 +1,6 @@
 package com.sentrix.ingestor_service.adapter.reddit;
 
+import com.sentrix.ingestor_service.adapter.SocialSourceAdapter;
 import com.sentrix.ingestor_service.adapter.reddit.client.RedditApiClient;
 import com.sentrix.ingestor_service.adapter.reddit.client.RedditAuthClient;
 import com.sentrix.ingestor_service.adapter.reddit.mapper.RedditCommentFlattener;
@@ -27,7 +28,7 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedditAdapter {
+public class RedditAdapter implements SocialSourceAdapter {
   private static final List<String> SUBREDDITS =
       List.of("stocks", "investing", "wallstreetbets", "options");
 
@@ -40,6 +41,12 @@ public class RedditAdapter {
   private final KafkaEventPublisher kafkaEventPublisher;
   private final ObjectMapper objectMapper;
 
+  @Override
+  public SourceType source() {
+    return SourceType.REDDIT;
+  }
+
+  @Override
   public void runIngestion() {
     long ingestedAt = Instant.now().getEpochSecond();
     log.info("[RUN] Reddit ingestion start ingestedAtUtc={}", ingestedAt);
