@@ -1,0 +1,30 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      retries: 10
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+
+reddit:
+  client-id: ${CLIENT_ID}
+  client-secret: ${CLIENT_SECRET}
+  username: ${REDDIT_USERNAME}
+  password: ${REDDIT_PASSWORD}
+  user-agent: sentrix-ingestor/0.1 by ${REDDIT_USERNAME}
+  token-url: https://www.reddit.com/api/v1/access_token
+  base-oauth-url: https://oauth.reddit.com
+
+app:
+  kafka:
+    topic: sentrix.ingestor.events
+
+logging:
+  level:
+    com.sentrix.ingestor_service.service.KafkaEventPublisher: INFO
+    com.sentrix.ingestor_service.adapter.reddit: INFO
