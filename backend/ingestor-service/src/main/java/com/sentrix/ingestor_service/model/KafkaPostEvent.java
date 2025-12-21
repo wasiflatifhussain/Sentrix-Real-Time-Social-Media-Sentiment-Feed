@@ -1,4 +1,4 @@
-package com.sentrix.ingestor_service.model.event;
+package com.sentrix.ingestor_service.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -24,6 +24,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class KafkaCommentEvent extends KafkaEvent {
+public class KafkaPostEvent extends KafkaEvent {
   // No additional fields for now - all are inherited from KafkaEvent
 }

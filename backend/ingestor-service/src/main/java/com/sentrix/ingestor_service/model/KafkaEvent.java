@@ -1,4 +1,4 @@
-package com.sentrix.ingestor_service.model.event;
+package com.sentrix.ingestor_service.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +33,6 @@ public abstract class KafkaEvent {
   private ThreadRef thread; // null for posts, filled for comments/replies
   private EngagementMetrics metrics;
 
-  private CaptureMeta capture; // query used to fetch this event
+  private CaptureMeta capture; // query used to fetch this ingestor
   private String lang;
 }

@@ -1,4 +1,4 @@
-package com.sentrix.ingestor_service.model.event;
+package com.sentrix.ingestor_service.model;
 
 public enum EntityType {
   POST,

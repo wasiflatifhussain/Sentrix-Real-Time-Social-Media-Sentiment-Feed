@@ -1,6 +1,6 @@
 package com.sentrix.ingestor_service.service;
 
-import com.sentrix.ingestor_service.model.event.SourceType;
+import com.sentrix.ingestor_service.model.SourceType;
 import java.util.EnumMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;

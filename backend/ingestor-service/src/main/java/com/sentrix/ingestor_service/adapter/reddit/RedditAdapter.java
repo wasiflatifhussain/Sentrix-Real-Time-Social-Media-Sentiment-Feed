@@ -10,10 +10,11 @@ import com.sentrix.ingestor_service.adapter.reddit.model.RedditComment;
 import com.sentrix.ingestor_service.adapter.reddit.model.RedditPost;
 import com.sentrix.ingestor_service.config.TickerConfig;
 import com.sentrix.ingestor_service.config.TickerConfigLoader;
-import com.sentrix.ingestor_service.model.event.CaptureMeta;
-import com.sentrix.ingestor_service.model.event.KafkaCommentEvent;
-import com.sentrix.ingestor_service.model.event.KafkaPostEvent;
-import com.sentrix.ingestor_service.model.event.SourceType;
+import com.sentrix.ingestor_service.model.CaptureMeta;
+import com.sentrix.ingestor_service.model.KafkaCommentEvent;
+import com.sentrix.ingestor_service.model.KafkaEvent;
+import com.sentrix.ingestor_service.model.KafkaPostEvent;
+import com.sentrix.ingestor_service.model.SourceType;
 import com.sentrix.ingestor_service.service.DeduplicationService;
 import com.sentrix.ingestor_service.service.KafkaEventPublisher;
 import com.sentrix.ingestor_service.service.RateLimiterRegistry;
@@ -112,7 +113,7 @@ public class RedditAdapter implements SocialSourceAdapter {
               continue;
             }
 
-            // Build + publish post event
+            // Build + publish post ingestor
             KafkaPostEvent postEvent =
                 RedditEventMapper.toPostEvent(post, ticker, capture, ingestedAt);
             if (publishEvent(postEvent)) {
@@ -185,7 +186,7 @@ public class RedditAdapter implements SocialSourceAdapter {
 
       // Derive key/source/entityType without reflection: since base class is KafkaEvent, cast is
       // safe
-      var event = (com.sentrix.ingestor_service.model.event.KafkaEvent) eventObj;
+      var event = (KafkaEvent) eventObj;
 
       kafkaEventPublisher
           .publish(

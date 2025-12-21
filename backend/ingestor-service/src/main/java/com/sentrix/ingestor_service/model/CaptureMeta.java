@@ -1,4 +1,4 @@
-package com.sentrix.ingestor_service.model.event;
+package com.sentrix.ingestor_service.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
