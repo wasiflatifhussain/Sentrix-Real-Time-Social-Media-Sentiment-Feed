@@ -36,6 +36,7 @@ public class RedditEventMapper {
     EngagementMetrics metrics =
         EngagementMetrics.builder()
             .likeCount(post.getScore() != null ? post.getScore().longValue() : null)
+            .commentCount(post.getNumComments() != null ? post.getNumComments().longValue() : null)
             .build();
 
     return KafkaPostEvent.builder()
@@ -94,6 +95,7 @@ public class RedditEventMapper {
     EngagementMetrics metrics =
         EngagementMetrics.builder()
             .likeCount(comment.getScore() != null ? comment.getScore().longValue() : null)
+            .commentCount(0L)
             .build();
 
     return KafkaCommentEvent.builder()

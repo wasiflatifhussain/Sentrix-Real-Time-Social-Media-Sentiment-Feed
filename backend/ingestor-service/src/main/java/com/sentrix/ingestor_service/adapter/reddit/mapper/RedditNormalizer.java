@@ -42,6 +42,10 @@ public class RedditNormalizer {
               .permalink(data.path("permalink").asText(""))
               .author(data.path("author").asText(""))
               .score(data.hasNonNull("score") ? data.get("score").asInt() : null)
+              .numComments(
+                  data.path("num_comments").isMissingNode() || data.path("num_comments").isNull()
+                      ? null
+                      : data.path("num_comments").asInt())
               .createdUtc(
                   data.hasNonNull("created_utc") ? data.get("created_utc").asDouble() : null)
               .build();
