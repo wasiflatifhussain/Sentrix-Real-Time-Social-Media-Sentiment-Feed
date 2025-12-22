@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class IngestorEvent {
+public class IngestorEvent {
   private Integer eventVersion;
   private SourceType source; // REDDIT, TWITTER, TELEGRAM
   private EntityType entityType; // POST, COMMENT, MESSAGE, REPLY

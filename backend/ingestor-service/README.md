@@ -239,7 +239,7 @@ app:
 
 logging:
   level:
-    com.sentrix.ingestor_service.service.KafkaEventPublisher: INFO
+    com.sentrix.ingestor_service.messaging.producer.KafkaEventPublisher: INFO
     com.sentrix.ingestor_service.adapter.reddit: INFO
   ```
 

@@ -379,3 +379,81 @@ Orchestrates in order:
 * one unified schema (`KafkaEvent`)
 * per-source thresholds via `SourcePolicy`
 * optional source-specific rule toggles
+
+# NOTE:
+
+We keep dropped events topic for checking filtering system performance and auditing
+
+# Create events.cleaned topic
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--create \
+--topic sentrix.filter-service-a.cleaned \
+--bootstrap-server localhost:9092 \
+--partitions 3 \
+--replication-factor 1 \
+--config cleanup.policy=delete \
+--config retention.ms=604800000
+
+# Verify topics
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--describe \
+--bootstrap-server localhost:9092 \
+--topic sentrix.filter-service-a.cleaned
+
+# Create events.dropped topic (audit + evaluation)
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--create \
+--topic sentrix.filter-service-a.dropped \
+--bootstrap-server localhost:9092 \
+--partitions 3 \
+--replication-factor 1 \
+--config cleanup.policy=delete \
+--config retention.ms=604800000
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--describe \
+--bootstrap-server localhost:9092 \
+--topic sentrix.filter-service-a.dropped
+
+## Kafka Consumption & Failure Handling (Design Notes)
+
+Filtering Service A uses **manual Kafka acknowledgments** to precisely control when events are considered “processed”.
+
+### How it works
+
+* The service **consumes events from `sentrix.ingestor.events`** with `enable-auto-commit=false`.
+* Each event is processed exactly once through the **hard-gate filtering pipeline**.
+* After processing:
+
+    * **KEEP** → published to `sentrix.filter-service-a.cleaned`
+    * **DROP** → published to `sentrix.filter-service-a.dropped`
+* **Offsets are acknowledged only after the result is successfully published**, ensuring no silent data loss.
+
+### Failure policy (intentional)
+
+* **Malformed / invalid events** (e.g. JSON parse failure, missing required fields) are:
+
+    * routed to `events.dropped`
+    * **acknowledged**
+    * **never retried** (poison-pill pattern)
+
+* This prevents the consumer from getting stuck on unrecoverable messages while still preserving them for audit,
+  analysis, and evaluation.
+
+### Why this is good
+
+* Guarantees **at-least-once processing**
+* Prevents infinite retries on broken data
+* Preserves dropped events for **debugging and model evaluation**
+* Clean separation between:
+
+    * **message ingestion**
+    * **filtering logic**
+    * **publishing & offset control**
+
+This design matches common production Kafka patterns and keeps the pipeline reliable, observable, and FYP-friendly.
+
+---

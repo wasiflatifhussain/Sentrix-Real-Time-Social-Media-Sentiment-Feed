@@ -1,4 +1,4 @@
-package com.sentrix.ingestor_service.service;
+package com.sentrix.ingestor_service.messaging.producer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
