@@ -14,4 +14,5 @@ public class EngagementMetrics {
   private Long replyCount;
   private Long shareCount;
   private Long viewCount;
+  private Long commentCount;
 }

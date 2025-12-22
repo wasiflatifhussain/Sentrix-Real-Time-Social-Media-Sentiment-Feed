@@ -28,6 +28,11 @@ app:
       group-id: filter-service-a
   text:
     max-len: 8000
+  validation:
+    min-text-len: 10
+    max-event-age-days: 7
+    drop-on-truncate: false  # if true, events exceeding max-text-len are dropped; if false, they are truncated
+
 
 server:
   port: 8081

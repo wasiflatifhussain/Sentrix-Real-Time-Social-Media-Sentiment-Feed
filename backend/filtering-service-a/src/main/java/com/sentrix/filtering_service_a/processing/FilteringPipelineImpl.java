@@ -4,6 +4,8 @@ import com.sentrix.filtering_service_a.model.ingestor.IngestorEvent;
 import com.sentrix.filtering_service_a.model.service_a.*;
 import com.sentrix.filtering_service_a.processing.features.FeatureExtractor;
 import com.sentrix.filtering_service_a.processing.normalizer.Normalizer;
+import com.sentrix.filtering_service_a.processing.validation.ValidationResult;
+import com.sentrix.filtering_service_a.processing.validation.Validator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ public class FilteringPipelineImpl implements FilteringPipeline {
 
   private final Normalizer normalizer;
   private final FeatureExtractor featureExtractor;
+  private final Validator validator;
 
   @Override
   public FilteredEventEnvelope process(IngestorEvent event) {
@@ -52,6 +55,23 @@ public class FilteringPipelineImpl implements FilteringPipeline {
         features.getUrlCount(),
         features.getCapsRatio(),
         features.getEmojiCount());
+
+    // Phase 3: Hard validations
+    ValidationResult validationResult = validator.validate(event, textView, features);
+    if (!validationResult.isOk()) {
+      return FilteredEventEnvelope.builder()
+          .ingestorEvent(event)
+          .filterMeta(
+              FilterMeta.builder()
+                  .filterStage("service_a")
+                  .decision(Decision.DROP)
+                  .filterReason(validationResult.getReason())
+                  .processedAtUtc(System.currentTimeMillis())
+                  .build())
+          .textView(textView) // keep for audit
+          .eventFeatures(features) // keep for audit
+          .build();
+    }
 
     return FilteredEventEnvelope.builder()
         .ingestorEvent(event)

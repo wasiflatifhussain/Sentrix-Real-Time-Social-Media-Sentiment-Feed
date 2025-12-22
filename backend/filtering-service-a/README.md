@@ -492,6 +492,8 @@ We keep dropped events topic for checking filtering system performance and audit
 --config cleanup.policy=delete \
 --config retention.ms=604800000
 
+# Verify topics
+
 /opt/homebrew/opt/kafka/bin/kafka-topics \
 --describe \
 --bootstrap-server localhost:9092 \
