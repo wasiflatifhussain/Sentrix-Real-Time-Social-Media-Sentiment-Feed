@@ -25,7 +25,9 @@ app:
       cleaned: sentrix.filter-service-a.cleaned
       dropped: sentrix.filter-service-a.dropped
     consumer:
-      group-id: filter-service-a-x
+      group-id: filter-service-a
+  text:
+    max-len: 8000
 
 server:
   port: 8081

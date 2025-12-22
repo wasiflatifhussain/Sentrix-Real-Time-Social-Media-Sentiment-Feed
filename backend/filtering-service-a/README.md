@@ -60,206 +60,285 @@ Only after all steps run, Service A makes a final decision:
 
 ---
 
-### Phase 1 — Create the Spring skeleton + Kafka IO (foundation)
+### Phase 1 — Spring skeleton + Kafka IO (foundation)
 
-**Goal:** Service runs, consumes from Kafka, produces to Kafka.
+**Goal:** Service runs end-to-end: consume raw events from Kafka, publish processed envelopes to Kafka, and commit
+offsets only after publish succeeds.
 
 Build in this order:
 
-1. Create Spring Boot app: `filtering-service-A`
+1. **Create Spring Boot app:** `filtering-service-a`
 
-2. Add config: bootstrap, `application.yml`, env vars
+2. **Configure Kafka + app topics**
 
-3. Implement Kafka consumer that reads from `events.raw`
+    * `application.yml` for:
 
-4. Implement Kafka producers that write to:
+        * `spring.kafka.bootstrap-servers`
+        * consumer group id
+        * producer reliability settings (acks=all, retries, idempotence)
+    * `app.kafka.topic.*` for:
 
-    * `events.cleaned`
-    * `events.dropped`
+        * `raw` (input)
+        * `cleaned` (output KEEP)
+        * `dropped` (output DROP)
+    * env vars:
 
-5. Add structured logging + tracing:
+        * `KAFKA_BOOTSTRAP_SERVERS` (default local)
 
-    * log `source`, `eventId`, `KEEP/DROP`, `reasons`
+3. **Implement Kafka consumer (manual ack)**
 
-✅ End of phase: pass-through works (temporary behavior is “KEEP everything” → publish to `events.cleaned`).
+    * `@KafkaListener(topics=${app.kafka.topic.raw}, groupId=${app.kafka.consumer.group-id})`
+    * Use **manual acknowledgment** (`AckMode.MANUAL`)
+    * Add lightweight heartbeat logging (every N messages) to verify liveness and partition progress.
+
+4. **Implement Kafka producer wrapper**
+
+    * Publish a JSON envelope to:
+
+        * `events.cleaned` for `KEEP`
+        * `events.dropped` for `DROP`
+    * Attach Kafka headers for traceability:
+
+        * `source`, `entityType`, `decision`, `filterReason`
+    * **Ack only after publish success**:
+
+        * `kafkaTemplate.send(...).thenRun(ack::acknowledge)`
+        * if publish fails, do not ack (so Kafka can retry delivery)
+
+5. **Implement Phase 1 “Hard Gate” pipeline**
+
+    * Minimal checks that indicate broken/unusable inputs:
+
+        * null event
+        * missing both `eventId` and `dedupKey`
+        * missing `source`
+        * missing `entityType`
+        * empty combined text (`title + text`)
+    * Everything else is temporary pass-through:
+
+        * return `KEEP` with a basic envelope (no normalization/features yet)
+
+6. **Structured logging for audit/debug**
+
+    * Log at decision points:
+
+        * `source`, `entityType`, `key`, `eventId`, `decision`, `filterReason`, topic/partition/offset
+    * Log parse failures separately (`RAW_PARSE_FAIL`) and route them to `events.dropped`.
+
+✅ **End of Phase 1**
+
+* Service consumes from `events.raw`
+* Produces `KEEP` → `events.cleaned`, `DROP` → `events.dropped`
+* Offsets commit only after output publish succeeds
+* Pass-through behavior is effectively **KEEP most events**, while **definitely broken** events are dropped with
+  explicit reasons
 
 ---
 
 ### Phase 2 — Canonicalization & feature extraction (always before rules)
 
-**Goal:** Every kept event becomes normalized + enriched with cheap features (and dropped events still get reasons).
+**Goal:** For every event that survives the hard gate, compute `textNorm` and cheap features for downstream rules + ML.
 
 Build in this order:
 
-1. Create a `Normalizer` component:
+1. **Add `Normalizer` component**
 
-* compute `textNorm` from raw (`title` + `text`)
-* standardize URLs to `<URL>`
-* cashtag normalization (consistent casing/format)
-* whitespace cleanup
+    * Input: raw `title + text`
+    * Output: `NormalizedText`:
 
-2. Create a `FeatureExtractor`:
+        * `textNorm`
+        * `wasTruncated` (if you enforce max length)
+        * `originalLength`
+    * Normalization steps:
 
-* extract urls/domains/mentions/cashtags/hashtags
-* compute counts:
+        * replace URLs → `<URL>`
+        * normalize cashtags (consistent format/case)
+        * whitespace cleanup
 
-    * word count
-    * url_count
-    * emoji_count
-    * caps_ratio
-    * repeated char score
+2. **Add `FeatureExtractor`**
 
-3. Update the outgoing message to carry:
+    * Extract:
 
-* `textNorm`
-* `features`
-* keep original raw fields untouched
+        * urls/domains/mentions/cashtags/hashtags
+    * Compute counts:
 
-✅ End: messages published to `events.cleaned` include normalization + features.
+        * word count
+        * url_count
+        * emoji_count
+        * caps_ratio
+        * repeated-char score
+
+3. **Update the envelope**
+
+    * Add `textView.textNormalized = textNorm`
+    * Add `eventFeatures = features`
+    * Preserve original raw event untouched
+
+✅ **End of Phase 2**
+
+* `events.cleaned` messages carry:
+
+    * original raw event
+    * `textNorm`
+    * extracted features
 
 ---
 
 ### Phase 3 — Schema validation + hard failures (DROP only “definitely broken”)
 
-**Goal:** Drop only events that are unusable, not merely suspicious.
+**Goal:** Drop only events that cannot be used reliably (not “suspicious” content).
 
 Build:
 
-1. Implement `Validator`:
+1. **Add `Validator`**
 
-* missing required fields → **DROP**
-* empty/too-short text → usually **DROP** (config-driven threshold)
-* too old (optional) → **DROP** or keep-but-tag (choose one)
+    * Runs after normalization + feature extraction
+    * Examples (config-driven):
 
-2. Define reason codes:
+        * missing required fields → `DROP`
+        * empty/too-short normalized text → `DROP`
+        * too old → `DROP` or `KEEP + tag` (choose one policy)
+        * oversize handling → truncate + mark `OVERSIZE_TRUNCATED` (or drop if absurd)
 
-* `MISSING_FIELD`
-* `EMPTY_TEXT`
-* `TOO_OLD`
-* `OVERSIZE_TRUNCATED`
+2. **Reason codes**
 
-✅ End: Service A begins removing broken/junk events.
-Dropped events are published to `events.dropped` (for audit + evaluation).
+    * `MISSING_FIELD`
+    * `EMPTY_TEXT`
+    * `TOO_OLD`
+    * `OVERSIZE_TRUNCATED`
+
+✅ **End of Phase 3**
+
+* Service A drops only clearly unusable events (with explainable reasons)
+* Dropped events go to `events.dropped` for audit/evaluation
 
 ---
 
 ### Phase 4 — Exact dedup (ID + content hash)
 
-**Goal:** Stop reprocessing duplicates and inflating downstream counts, while preserving campaign detection ability.
+**Goal:** Remove exact duplicates cheaply to avoid inflating downstream counts.
 
 Build in this order:
 
-1. Decide dedup storage:
+1. **Dedup storage**
 
-* simplest: Redis with TTL
-* fallback: in-memory LRU (dev only)
+    * Preferred: Redis with TTL
+    * Dev fallback: in-memory TTL map / LRU
 
-2. Implement ID dedup:
+2. **ID dedup**
 
-* key: `dedup:id:{source}:{eventId}`
-* if seen → **DROP** with `EXACT_DUP_ID`
+    * key: `dedup:id:{source}:{eventId}`
+    * if seen → `DROP` with `EXACT_DUP_ID`
 
-3. Implement content hash dedup:
+3. **Content hash dedup**
 
-* hash: `sha256(source + textNorm + ticker + time_bucket)`
-* key: `dedup:hash:{hash}`
-* if seen → **DROP** with `EXACT_DUP_CONTENT`
+    * hash: `sha256(source + textNorm + ticker + time_bucket)`
+    * key: `dedup:hash:{hash}`
+    * if seen → `DROP` with `EXACT_DUP_CONTENT`
 
-✅ End: exact duplicates removed with explainable reasons.
+✅ **End of Phase 4**
 
-Note: campaign detection mainly needs **near-duplicate patterns**, not exact duplicates, so dropping exact duplicates is
-typically safe.
+* Exact duplicates removed with explicit reason codes
+* Campaign detection is preserved for later via near-dup tagging (Phase 6)
 
 ---
 
 ### Phase 5 — Heuristic spam/scam rules (cheap wins, DROP only slam-dunks)
 
-**Goal:** Remove only obvious spam/scams without ML, without “approving” anything.
+**Goal:** Remove only obvious spam/scams without ML.
 
 Build:
 
-1. Implement a rule engine pattern:
+1. **Rule engine**
 
-* interface like `FilterRule`
-* each rule returns:
+    * `FilterRule` interface
+    * Each rule returns:
 
-    * matched? (yes/no)
-    * action: DROP or KEEP
-    * reason code(s)
+        * matched? (yes/no)
+        * action: DROP/KEEP
+        * reason code(s)
 
-2. Add rules in sensible order:
+2. **Rules in sensible order**
 
-* extreme URL spam rule (absurd URL count)
-* denylist domains rule (high-confidence malicious domains)
-* scam phrase regex rule (very high precision)
-* extreme emoji / repeated chars (only if very clearly spam)
-* too many tickers/cashtags (if you later support multi-ticker)
+    * absurd URL spam (very high url_count)
+    * denylist domains (high-confidence malicious)
+    * scam phrase regex (high precision)
+    * extreme emoji / repeated chars (only slam-dunks)
+    * too many tickers/cashtags (if multi-ticker later)
 
-3. Thresholds must be config-driven:
+3. **Config-driven thresholds**
 
-* `maxUrls`, `minWords`, etc.
+    * `maxUrls`, `minWords`, etc.
 
-✅ End: obvious junk is removed, while borderline content is preserved for Service B.
+✅ **End of Phase 5**
+
+* Obvious junk removed; borderline content preserved for Service B
 
 ---
 
-### Phase 6 — Near-duplicate fingerprinting (KEEP but tag for downstream)
+### Phase 6 — Near-duplicate fingerprinting (KEEP but tag)
 
-**Goal:** Detect copy-paste / repost campaigns without deleting evidence.
+**Goal:** Detect repost/copy-paste campaigns without deleting evidence.
 
 Build:
 
-1. Implement fingerprint generation:
+1. **Fingerprint generation**
 
-* SimHash (or MinHash)
-* store fingerprint with TTL
+    * SimHash (or MinHash)
+    * store fingerprints with TTL
 
-2. Implement lookup strategy:
+2. **Lookup**
 
-* compare against recent fingerprints for same ticker/source
-* if near-dup → **KEEP**, but attach a tag/reason like `NEAR_DUP_SIGNAL`
+    * compare against recent fingerprints by ticker/source
+    * if near-dup → **KEEP**, attach tag like `NEAR_DUP_SIGNAL`
 
-✅ End: you preserve campaign signals while enabling Service B to act on them.
+✅ **End of Phase 6**
+
+* You preserve evidence while enabling downstream handling
 
 ---
 
 ### Phase 7 — Source-aware tuning (Reddit vs Twitter vs Telegram)
 
-**Goal:** Same pipeline, different thresholds per platform.
+**Goal:** One pipeline, different thresholds per source.
 
 Build:
 
-1. Add `SourcePolicy` config:
+1. **SourcePolicy config**
 
-* per-source thresholds:
+    * per-source thresholds:
 
-    * min text length
-    * max URLs
-    * emoji/caps thresholds
-    * near-dup sensitivity
+        * min length
+        * max URLs
+        * emoji/caps limits
+        * near-dup sensitivity
 
-2. Policy resolution:
+2. **Policy resolution**
 
-* based on `event.source`
-* default policy if unknown
+    * based on `event.source`
+    * default fallback policy
 
-✅ End: consistent structure, source-aware behavior.
+✅ **End of Phase 7**
+
+* Consistent structure + source-aware behavior
 
 ---
 
 ### Phase 8 — Observability + evaluation hooks (FYP-friendly)
 
-**Goal:** Prove Service A improves data quality without destroying useful patterns.
+**Goal:** Demonstrate Service A improves quality without destroying useful patterns.
 
 Add:
 
 * counters per reason code (drops + tags)
 * per-source metrics
-* % dropped vs kept
-* optional sampling logs (small % of drops) for manual review
-* retention policy for `events.dropped` (e.g., 7–30 days) for offline evaluation
+* kept vs dropped %
+* sampling logs for drops (small % for manual review)
+* retention for `events.dropped` (7–30 days) for offline evaluation
 
-✅ This makes your report much stronger.
+✅ **End of Phase 8**
+
+* You have measurable, reportable evidence for your FYP (before/after quality + drop reasons).
 
 ---
 
@@ -417,6 +496,18 @@ We keep dropped events topic for checking filtering system performance and audit
 --describe \
 --bootstrap-server localhost:9092 \
 --topic sentrix.filter-service-a.dropped
+
+# Commands for delete
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--delete \
+--topic sentrix.filter-service-a.cleaned \
+--bootstrap-server localhost:9092
+
+/opt/homebrew/opt/kafka/bin/kafka-topics \
+--delete \
+--topic sentrix.filter-service-a.dropped \
+--bootstrap-server localhost:9092
 
 ## Kafka Consumption & Failure Handling (Design Notes)
 

@@ -2,17 +2,24 @@ package com.sentrix.filtering_service_a.processing;
 
 import com.sentrix.filtering_service_a.model.ingestor.IngestorEvent;
 import com.sentrix.filtering_service_a.model.service_a.*;
+import com.sentrix.filtering_service_a.processing.features.FeatureExtractor;
+import com.sentrix.filtering_service_a.processing.normalizer.Normalizer;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class FilteringPipelineImpl implements FilteringPipeline {
+
+  private final Normalizer normalizer;
+  private final FeatureExtractor featureExtractor;
 
   @Override
   public FilteredEventEnvelope process(IngestorEvent event) {
 
-    // use hard-exits for failures
+    // Phase 1: Basic validation and rejections
     if (event == null) {
       return dropEvent(null, FilterReason.MALFORMED_EVENT);
     }
@@ -31,17 +38,20 @@ public class FilteringPipelineImpl implements FilteringPipeline {
       return dropEvent(event, FilterReason.EMPTY_TEXT);
     }
 
-    // TODO: normalize + event features extraction here
-    log.debug(
-        "[A_PIPELINE] features/normalization not implemented yet; passing KEEP eventId={}",
-        event.getEventId());
+    // Phase 2: Normalization + Event Features Extraction
+    TextView textView = normalizer.normalize(event, combinedText);
+    if (textView == null || isBlank(textView.getTextNormalized())) {
+      return dropEvent(event, FilterReason.EMPTY_TEXT);
+    }
+    EventFeatures features = featureExtractor.extract(event, textView);
 
-    TextView textView =
-        TextView.builder()
-            .textNormalized(null) // TODO: insert result from normalization impl
-            .wasTruncated(false) // TODO: determine during normalization
-            .originalTextLength(combinedText.length())
-            .build();
+    log.debug(
+        "[A_PIPELINE] KEEP eventId={} words={} urls={} capsRatio={} emojis={}",
+        event.getEventId(),
+        features.getWordCount(),
+        features.getUrlCount(),
+        features.getCapsRatio(),
+        features.getEmojiCount());
 
     return FilteredEventEnvelope.builder()
         .ingestorEvent(event)
@@ -53,7 +63,7 @@ public class FilteringPipelineImpl implements FilteringPipeline {
                 .processedAtUtc(System.currentTimeMillis())
                 .build())
         .textView(textView)
-        .eventFeatures(null) // TODO: insert result from event feature impl
+        .eventFeatures(features) // TODO: insert result from event feature impl
         .build();
   }
 

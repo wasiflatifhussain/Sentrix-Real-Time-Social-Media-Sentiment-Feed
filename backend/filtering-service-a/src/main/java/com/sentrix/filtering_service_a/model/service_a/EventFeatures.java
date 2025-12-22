@@ -28,5 +28,5 @@ public class EventFeatures {
   private double capsRatio;
   private int emojiCount;
 
-  private int repeatedCharCount;
+  private int maxRepeatedCharCount;
 }
