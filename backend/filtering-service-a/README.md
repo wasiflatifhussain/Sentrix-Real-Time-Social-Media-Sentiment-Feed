@@ -275,36 +275,81 @@ Both are required to avoid over-deduplication.
 
 ---
 
-### Phase 5 — Heuristic spam/scam rules (cheap wins, DROP only slam-dunks)
+Here’s a **clean, accurate rewrite** of your Phase 5 README section that matches the decision we just made (only the 4
+slam-dunk structural rules, no scam logic, no denylist).
 
-**Goal:** Remove only obvious spam/scams without ML.
+I’ve kept it concise and “design-doc clean”, so it reads well to a supervisor/reviewer.
 
-Build:
+---
 
-1. **Rule engine**
+### Phase 5 — Heuristic spam rules (cheap wins, DROP only slam-dunks)
 
-    * `FilterRule` interface
-    * Each rule returns:
+**Goal:** Remove only *structurally obvious* spam using deterministic rules.
+No semantic scam detection or ML at this stage. Borderline content is preserved for Service B.
 
-        * matched? (yes/no)
-        * action: DROP/KEEP
-        * reason code(s)
+---
 
-2. **Rules in sensible order**
+### Build
 
-    * absurd URL spam (very high url_count)
-    * denylist domains (high-confidence malicious)
-    * scam phrase regex (high precision)
-    * extreme emoji / repeated chars (only slam-dunks)
-    * too many tickers/cashtags (if multi-ticker later)
+#### 1. Rule engine
 
-3. **Config-driven thresholds**
+* `FilterRule` interface
+* Each rule returns:
 
-    * `maxUrls`, `minWords`, etc.
+    * `matched` (boolean)
+    * `action` (`DROP` / `KEEP`)
+    * one or more **reason codes** (for observability)
+
+---
+
+#### 2. Rules (high-confidence only, ordered)
+
+Applied in order; **DROP only when confidence is extremely high**:
+
+1. **Absurd URL spam**
+
+    * Very high `urlCount`
+    * Link-heavy posts with almost no text
+
+2. **Extreme emoji abuse**
+
+    * Excessive emoji usage
+    * Emoji-only or near-empty text spam
+
+3. **Repeated character abuse**
+
+    * Long repeated character runs (e.g. `!!!!!!!!!!!!`, `$$$$$$$$$$$$`)
+    * Captures visual noise spam
+
+4. **Excessive cashtags / tickers**
+
+    * Abnormally high number of `$TICKER` mentions
+    * Only triggers at extreme thresholds
+
+> No denylist domains or scam phrase matching in Phase 5 — semantic and contextual spam detection is deferred to *
+*Service B (ML-based)** to avoid false positives and irreversible data loss.
+
+---
+
+#### 3. Config-driven thresholds
+
+All thresholds are externally configurable, e.g.:
+
+* `maxUrls`
+* `shortTextMaxWords`
+* `maxEmojiCount`
+* `maxCashtagCount`
+* `repeatCharRunLimit`
+
+Allows tuning without code changes as real data is observed.
+
+---
 
 ✅ **End of Phase 5**
 
-* Obvious junk removed; borderline content preserved for Service B
+* Obvious junk removed early and cheaply
+* Legitimate or borderline content preserved
+* Richer spam/scam classification delegated to **Service B**
 
 ---
 

@@ -40,6 +40,23 @@ app:
     enabled: true
     ttl-seconds: 604800  # 7 days
     bucket-seconds: 3600  # 1 hour
+  event-feature-checks:
+    enabled: true
+    url-spam:
+      hard-drop-count: 6
+      short-text-drop-count: 3
+      short-text-max-words: 8
+    emoji:
+      hard-drop-count: 20
+      short-text-drop-count: 10
+      short-text-max-words: 6
+    repeat-char:
+      hard-run-len: 12
+    cashtag:
+      hard-drop-count: 12
+      short-text-drop-count: 6
+      short-text-max-words: 12
+
 
 
 server:

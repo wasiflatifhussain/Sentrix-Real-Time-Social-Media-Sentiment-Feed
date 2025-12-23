@@ -3,6 +3,7 @@ package com.sentrix.filtering_service_a.pipeline;
 import com.sentrix.filtering_service_a.model.ingestor.IngestorEvent;
 import com.sentrix.filtering_service_a.model.service_a.*;
 import com.sentrix.filtering_service_a.pipeline.dedup.DedupService;
+import com.sentrix.filtering_service_a.pipeline.feature_checks.EventFeatureChecks;
 import com.sentrix.filtering_service_a.pipeline.features.FeatureExtractor;
 import com.sentrix.filtering_service_a.pipeline.normalizer.Normalizer;
 import com.sentrix.filtering_service_a.pipeline.validation.ValidationResult;
@@ -22,6 +23,7 @@ public class FilteringPipelineImpl implements FilteringPipeline {
   private final FeatureExtractor featureExtractor;
   private final Validator validator;
   private final DedupService dedupService;
+  private final EventFeatureChecks eventFeatureChecks;
 
   @Override
   public FilteredEventEnvelope process(IngestorEvent event) {
@@ -82,6 +84,12 @@ public class FilteringPipelineImpl implements FilteringPipeline {
 
     if (dedupReasonOpt.isPresent()) {
       return dropEvent(event, dedupReasonOpt.get(), textView, features);
+    }
+
+    // Phase 5: Event Feature based heuristic checks
+    Optional<FilterReason> featureCheckDropOpt = eventFeatureChecks.shouldDrop(features);
+    if (featureCheckDropOpt.isPresent()) {
+      return dropEvent(event, featureCheckDropOpt.get(), textView, features);
     }
 
     return FilteredEventEnvelope.builder()

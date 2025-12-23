@@ -67,6 +67,8 @@ public class DefaultFeatureExtractor implements FeatureExtractor {
         .build();
   }
 
+  // Count words in a string by splitting on whitespace
+  // Not counting chars
   private static int countWords(String s) {
     String t = s.trim();
     if (t.isEmpty()) return 0;
