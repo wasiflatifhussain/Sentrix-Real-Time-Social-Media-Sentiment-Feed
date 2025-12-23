@@ -1,6 +1,6 @@
 package com.sentrix.ingestor_service.adapter;
 
-import com.sentrix.ingestor_service.model.event.SourceType;
+import com.sentrix.ingestor_service.model.SourceType;
 
 /**
  * Common interface for all social ingestion adapters.

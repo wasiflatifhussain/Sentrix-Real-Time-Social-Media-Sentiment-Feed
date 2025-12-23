@@ -190,6 +190,15 @@ Kafka automatically deletes events older than ~7 days (segment-based cleanup).
   --describe
   ```
 
+### Delete Topic:
+
+  ```
+    /opt/homebrew/opt/kafka/bin/kafka-topics \
+    --delete \
+    --topic sentrix.ingestor.events \
+    --bootstrap-server localhost:9092
+  ```
+ 
 Expected values:
 
 * `cleanup.policy=delete`
@@ -239,7 +248,7 @@ app:
 
 logging:
   level:
-    com.sentrix.ingestor_service.service.KafkaEventPublisher: INFO
+    com.sentrix.ingestor_service.messaging.producer.KafkaEventPublisher: INFO
     com.sentrix.ingestor_service.adapter.reddit: INFO
   ```
 

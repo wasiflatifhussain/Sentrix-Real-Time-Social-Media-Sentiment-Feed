@@ -2,12 +2,12 @@ package com.sentrix.ingestor_service.adapter.reddit.mapper;
 
 import com.sentrix.ingestor_service.adapter.reddit.model.RedditComment;
 import com.sentrix.ingestor_service.adapter.reddit.model.RedditPost;
-import com.sentrix.ingestor_service.model.event.*;
+import com.sentrix.ingestor_service.model.*;
 import java.time.Instant;
 import java.util.Objects;
 
 /*
- * Contains static methods to map Reddit-specific data to generic event structures
+ * Contains static methods to map Reddit-specific data to generic ingestor structures
  */
 public class RedditEventMapper {
   private static final int EVENT_VERSION = 1;
@@ -95,7 +95,7 @@ public class RedditEventMapper {
     EngagementMetrics metrics =
         EngagementMetrics.builder()
             .likeCount(comment.getScore() != null ? comment.getScore().longValue() : null)
-            .commentCount(0L)
+            .commentCount(null)
             .build();
 
     return KafkaCommentEvent.builder()

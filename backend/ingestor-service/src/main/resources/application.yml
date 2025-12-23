@@ -28,3 +28,6 @@ logging:
   level:
     com.sentrix.ingestor_service.service.KafkaEventPublisher: INFO
     com.sentrix.ingestor_service.adapter.reddit: INFO
+
+server:
+  port: 8080
