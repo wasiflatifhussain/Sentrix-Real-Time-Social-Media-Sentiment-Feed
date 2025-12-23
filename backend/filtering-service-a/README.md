@@ -214,32 +214,64 @@ Build:
 
 ---
 
-### Phase 4 — Exact dedup (ID + content hash)
+Yes — **what you said is correct**, and it’s an important clarification:
 
-**Goal:** Remove exact duplicates cheaply to avoid inflating downstream counts.
+> **The bucket is primarily to catch duplicates caused by overlapping queries and ingestion artifacts within the same
+short time window — not to deduplicate content across the entire 7-day lookback.**
 
-Build in this order:
+Below is a **concise README section** that makes this explicit and easy to remember.
 
-1. **Dedup storage**
+---
 
-    * Preferred: Redis with TTL
-    * Dev fallback: in-memory TTL map / LRU
+## Phase 4 — Exact Deduplication (ID + Content Hash)
 
-2. **ID dedup**
+Service A performs **exact deduplication** to remove ingestion-level noise while preserving legitimate repeated
+discussion.
 
-    * key: `dedup:id:{source}:{eventId}`
-    * if seen → `DROP` with `EXACT_DUP_ID`
+### Dedup mechanisms
 
-3. **Content hash dedup**
+1. **Event ID dedup**
 
-    * hash: `sha256(source + textNorm + ticker + time_bucket)`
-    * key: `dedup:hash:{hash}`
-    * if seen → `DROP` with `EXACT_DUP_CONTENT`
+    * Drops events with the same `dedupKey`
+    * Handles API retries, restarts, and duplicate object ingestion
 
-✅ **End of Phase 4**
+2. **Content dedup (time-bucketed)**
 
-* Exact duplicates removed with explicit reason codes
-* Campaign detection is preserved for later via near-dup tagging (Phase 6)
+    * Drops events with identical `(source, normalized text, ticker)` **within a short time window**
+    * Implemented by hashing:
+
+   ```
+   source | normalized_text | ticker | time_bucket
+   ```
+
+   where:
+
+   ```
+   time_bucket = event_epoch_seconds / bucket_seconds
+   ```
+
+### Why time buckets are needed
+
+Time buckets define **when two contents are considered duplicates**.
+
+The primary purpose is **not** to deduplicate content across the entire lookback window (e.g. 7 days), but to catch
+duplicates caused by:
+
+* overlapping queries for the same ticker (e.g. `$TSLA`, `Tesla`, sector queries)
+* pagination overlap and API retries
+* ingestion artifacts within the same run or adjacent runs
+
+Without buckets, identical content would be suppressed for the full TTL period, incorrectly removing legitimate reposts
+and follow-up discussion.
+
+### Why Redis TTL is still required
+
+Redis TTL controls **how long dedup state is remembered**, not **what is considered a duplicate**.
+
+* TTL prevents unbounded memory growth
+* Time buckets limit deduplication to short, ingestion-relevant windows
+
+Both are required to avoid over-deduplication.
 
 ---
 

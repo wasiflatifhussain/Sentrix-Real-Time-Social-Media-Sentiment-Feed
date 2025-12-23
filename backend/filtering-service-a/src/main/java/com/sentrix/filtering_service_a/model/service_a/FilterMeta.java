@@ -14,5 +14,5 @@ public class FilterMeta {
   private Decision decision;
 
   private FilterReason filterReason;
-  private Long processedAtUtc;
+  private Long processedAtUtc; // all timestamps are epoch seconds UTC
 }

@@ -6,9 +6,10 @@ import com.sentrix.filtering_service_a.model.service_a.Decision;
 import com.sentrix.filtering_service_a.model.service_a.FilterMeta;
 import com.sentrix.filtering_service_a.model.service_a.FilterReason;
 import com.sentrix.filtering_service_a.model.service_a.FilteredEventEnvelope;
-import com.sentrix.filtering_service_a.processing.FilteringPipeline;
+import com.sentrix.filtering_service_a.pipeline.FilteringPipeline;
 import com.sentrix.filtering_service_a.util.EventKeyUtil;
 import com.sentrix.filtering_service_a.util.KafkaHeaderUtil;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -57,7 +58,7 @@ public class IngestorEventHandler {
                       .filterStage("service_a")
                       .decision(Decision.DROP)
                       .filterReason(FilterReason.RAW_PARSE_FAIL)
-                      .processedAtUtc(System.currentTimeMillis())
+                      .processedAtUtc(Instant.now().getEpochSecond())
                       .build())
               .textView(null)
               .eventFeatures(null)
@@ -96,7 +97,7 @@ public class IngestorEventHandler {
                       .filterStage("service_a")
                       .decision(Decision.DROP)
                       .filterReason(FilterReason.PIPELINE_CALL_FAIL)
-                      .processedAtUtc(System.currentTimeMillis())
+                      .processedAtUtc(Instant.now().getEpochSecond())
                       .build())
               .textView(null)
               .eventFeatures(null)

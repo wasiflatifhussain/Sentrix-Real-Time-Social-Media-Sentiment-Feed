@@ -1,11 +1,14 @@
-package com.sentrix.filtering_service_a.processing;
+package com.sentrix.filtering_service_a.pipeline;
 
 import com.sentrix.filtering_service_a.model.ingestor.IngestorEvent;
 import com.sentrix.filtering_service_a.model.service_a.*;
-import com.sentrix.filtering_service_a.processing.features.FeatureExtractor;
-import com.sentrix.filtering_service_a.processing.normalizer.Normalizer;
-import com.sentrix.filtering_service_a.processing.validation.ValidationResult;
-import com.sentrix.filtering_service_a.processing.validation.Validator;
+import com.sentrix.filtering_service_a.pipeline.dedup.DedupService;
+import com.sentrix.filtering_service_a.pipeline.features.FeatureExtractor;
+import com.sentrix.filtering_service_a.pipeline.normalizer.Normalizer;
+import com.sentrix.filtering_service_a.pipeline.validation.ValidationResult;
+import com.sentrix.filtering_service_a.pipeline.validation.Validator;
+import java.time.Instant;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,7 @@ public class FilteringPipelineImpl implements FilteringPipeline {
   private final Normalizer normalizer;
   private final FeatureExtractor featureExtractor;
   private final Validator validator;
+  private final DedupService dedupService;
 
   @Override
   public FilteredEventEnvelope process(IngestorEvent event) {
@@ -59,18 +63,25 @@ public class FilteringPipelineImpl implements FilteringPipeline {
     // Phase 3: Hard validations
     ValidationResult validationResult = validator.validate(event, textView, features);
     if (!validationResult.isOk()) {
-      return FilteredEventEnvelope.builder()
-          .ingestorEvent(event)
-          .filterMeta(
-              FilterMeta.builder()
-                  .filterStage("service_a")
-                  .decision(Decision.DROP)
-                  .filterReason(validationResult.getReason())
-                  .processedAtUtc(System.currentTimeMillis())
-                  .build())
-          .textView(textView) // keep for audit
-          .eventFeatures(features) // keep for audit
-          .build();
+      return dropEvent(event, validationResult.getReason(), textView, features);
+    }
+
+    // Phase 4: Deduplication using dedup-key and content hash
+    long eventEpochSeconds =
+        (event.getCreatedAtUtc() != null && event.getCreatedAtUtc() > 0)
+            ? event.getCreatedAtUtc()
+            : event.getIngestedAtUtc();
+
+    Optional<FilterReason> dedupReasonOpt =
+        dedupService.checkAndMark(
+            event.getSource().name().toLowerCase(), // eg: "reddit"
+            event.getDedupKey(),
+            textView.getTextNormalized(),
+            event.getTicker(),
+            eventEpochSeconds);
+
+    if (dedupReasonOpt.isPresent()) {
+      return dropEvent(event, dedupReasonOpt.get(), textView, features);
     }
 
     return FilteredEventEnvelope.builder()
@@ -80,14 +91,19 @@ public class FilteringPipelineImpl implements FilteringPipeline {
                 .filterStage("service_a")
                 .decision(Decision.KEEP)
                 .filterReason(null)
-                .processedAtUtc(System.currentTimeMillis())
+                .processedAtUtc(Instant.now().getEpochSecond())
                 .build())
         .textView(textView)
-        .eventFeatures(features) // TODO: insert result from event feature impl
+        .eventFeatures(features)
         .build();
   }
 
   private static FilteredEventEnvelope dropEvent(IngestorEvent event, FilterReason reason) {
+    return dropEvent(event, reason, null, null);
+  }
+
+  private static FilteredEventEnvelope dropEvent(
+      IngestorEvent event, FilterReason reason, TextView textView, EventFeatures features) {
     return FilteredEventEnvelope.builder()
         .ingestorEvent(event)
         .filterMeta(
@@ -95,10 +111,10 @@ public class FilteringPipelineImpl implements FilteringPipeline {
                 .filterStage("service_a")
                 .decision(Decision.DROP)
                 .filterReason(reason)
-                .processedAtUtc(System.currentTimeMillis())
+                .processedAtUtc(Instant.now().getEpochSecond())
                 .build())
-        .textView(null)
-        .eventFeatures(null)
+        .textView(textView)
+        .eventFeatures(features)
         .build();
   }
 

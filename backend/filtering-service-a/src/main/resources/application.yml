@@ -17,6 +17,10 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     listener:
       ack-mode: manual
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 app:
   kafka:
@@ -32,6 +36,10 @@ app:
     min-text-len: 10
     max-event-age-days: 7
     drop-on-truncate: false  # if true, events exceeding max-text-len are dropped; if false, they are truncated
+  dedup:
+    enabled: true
+    ttl-seconds: 604800  # 7 days
+    bucket-seconds: 3600  # 1 hour
 
 
 server:
