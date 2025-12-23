@@ -113,6 +113,14 @@ public class RedditAdapter implements SocialSourceAdapter {
               continue;
             }
 
+            log.info(
+                "DEBUG reddit post: id={}, fullname={}, score={}, numComments={}, rawKeys?={}",
+                post.getId(),
+                post.getFullname(),
+                post.getScore(),
+                post.getNumComments(),
+                post);
+
             // Build + publish post ingestor
             KafkaPostEvent postEvent =
                 RedditEventMapper.toPostEvent(post, ticker, capture, ingestedAt);

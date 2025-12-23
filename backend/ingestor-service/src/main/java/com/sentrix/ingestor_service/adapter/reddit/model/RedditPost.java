@@ -25,6 +25,8 @@ public class RedditPost {
   private String author;
   private Integer score;
 
+  private Integer numComments;
+
   // Reddit returns created_utc as float sometimes -> store as Double then convert later
   private Double createdUtc;
 }

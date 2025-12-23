@@ -58,6 +58,5 @@ app:
       short-text-max-words: 12
 
 
-
 server:
   port: 8081

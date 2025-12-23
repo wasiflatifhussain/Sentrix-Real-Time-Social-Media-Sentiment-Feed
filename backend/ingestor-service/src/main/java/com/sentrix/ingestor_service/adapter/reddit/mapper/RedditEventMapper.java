@@ -15,7 +15,7 @@ public class RedditEventMapper {
   private RedditEventMapper() {}
 
   public static KafkaPostEvent toPostEvent(
-          RedditPost post, String ticker, CaptureMeta capture, Long ingestedAtUtc) {
+      RedditPost post, String ticker, CaptureMeta capture, Long ingestedAtUtc) {
     Objects.requireNonNull(post, "post must not be null");
     Objects.requireNonNull(ticker, "ticker must not be null");
 
@@ -36,6 +36,7 @@ public class RedditEventMapper {
     EngagementMetrics metrics =
         EngagementMetrics.builder()
             .likeCount(post.getScore() != null ? post.getScore().longValue() : null)
+            .commentCount(post.getNumComments() != null ? post.getNumComments().longValue() : null)
             .build();
 
     return KafkaPostEvent.builder()
@@ -94,6 +95,7 @@ public class RedditEventMapper {
     EngagementMetrics metrics =
         EngagementMetrics.builder()
             .likeCount(comment.getScore() != null ? comment.getScore().longValue() : null)
+            .commentCount(null)
             .build();
 
     return KafkaCommentEvent.builder()
