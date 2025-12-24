@@ -1,5 +1,7 @@
 package com.sentrix.filtering_service_a.model.service_a;
 
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +17,7 @@ public class FilterMeta {
 
   private FilterReason filterReason;
   private Long processedAtUtc; // all timestamps are epoch seconds UTC
+
+  private List<String> tags;
+  private Map<String, Object> signals;
 }

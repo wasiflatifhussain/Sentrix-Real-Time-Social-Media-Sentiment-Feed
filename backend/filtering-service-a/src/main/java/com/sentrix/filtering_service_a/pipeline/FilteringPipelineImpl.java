@@ -1,14 +1,20 @@
 package com.sentrix.filtering_service_a.pipeline;
 
+import com.sentrix.filtering_service_a.config.NearDupConfig;
 import com.sentrix.filtering_service_a.model.ingestor.IngestorEvent;
 import com.sentrix.filtering_service_a.model.service_a.*;
 import com.sentrix.filtering_service_a.pipeline.dedup.DedupService;
 import com.sentrix.filtering_service_a.pipeline.feature_checks.EventFeatureChecks;
 import com.sentrix.filtering_service_a.pipeline.features.FeatureExtractor;
+import com.sentrix.filtering_service_a.pipeline.near_dup_detect.NearDupResult;
+import com.sentrix.filtering_service_a.pipeline.near_dup_detect.NearDupService;
+import com.sentrix.filtering_service_a.pipeline.near_dup_detect.SimHash64;
 import com.sentrix.filtering_service_a.pipeline.normalizer.Normalizer;
 import com.sentrix.filtering_service_a.pipeline.validation.ValidationResult;
 import com.sentrix.filtering_service_a.pipeline.validation.Validator;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +30,8 @@ public class FilteringPipelineImpl implements FilteringPipeline {
   private final Validator validator;
   private final DedupService dedupService;
   private final EventFeatureChecks eventFeatureChecks;
+  private final NearDupService nearDupService;
+  private final NearDupConfig nearDupConfig;
 
   @Override
   public FilteredEventEnvelope process(IngestorEvent event) {
@@ -92,15 +100,47 @@ public class FilteringPipelineImpl implements FilteringPipeline {
       return dropEvent(event, featureCheckDropOpt.get(), textView, features);
     }
 
+    // Phase 6: Keep events + add tags under meta-data for near duplicate/wave detection
+    // (downstream)
+
+    FilterMeta meta =
+        FilterMeta.builder()
+            .filterStage("service_a")
+            .decision(Decision.KEEP)
+            .filterReason(null)
+            .processedAtUtc(Instant.now().getEpochSecond())
+            .tags(null)
+            .signals(null)
+            .build();
+
+    if (nearDupConfig.isEnabled() && features.getWordCount() >= nearDupConfig.getMinWords()) {
+
+      long fingerprint = SimHash64.fingerprint(textView.getTextNormalized());
+      long fpBucketTime =
+          eventEpochSeconds > 0 ? eventEpochSeconds : Instant.now().getEpochSecond();
+
+      NearDupResult nearDupResult =
+          nearDupService.checkAndRecord(
+              event.getSource().name(), // keep as enum name; consistent with service
+              event.getTicker(),
+              fingerprint,
+              fpBucketTime);
+
+      if (nearDupResult.isNearDupWave()) {
+        if (meta.getTags() == null) meta.setTags(new ArrayList<>());
+        if (meta.getSignals() == null) meta.setSignals(new HashMap<>());
+
+        meta.getTags().add("NEAR_DUP_WAVE");
+        meta.getSignals().put("nearDupMatchCount", nearDupResult.getMatchCount());
+        meta.getSignals().put("nearDupMinHamming", nearDupResult.getMinHamming());
+        meta.getSignals().put("nearDupBucketSeconds", nearDupConfig.getBucketSeconds());
+        meta.getSignals().put("nearDupMaxHamming", nearDupConfig.getMaxHamming());
+      }
+    }
+
     return FilteredEventEnvelope.builder()
         .ingestorEvent(event)
-        .filterMeta(
-            FilterMeta.builder()
-                .filterStage("service_a")
-                .decision(Decision.KEEP)
-                .filterReason(null)
-                .processedAtUtc(Instant.now().getEpochSecond())
-                .build())
+        .filterMeta(meta)
         .textView(textView)
         .eventFeatures(features)
         .build();
