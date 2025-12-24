@@ -56,6 +56,14 @@ app:
       hard-drop-count: 12
       short-text-drop-count: 6
       short-text-max-words: 12
+  neardup:
+    enabled: true
+    min-words: 30  # simHash unreliable on short texts
+    max-hamming: 5  # maximum number of differing bits between two 64-bit fingerprints (3-5 indicate high similarity) [used to compare 2 posts]
+    min-matches: 3   # number of near-dup events in recent history to trigger a tag (compare each post against redis set of recent posts) [ttl limits how big this set can grow]
+    bucket-seconds: 900  # 15 min (trade-off between accuracy and memory usage)
+    ttl-seconds: 3600  # 60 min (recent history window for counting matches)
+    check-prev-bucket: true   # helps at bucket boundaries
 
 
 server:

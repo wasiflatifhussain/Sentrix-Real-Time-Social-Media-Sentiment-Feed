@@ -353,25 +353,89 @@ Allows tuning without code changes as real data is observed.
 
 ---
 
-### Phase 6 — Near-duplicate fingerprinting (KEEP but tag)
+## Phase 6 — Near-duplicate fingerprinting (annotate only)
 
-**Goal:** Detect repost/copy-paste campaigns without deleting evidence.
+### Goal
 
-Build:
+Detect **coordinated repost / copy-paste activity** without deleting or down-weighting legitimate content.
 
-1. **Fingerprint generation**
+This phase **never drops events**.
+It only **annotates** events with evidence of near-duplicate activity for downstream use.
 
-    * SimHash (or MinHash)
-    * store fingerprints with TTL
+---
 
-2. **Lookup**
+### Why this matters
 
-    * compare against recent fingerprints by ticker/source
-    * if near-dup → **KEEP**, attach tag like `NEAR_DUP_SIGNAL`
+Exact deduplication (Phase 4) removes ingestion-level duplicates, but it cannot detect:
+
+* repost waves with small wording changes
+* copy-paste amplification intended to inflate sentiment
+
+These patterns are **distribution-level behaviors** and must be detected by comparing events across time.
+
+---
+
+### Build
+
+#### 1. Fingerprint generation
+
+* Generate a near-duplicate fingerprint from normalized text
+* Algorithm: **SimHash** (or MinHash)
+* Applied only to sufficiently long texts to reduce noise
+* Fingerprints stored with a short TTL
+
+References:
+
+* [https://dev.to/lovestaco/what-is-simhash-58m5](https://dev.to/lovestaco/what-is-simhash-58m5)
+* [https://spotintelligence.com/2023/01/02/simhash/](https://spotintelligence.com/2023/01/02/simhash/)
+
+Fingerprints are scoped by:
+
+* `source`
+* `ticker`
+* short rolling time window (e.g. last 30–60 minutes)
+
+---
+
+#### 2. Near-duplicate lookup
+
+* Compare each event against recent fingerprints in the same scope
+* Use **Hamming distance** to measure similarity
+* If multiple near-matches are found:
+
+    * **KEEP** the event
+    * Attach a tag such as `NEAR_DUP_WAVE`
+    * Record supporting signals (match count, min distance, window size)
+
+---
+
+### Output
+
+* All events are forwarded unchanged
+* Near-duplicate participation is recorded as metadata only
+* No suppression or weighting occurs in Service A
+
+Downstream systems decide how to interpret or act on this signal.
+
+---
+
+### Notes on detection semantics
+
+Near-duplicate wave detection is **best-effort** in a distributed stream:
+
+* Events may be processed out of order across partitions
+* Match counts depend on what recent fingerprints are visible at processing time
+
+This phase is intentionally **approximate**, as it produces a soft signal for downstream analysis rather than a hard
+filtering decision.
+
+---
 
 ✅ **End of Phase 6**
 
-* You preserve evidence while enabling downstream handling
+* Legitimate content preserved
+* Coordinated repost activity made observable
+* Downstream manipulation detection enabled
 
 ---
 
