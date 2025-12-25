@@ -12,6 +12,10 @@ class FilterMeta:
 
 @dataclass(frozen=True)
 class CleanedEvent:
+    """
+    Transport-level cleaned event produced by Filtering Service A/B.
+    """
+
     event_id: str
     dedup_key: Optional[str]
     ticker: str
