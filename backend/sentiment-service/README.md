@@ -305,10 +305,321 @@ sentiment-service/
 
 ---
 
-## Next Steps
+## ✅ Phase 0 — DONE (Kafka Ingestion)
 
-1. Wire Kafka consumer → dummy scoring → MongoDB writes
-2. Add MongoDB indexes + TTL
-3. Validate backend API reads
-4. Replace dummy scoring with real sentiment model
-5. Improve aggregation and keyword extraction
+**Status:** ✔ Completed
+You already did this correctly.
+
+### Goal
+
+* Consume events reliably
+* Parse envelope
+* Manual commit only on success
+
+### Files
+
+* `main.py`
+* `kafka_consumer.py`
+* `schemas.py`
+* `settings.py`
+
+### DoD
+
+* Logs show eventId / ticker / partition / offset
+* Restart resumes from last offset
+* Bad messages do not get committed
+
+✅ **You’re here**
+
+---
+
+## 🟡 Phase 1 — Time Bucketing (Pure Function Layer)
+
+### Goal
+
+Convert event timestamps → **hour-aligned UTC buckets**
+
+This is foundational. Everything else depends on it.
+
+### What to build
+
+* A **pure helper** that:
+
+  * takes epoch seconds
+  * returns `(hourStart, hourEnd)` in UTC
+* No Kafka
+* No Mongo
+* No side effects
+
+### Files
+
+* `utils/time.py`
+
+### Responsibilities
+
+* Normalize timestamps
+* Align to hour boundary
+* Handle missing timestamps safely
+
+### DoD
+
+* Unit tests for:
+
+  * normal timestamps
+  * boundary cases (e.g. 12:59 → 12:00)
+  * UTC correctness
+
+> 💡 This is intentionally boring — boring = correct.
+
+---
+
+## 🟡 Phase 2 — Sentiment Scoring Stub (Domain Layer)
+
+### Goal
+
+Introduce a **stable scoring interface** without real ML yet
+
+### What to build
+
+* A function/class that:
+
+  * accepts `CleanedEvent`
+  * returns `SentimentResult`
+* Output is deterministic or random (doesn’t matter)
+
+### Files
+
+* `domain/models.py`
+* `domain/scoring.py`
+
+### Responsibilities
+
+* Define the **contract** for scoring
+* Decouple scoring from Kafka & Mongo
+
+### DoD
+
+* Given a CleanedEvent → returns:
+
+  * score (float)
+  * keywords (list[str])
+  * confidence (optional)
+* No external dependencies
+* Easily replaceable later
+
+> 💡 This is where ML will plug in later — don’t rush it now.
+
+---
+
+## 🟡 Phase 3 — Aggregation Logic (Pure + Stateful)
+
+### Goal
+
+Aggregate **per-event scores** into **hourly summaries**
+
+### What to build
+
+* Logic that updates:
+
+  * count
+  * average score (or weighted avg)
+  * bounded keyword list
+
+### Files
+
+* `domain/aggregation.py`
+
+### Responsibilities
+
+* Pure math
+* No Mongo
+* No Kafka
+
+### DoD
+
+* Given:
+
+  * existing aggregate
+  * new sentiment result
+* Returns:
+
+  * updated aggregate
+
+> 💡 This must be **idempotent-friendly** (replays should not corrupt state).
+
+---
+
+## 🟡 Phase 4 — MongoDB Integration (Storage Layer)
+
+### Goal
+
+Persist aggregates into MongoDB **safely**
+
+### What to build
+
+* Mongo client setup
+* Repositories for:
+
+  * hourly view
+  * latest snapshot
+
+### Files
+
+* `storage/mongo_client.py`
+* `storage/hourly_repo.py`
+* `storage/latest_repo.py`
+
+### Responsibilities
+
+* Connection management
+* Atomic updates (`$inc`, `$set`, `$setOnInsert`)
+* TTL compatibility
+
+### DoD
+
+* Can upsert hourly document
+* Can upsert latest document
+* Safe under replay
+* TTL index documented (can be manual)
+
+> 💡 Mongo is your *state store* — treat it carefully.
+
+---
+
+## 🟡 Phase 5 — Wire Everything Together (End-to-End)
+
+### Goal
+
+Kafka → Scoring → Bucketing → Aggregation → Mongo
+
+### What to build
+
+* Glue code inside `main.py`
+
+### Files
+
+* `main.py` (updated)
+* Everything else reused
+
+### Responsibilities
+
+* Orchestration only
+* No business logic here
+
+### DoD
+
+* Consume one Kafka event
+* Mongo shows:
+
+  * updated hourly doc
+  * updated latest doc
+* Restart service → no duplication
+
+---
+
+## 🟡 Phase 6 — Idempotency & Replay Safety
+
+### Goal
+
+Make replays **safe and expected**
+
+### What to build
+
+* Ensure:
+
+  * no double-counting
+  * deterministic aggregation
+* Possibly use:
+
+  * eventId sets
+  * monotonic hour updates
+  * careful `$inc` logic
+
+### Files
+
+* `domain/aggregation.py`
+* `storage/*`
+
+### DoD
+
+* Replaying same Kafka data does not corrupt aggregates
+* Safe for demo and grading
+
+---
+
+## 🟢 Phase 7 — Observability & Ops Polish (Optional but Impressive)
+
+### Goal
+
+Make the service **demo- and prod-friendly**
+
+### What to build
+
+* Health endpoint
+* Better logs
+* Basic metrics
+
+### Files
+
+* `observability/health.py`
+* `observability/logging.py`
+
+### DoD
+
+* Health check works
+* Logs are readable
+* Failures are diagnosable
+
+---
+
+## 🟢 Phase 8 — Real Sentiment Model (Post-Core)
+
+### Goal
+
+Replace stub scoring with real NLP
+
+### What to build
+
+* FinBERT / HF pipeline
+* Batch or per-event inference
+
+### Files
+
+* `domain/scoring.py`
+
+### DoD
+
+* Same interface
+* Better results
+* No storage changes needed
+
+---
+
+# Recommended Order (Very Important)
+
+**Do NOT skip around. Follow this order exactly:**
+
+1. Phase 1 — Time bucketing
+2. Phase 2 — Scoring stub
+3. Phase 3 — Aggregation math
+4. Phase 4 — Mongo writes
+5. Phase 5 — Full wiring
+6. Phase 6 — Replay safety
+
+This minimizes bugs and rework.
+
+---
+
+## Where you are now
+
+✅ Kafka ingestion
+⏭ **Next: Phase 1 — Time Bucketing**
+
+If you want, next I can:
+
+* design `HourBucket` exactly
+* give you the time bucketing helper + tests
+* or sketch the Mongo update patterns **before** you code them
+
+Just tell me which phase you want to start next.
+
