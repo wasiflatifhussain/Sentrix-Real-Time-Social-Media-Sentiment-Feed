@@ -26,6 +26,6 @@ class SentimentResult:
 
     event_id: str
     ticker: str
-    score: float  # recommend -1.0 .. +1.0
+    score: float  # -1.0 .. +1.0
     keywords: List[str]
     confidence: Optional[float] = None  # 0.0 .. 1.0, optional

@@ -1,516 +1,432 @@
-# Sentiment Service — Market-Like Sentiment Signal (Tier 2 + Signal Layer)
+# Sentiment Service — Market-Like Sentiment Signal (Hourly + Serving API)
 
 ## Purpose
 
-This service consumes **cleaned social events** from Kafka, performs **sentiment scoring + keyword extraction**, and produces a **market-like sentiment signal per ticker**.
+This service consumes **cleaned social events** from Kafka, performs **sentiment scoring and keyword extraction**, and exposes sentiment data through a **backend API** for frontend consumption.
 
-Instead of exposing raw per-event or raw per-hour sentiment directly to the frontend, the service builds sentiment in **two layers**:
+The system intentionally separates sentiment processing into **two layers**:
 
-1. **Hourly per-ticker aggregates** (raw material, time series, TTL)
-2. **A smoothed, market-style sentiment signal** (serving layer, one document per ticker)
+1. **Hourly per-ticker aggregates** (raw, time-series data)
+2. **Latest sentiment signal per ticker** (fast, serving-layer snapshot)
 
-This mirrors how financial indicators are constructed:
+This mirrors how market data systems work:
 
-* noisy data → hourly “bars”
-* bars → smoothed indicator (EMA)
+> noisy events → hourly bars → indicator snapshot
 
-The frontend never talks to Kafka and never scans large historical windows.
-It consumes **pre-computed sentiment signals** via the backend API.
-
----
-
-## Design Philosophy (Important)
-
-> **Hourly sentiment is not the product.
-> The sentiment signal is the product.**
-
-Social sentiment is noisy:
-
-* a single viral post can distort one hour
-* low-volume hours are unreliable
-* raw hourly values swing too much for users
-
-To reflect **overall market sentiment**, this service:
-
-* aggregates sentiment per hour
-* smooths sentiment across hours
-* weights hours with more data more heavily
-* updates sentiment gradually when trends persist
-
-This produces a signal that:
-
-* behaves like a market indicator
-* is stable but responsive
-* scales well for many users
+The frontend never consumes Kafka data directly and never scans large event histories.
+It polls **pre-computed MongoDB data** through a stable API.
 
 ---
 
-## Architecture Overview
+## What is implemented now (scope of current system)
 
-### High-level data flow
+### ✔ Implemented
 
-1. **Ingestor Service** publishes RAW events
-2. **Filtering Service A** standardizes and filters events → `CLEANED_EVENTS`
-3. **Sentiment Service (this repo)**:
+* Kafka → hourly sentiment aggregation (streaming, incremental)
+* MongoDB storage with TTL for hourly data
+* Periodic signal updater (placeholder logic)
+* One latest signal document per ticker
+* FastAPI backend exposing:
 
-   * consumes `CLEANED_EVENTS`
-   * scores sentiment + extracts keywords
-   * incrementally builds **hourly aggregates**
-   * periodically updates a **market-like sentiment signal**
-4. **Backend API** reads MongoDB and serves frontend
-5. **Frontend** polls backend APIs (cheap reads)
+  * list of tickers
+  * latest signals (single or many)
+  * hourly sentiment history for charts
 
-### Two processing tracks
+### ❌ Not implemented yet (by design)
 
-#### 1️⃣ Streaming track (event-driven, always running)
+* Historical signal (EMA) time-series storage
+* Real sentiment model (currently stubbed)
+* Advanced indicators (trend, confidence, decay curves)
 
-* Kafka → per-event sentiment
-* Updates **hourly aggregates** using atomic increments
-
-#### 2️⃣ Signal track (time-driven, controlled)
-
-* Periodically checks for completed hours
-* Converts hourly aggregates into a **smoothed sentiment signal**
-* Updates **one document per ticker**
+These are listed under **Future Improvements**.
 
 ---
 
-## Storage Model (Tier 2 + Signal Layer)
+## High-Level Architecture
 
-### Why two layers?
+### Data flow
 
-| Layer             | Purpose                                |
-| ----------------- | -------------------------------------- |
-| Hourly aggregates | Truth, history, charts, debugging      |
-| Signal layer      | Fast reads, stable UX, market behavior |
+1. **Ingestor Service**
+
+   * Publishes raw social events to Kafka
+
+2. **Filtering Service**
+
+   * Normalizes, filters, deduplicates
+   * Publishes cleaned events
+
+3. **Sentiment Service (this repo)**
+
+   * Consumes cleaned events
+   * Scores sentiment (stub)
+   * Builds hourly aggregates
+   * Periodically updates latest signal
+
+4. **Backend API (FastAPI)**
+
+   * Reads MongoDB only
+   * Serves frontend requests
+
+5. **Frontend**
+
+   * Polls backend APIs
+   * Displays dashboard + charts
 
 ---
 
-## MongoDB Atlas: What we write
+## Processing Model
+
+### 1) Streaming path (event-driven)
+
+Runs continuously.
+
+For each cleaned Kafka event:
+
+* Bucket event into UTC hour
+* Compute sentiment score (stub)
+* Increment hourly MongoDB document using `$inc`
+
+Result:
+
+* Exactly one MongoDB document per `(ticker, hour)`
+* Replay-safe, no read-before-write
+
+---
+
+### 2) Signal update path (time-driven)
+
+Runs periodically (e.g. every minute).
+
+Logic:
+
+* Determine the most recent **fully closed hour** (with grace window)
+* For each active ticker:
+
+  * Read that hour’s aggregate
+  * Compute a placeholder signal value
+  * Update **one signal document per ticker**
+  * Guard against double application using `asOfHourStartUtc`
+
+Result:
+
+* Latest signal snapshot per ticker
+* Cheap reads for frontend
+* No historical signal stored yet
+
+---
+
+## Storage Model (MongoDB)
 
 ### Database
 
-* Example database name: `sentrix`
+Example: `sentrix`
 
-### Collections
+---
 
-### 1) `ticker_sentiment_hourly` — base time series (TTL)
+### Collection: `ticker_sentiment_hourly`
 
-Stores **one document per (ticker, hour)**.
+**Purpose:**
+Raw time-series data for charts, debugging, and recomputation.
 
-This is the **raw material layer**, similar to market candles.
+**One document per (ticker, hour)**
 
-**Document meaning**
-
-> “What did sentiment look like for this ticker during this hour?”
-
-**Stored fields (conceptual)**:
+**Key fields:**
 
 * `_id`: `${ticker}|${hourStartUtc}`
 * `ticker`
 * `hourStartUtc`, `hourEndUtc`
-* `count` (number of events)
-* `scoreSum` (sum of sentiment scores)
-* `keywordCounts` (frequency map)
+* `count`
+* `scoreSum`
+* `keywordCounts`
 * `sourceBreakdown`
 * `updatedAtUtc`
 * `expireAtUtc` (TTL)
 
-**Retention**
+**Retention:**
 
-* TTL index keeps only the last **7–30 days**
-* Old data expires automatically
+* Automatically expires after configured TTL (e.g. 7–30 days)
 
-**Why this exists**
+**Used for:**
 
-* historical charts
-* transparency for demo
-* backfills / recomputation
-* debugging incorrect signals
+* Hourly sentiment charts
+* Transparency and demo
+* Future signal recomputation
 
 ---
 
-### 2) `ticker_sentiment_signal` — market-like serving model
+### Collection: `ticker_sentiment_signal`
 
-Stores **one document per ticker**.
+**Purpose:**
+Serving-layer snapshot of **current sentiment per ticker**.
 
-This is what the **frontend primarily consumes**.
+**One document per ticker**
 
-**Document meaning**
-
-> “What is the current overall market sentiment for this ticker?”
-
-**Stored fields (conceptual)**:
+**Key fields:**
 
 * `_id`: `ticker`
 * `ticker`
-* `signalScore` (EMA-smoothed sentiment)
-* `halfLifeHours` or `alpha` (signal configuration)
-* `lastAppliedHourStartUtc` (prevents double application)
+* `signalScore`
+* `asOfHourStartUtc`
 * `updatedAtUtc`
 
-**Optional (but useful)**
+**Optional fields (future):**
 
-* `lastHourAvg`
-* `lastHourCount`
-* `recentVolume` (confidence indicator)
-* `trend24h` / `trend1h`
-* `keywords` (from most recent hour)
+* `recentVolume`
+* `keywords`
+* `halfLifeHours`
+* trend indicators
 
-**Why this exists**
+**Used for:**
 
-* O(1) reads per ticker
-* no scanning 168 hours per request
-* scalable to many users polling
-
----
-
-## How the market-like signal is built
-
-### Step 1 — Build hourly aggregates (continuous)
-
-For each event:
-
-1. Determine hour bucket (UTC)
-2. Compute sentiment score
-3. `$inc` into `ticker_sentiment_hourly`:
-
-   * `count += 1`
-   * `scoreSum += score`
-   * `keywordCounts.* += 1`
-
-This happens continuously.
+* Dashboards
+* Fast polling
+* Overview pages
 
 ---
 
-### Step 2 — Apply hourly signal update (periodic)
+## Backend API
 
-On a fixed schedule (e.g. every minute):
+All endpoints are prefixed with:
 
-1. Identify the **previous hour** (with a small grace window)
-2. For each ticker:
-
-   * read that hour’s `count` and `scoreSum`
-   * compute `hourAvg = scoreSum / count`
-3. Apply **exponentially weighted moving average (EMA)**:
-
-   * recent hours matter more
-   * sustained trends move the signal gradually
-4. Update `ticker_sentiment_signal`
-5. Record `lastAppliedHourStartUtc` to ensure **exactly-once behavior**
-
-This produces market-style behavior:
-
-* one bad hour ≠ crash
-* many bad hours → signal drifts negative
+```
+/api/v1
+```
 
 ---
 
-## Frontend Consumption Model
+### `GET /api/v1/health`
 
-### Main sentiment view (cheap)
+**Purpose:**
+Health check endpoint.
 
-Backend reads only:
+**Returns:**
 
-* `ticker_sentiment_signal`
+```json
+{ "ok": true }
+```
+
+Used for monitoring and sanity checks.
+
+---
+
+### `GET /api/v1/tickers`
+
+**Purpose:**
+List all tickers currently present in the system.
+
+Used to populate frontend dropdowns / autocomplete.
+
+**Query params:**
+
+* `limit` (optional, default 2000)
+
+**Returns:**
+
+```json
+{
+  "tickers": ["AAPL", "TSLA", "MSFT"],
+  "count": 3
+}
+```
+
+---
+
+### `POST /api/v1/signals/latest`
+
+**Purpose:**
+Fetch latest sentiment signals for **multiple tickers at once**.
+
+Used by dashboard list views.
+
+**Request body:**
+
+```json
+{
+  "tickers": ["AAPL", "TSLA", "MSFT"]
+}
+```
+
+**Returns:**
+
+```json
+{
+  "requested": ["AAPL", "TSLA", "MSFT"],
+  "found": 3,
+  "signals": {
+    "AAPL": { ... },
+    "TSLA": { ... }
+  }
+}
+```
+
+---
+
+### `GET /api/v1/tickers/{ticker}/sentiment`
+
+**Purpose:**
+Fetch detailed sentiment data for **one ticker**.
 
 Used for:
 
-* overview pages
-* dashboards
-* frequent polling
-
-### Detailed views (on demand)
-
-Backend reads:
-
-* `ticker_sentiment_hourly`
-
-Used for:
-
+* detail pages
 * charts
-* explanations
-* trend breakdowns
 
-Frontend **never**:
+**Query params:**
 
-* talks to Kafka
-* scans raw events
-* scans long history unnecessarily
+* `hours` (default 48, max 336)
 
----
+**Returns:**
 
-## Why this scales well
-
-* Writes are incremental and atomic
-* Reads are constant-time per ticker
-* Historical data is bounded by TTL
-* Signal updates are controlled and replay-safe
-
----
-
-## Operational Notes
-
-* Service runs as a **long-running Kafka consumer**
-* Hourly aggregation is continuous
-* Signal update runs periodically
-* MongoDB TTL enforces bounded storage
-* Signal logic can evolve without changing upstream contracts
-
-
----
-# Phases:
-## 🟡 Phase 3 — Hourly Aggregation Logic (Streaming, Incremental)
-
-### Goal
-
-Build a **correct, replay-safe hourly time-series** from Kafka events.
-
-At this stage, the hourly layer is treated as the **source of truth** for all downstream sentiment logic.
-
-### What is built in this phase
-
-* Consume cleaned Kafka events
-* Convert event timestamps into **hour-aligned UTC buckets**
-* Incrementally update MongoDB hourly documents:
-
-  * `count`
-  * `scoreSum`
-  * `keywordCounts`
-  * `sourceBreakdown`
-
-This phase **does not** attempt to infer market sentiment yet.
-
-### Files
-
-* `utils/time.py`
-* `domain/scoring.py` (stub)
-* `storage/hourly_repo.py`
-* `main.py` (partial wiring)
-
-### Responsibilities
-
-* Streaming-safe writes using `$inc`
-* No read-before-write
-* No cross-hour coupling
-* No signal smoothing logic
-
-### DoD
-
-* Multiple Kafka events for the same `(ticker, hour)` produce a **single MongoDB document**
-* Reprocessing events increases `count` and `scoreSum` deterministically
-* TTL index correctly expires old hourly documents
-
-> 💡 This phase intentionally ignores “market behavior”.
-> It focuses only on building correct **hourly bars**.
+```json
+{
+  "ticker": "TSLA",
+  "signal": { ... },
+  "hourly": [
+    { "hourStartUtc": ..., "count": ..., "scoreSum": ... }
+  ]
+}
+```
 
 ---
 
-## 🟡 Phase 4 — MongoDB Storage Layer (Hourly + Signal Schema)
+## How charts work (current behavior)
 
-### Goal
+* Charts use **hourly aggregates**
+* Data reflects **raw hourly sentiment**, not smoothed signal
+* This is intentional and correct for a first version
 
-Establish **production-grade MongoDB persistence** for both:
+Dashboard:
 
-1. Hourly time series
-2. Signal serving model (schema only)
+* shows **latest signal**
 
-### What is built in this phase
+Charts:
 
-* Mongo client lifecycle management
-* Hourly repository with TTL
-* Signal repository **schema and indexes only**
-
-At this stage, the signal collection exists structurally but does **not yet implement EMA logic**.
-
-### Files
-
-* `storage/mongo_client.py`
-* `storage/hourly_repo.py`
-* `storage/signal_repo.py`
-
-### Responsibilities
-
-* Connection reuse
-* Atomic upserts
-* Correct indexing
-* Clear separation of:
-
-  * analytical store (hourly)
-  * serving store (signal)
-
-### DoD
-
-* Hourly docs persist correctly with TTL
-* Signal collection exists with one document per ticker
-* No coupling between hourly writes and signal semantics yet
-
-> 💡 Signal storage is introduced **early** so backend and frontend can be built against a stable contract.
+* show **what happened per hour**
 
 ---
 
-## 🟡 Phase 5 — End-to-End Streaming Persistence (Kafka → Hourly)
+## How to run the system locally
 
-### Goal
+### Terminal 1 — Sentiment Service (Kafka consumer + signal updater)
 
-Complete the **real streaming path**:
-Kafka → bucketing → scoring (stub) → hourly MongoDB writes.
+```bash
+poetry install
+poetry run python -m sentiment_service.main
+```
 
-This phase proves that the pipeline can run continuously and safely.
+This starts:
 
-### What is built in this phase
-
-* Kafka consumer loop
-* Event validation and parsing
-* Hour bucketing
-* Stub sentiment scoring
-* Incremental hourly MongoDB updates
-* Offset commit only on success
-
-### Files
-
-* `main.py`
-* `messaging/kafka_consumer.py`
-* `storage/hourly_repo.py`
-
-### Responsibilities
-
-* Orchestration only
-* No aggregation math inside Mongo
-* No signal smoothing yet
-
-### DoD
-
-* Kafka ingestion runs continuously
-* MongoDB hourly docs update correctly under load
-* Restarting the service does not corrupt data
-
-> 💡 This is the **first truly “working system” milestone**.
+* Kafka consumer
+* hourly aggregation
+* signal updater loop
 
 ---
 
-## 🟡 Phase 6 — Signal Placeholder (Hourly-Driven, Once per Hour)
+### Terminal 2 — Backend API (FastAPI)
 
-### Goal
+Install API dependencies if not already installed:
 
-Introduce the **signal update lifecycle** without implementing EMA yet.
+```bash
+poetry add fastapi uvicorn
+```
 
-This phase exists to:
+Run API server:
 
-* unblock backend APIs
-* unblock frontend polling
-* lock in the signal update semantics
+```bash
+poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8000
+```
 
-### What is built in this phase
+API base URL (local):
 
-* Time-based signal updater:
-
-  * runs periodically
-  * applies **exactly once per hour**
-* Signal value computation is **placeholder logic**:
-
-  * deterministic or random per `(ticker, hour)`
-* Signal documents store:
-
-  * `signalScore`
-  * `asOfHourStartUtc`
-  * `updatedAtUtc`
-
-### Important constraints
-
-* Signal is **not** updated per event
-* Signal is **not** updated multiple times per hour
-* Hour boundary is determined by:
-
-  * clock time
-  * grace window
-  * `asOfHourStartUtc` guard
-
-### Files
-
-* `storage/signal_repo.py`
-* `main.py` (signal updater hook)
-
-### DoD
-
-* Signal updates exactly once per hour per ticker
-* Restarting the service does not reapply the same hour
-* Backend can read signal documents cheaply
-
-> 💡 This phase validates **signal mechanics**, not signal correctness.
+```
+http://localhost:8000/api/v1
+```
 
 ---
 
-## 🟢 Phase 7 — Idempotency, Stability & Ops Polish
+## Testing with Postman
 
-### Goal
+### Health
 
-Harden the system for demos and grading.
-
-### What is built
-
-* Stability checks (grace window, `updatedAtUtc`)
-* Clear logging around hour application
-* Health/readiness endpoints
-* Safer failure modes
-
-### Files
-
-* `observability/logging.py`
-* `observability/health.py`
-
-### DoD
-
-* Clear operational visibility
-* Failures are diagnosable
-* Signal updater behaves predictably
+```
+GET http://localhost:8000/api/v1/health
+```
 
 ---
 
-## 🟢 Phase 8 — Real Market Signal (EMA / EWMA)
+### List tickers
 
-### Goal
-
-Replace placeholder signal logic with **true market-style EMA**.
-
-### What changes
-
-* Signal computation logic only
-* No schema changes
-* No API changes
-* No frontend changes
-
-### Files
-
-* `domain/signal.py` (or `domain/scoring.py` extension)
-
-### DoD
-
-* EMA applied once per hour
-* Volume-weighted smoothing
-* Stable, explainable sentiment behavior
+```
+GET http://localhost:8000/api/v1/tickers
+```
 
 ---
 
-## Updated Recommended Order
+### Latest signals (multiple tickers)
 
-1. Phase 3 — Hourly aggregation (current)
-2. Phase 4 — Mongo schema & repos (current)
-3. Phase 5 — End-to-end Kafka → hourly (current focus)
-4. Phase 6 — Signal placeholder (next)
-5. Phase 7 — Ops polish
-6. Phase 8 — EMA signal
+```
+POST http://localhost:8000/api/v1/signals/latest
+```
+
+Body:
+
+```json
+{
+  "tickers": ["TSLA", "AAPL"]
+}
+```
 
 ---
 
-### Key takeaway (for your report)
+### Ticker detail + chart data
 
-> The system is intentionally built **bottom-up**:
-> hourly truth → signal mechanics → signal intelligence.
+```
+GET http://localhost:8000/api/v1/tickers/TSLA/sentiment?hours=48
+```
 
-This framing will read **very well** to examiners.
+---
 
-If you want, next I can:
+## Future Improvements
 
-* help you write the **exact “Phase 6 signal updater” pseudo-flow** for the README, or
-* sanity-check that Phase 5 code path matches the write-up line-by-line.
+### 1) Real sentiment model
+
+* Replace stub sentiment scorer with:
+
+  * transformer model
+  * lexicon-based scoring
+  * or hybrid approach
+
+### 2) Historical signal series
+
+* Store **signal per hour** (7-day rolling window)
+* Enable “signal line” charts
+* Keep latest snapshot for fast reads
+
+### 3) On-demand signal recomputation
+
+* Compute EMA in API from hourly data
+* Avoid extra storage initially
+
+### 4) Confidence metrics
+
+* Volume-weighted confidence
+* Volatility indicators
+* Trend strength
+
+---
+
+## Summary
+
+This system intentionally prioritizes:
+
+* correctness
+* clarity
+* frontend usability
+* extensibility
+
+Hourly data provides transparency and charts.
+Signal snapshots provide stable UX and scalability.
+
+The architecture is production-grade and ready for incremental intelligence upgrades without breaking APIs or storage contracts.
+
+---

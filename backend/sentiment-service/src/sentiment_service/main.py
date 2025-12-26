@@ -22,7 +22,7 @@ from sentiment_service.utils.time import SECONDS_PER_HOUR, bucket_epoch_seconds_
 log = logging.getLogger(__name__)
 
 SIGNAL_CHECK_INTERVAL_SECONDS = 60
-SIGNAL_GRACE_SECONDS = 25 * 60
+SIGNAL_GRACE_SECONDS = 15 * 60
 
 
 def _eligible_hour_start_utc(now_utc: int, grace_seconds: int) -> int:

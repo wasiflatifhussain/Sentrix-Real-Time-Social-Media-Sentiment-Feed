@@ -165,3 +165,15 @@ class HourlyRepo:
             filter={"updatedAtUtc": {"$gte": int(min_updated_at)}},
         )
         return [t for t in raw if isinstance(t, str) and t.strip()]
+
+    def find_recent_by_ticker(self, *, ticker: str, hours: int) -> List[dict]:
+        """
+        Fetch last N hourly aggregate docs for a ticker (most recent first).
+        Returns raw Mongo docs.
+        """
+        t = (ticker or "").strip().upper()
+        if not t:
+            return []
+
+        limit = max(1, int(hours))
+        return list(self._col.find({"ticker": t}).sort("hourStartUtc", -1).limit(limit))
