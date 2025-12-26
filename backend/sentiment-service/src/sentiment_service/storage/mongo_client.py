@@ -8,7 +8,7 @@ from pymongo.database import Database
 
 
 @dataclass(frozen=True)
-class MongoSettings:
+class MongoClientSettings:
     uri: str
     db_name: str
 
@@ -16,20 +16,20 @@ class MongoSettings:
 class MongoClientFactory:
     """
     Owns the MongoClient lifecycle.
-    In prod, keep one client per process and reuse it (thread-safe).
+
+    One MongoClient per process is standard; MongoClient is thread-safe.
     """
 
-    def __init__(self, settings: MongoSettings):
+    def __init__(self, settings: MongoClientSettings):
         self._settings = settings
         self._client: Optional[MongoClient] = None
 
     def connect(self) -> MongoClient:
         if self._client is None:
-            # ServerSelectionTimeout keeps startup failures fast and obvious.
             self._client = MongoClient(
-                self._settings.uri, serverSelectionTimeoutMS=5000
+                self._settings.uri,
+                serverSelectionTimeoutMS=5000,
             )
-            # Force a ping so bad URIs fail immediately
             self._client.admin.command("ping")
         return self._client
 

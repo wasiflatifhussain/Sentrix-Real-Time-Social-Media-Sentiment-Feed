@@ -28,6 +28,11 @@ def bucket_epoch_seconds_to_hour(ts_utc_seconds: int) -> HourBucket:
     if ts_utc_seconds is None:
         raise ValueError("timestamp cannot be None")
 
+    if not isinstance(ts_utc_seconds, int):
+        raise ValueError(
+            f"timestamp must be int epoch seconds, got: {type(ts_utc_seconds)}"
+        )
+
     if ts_utc_seconds < 0:
         raise ValueError(f"invalid epoch seconds: {ts_utc_seconds}")
 

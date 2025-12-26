@@ -16,14 +16,16 @@ class StubSentimentScorer:
     Stub sentiment scorer for development / testing.
     - Deterministic (based on event_id)
     - No ML deps
-    - Will be replaced later with FinBERT/HF/etc while keeping the same .score(event) contract
+    - Intended to be replaced later with FinBERT/HF/etc while keeping the same .score(event) contract
     """
 
     max_keywords: int = 10
 
     def score(self, event: CleanedEvent) -> SentimentResult:
         score = self._deterministic_score(event.event_id)  # -1..+1
-        keywords = self._extract_keywords(event.text_normalized, self.max_keywords)
+        keywords = self._extract_keywords(
+            event.text_normalized or "", self.max_keywords
+        )
         confidence = self._deterministic_confidence(event.event_id)  # 0..1 (optional)
 
         return SentimentResult(
@@ -62,7 +64,7 @@ class StubSentimentScorer:
         - count frequency
         - return top-k
 
-        Will be replaced with TF-IDF / KeyBERT etc without changing SentimentResult.
+        Intended to be replaced later with TF-IDF / KeyBERT etc without changing SentimentResult.
         """
         tokens = [t.lower() for t in _WORD_RE.findall(text)]
         if not tokens:
@@ -72,6 +74,5 @@ class StubSentimentScorer:
         for t in tokens:
             freq[t] = freq.get(t, 0) + 1
 
-        # sort by freq desc, then word asc for determinism
         ranked = sorted(freq.items(), key=lambda kv: (-kv[1], kv[0]))
         return [w for (w, _) in ranked[:k]]

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import time
 from dataclasses import asdict
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -37,10 +38,17 @@ class HourlyRepo:
         """
         TTL index: documents expire TTL seconds AFTER the value in `expireAtUtc`.
         Set expireAtUtc = hour_end_utc + TTL_window in upserts.
-        This keeps a rolling window (last 7 days of hourly docs).
+        This keeps a rolling window (last N days of hourly docs).
         """
-        # Fast query by ticker and recency
+        # Existing index (for per-ticker reads)
         self._col.create_index([("ticker", 1), ("hourStartUtc", -1)])
+
+        # NEW: make "find all tickers active in a given hour" fast
+        # (supports distinct_tickers_for_hour filter on hourStartUtc)
+        self._col.create_index([("hourStartUtc", 1), ("ticker", 1)])
+
+        # NEW: supports distinct_tickers_recent filter on updatedAtUtc
+        self._col.create_index([("updatedAtUtc", -1)])
 
         # TTL index (seconds = 0 means expire at exact expireAtUtc)
         # NOTE: TTL monitor runs ~every 60 seconds; deletion isn't instantaneous.
@@ -133,3 +141,27 @@ class HourlyRepo:
             {"$set": doc, "$setOnInsert": {"createdAtUtc": int(agg.updated_at_utc)}},
             upsert=True,
         )
+
+    # Get distinct tickers methods for signal updater from MongoDB
+    def distinct_tickers_for_hour(self, *, hour_start_utc: int) -> List[str]:
+        """
+        Returns distinct tickers that have an hourly doc for the given hourStartUtc.
+        Efficient: only hits docs for that hour window.
+        """
+        raw = self._col.distinct("ticker", filter={"hourStartUtc": int(hour_start_utc)})
+        return [t for t in raw if isinstance(t, str) and t.strip()]
+
+    def distinct_tickers_recent(self, *, lookback_days: int) -> List[str]:
+        """
+        Fallback: distinct tickers updated in recent window.
+        Uses updatedAtUtc; ensures signal updater can still run even if that exact hour has no docs.
+        """
+        now = int(time.time())
+        lookback_seconds = max(1, int(lookback_days)) * 24 * 3600
+        min_updated_at = now - lookback_seconds
+
+        raw = self._col.distinct(
+            "ticker",
+            filter={"updatedAtUtc": {"$gte": int(min_updated_at)}},
+        )
+        return [t for t in raw if isinstance(t, str) and t.strip()]
