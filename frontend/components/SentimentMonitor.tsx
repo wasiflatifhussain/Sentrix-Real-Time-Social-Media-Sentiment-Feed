@@ -132,7 +132,7 @@ const SentimentMonitor = ({
                     {onRemove ? (
                       <button
                         onClick={() => onRemove(row.symbol)}
-                        className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+                      className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
                         title="Remove from watchlist"
                       >
                         Remove
