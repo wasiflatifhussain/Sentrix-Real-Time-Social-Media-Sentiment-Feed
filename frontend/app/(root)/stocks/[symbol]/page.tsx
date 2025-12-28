@@ -1,12 +1,12 @@
 import TradingViewWidget from "@/components/TradingViewWidget";
 import WatchlistButton from "@/components/WatchlistButton";
 import {
-  SYMBOL_INFO_WIDGET_CONFIG,
-  CANDLE_CHART_WIDGET_CONFIG,
   BASELINE_WIDGET_CONFIG,
-  TECHNICAL_ANALYSIS_WIDGET_CONFIG,
-  COMPANY_PROFILE_WIDGET_CONFIG,
+  CANDLE_CHART_WIDGET_CONFIG,
   COMPANY_FINANCIALS_WIDGET_CONFIG,
+  COMPANY_PROFILE_WIDGET_CONFIG,
+  SYMBOL_INFO_WIDGET_CONFIG,
+  TECHNICAL_ANALYSIS_WIDGET_CONFIG,
 } from "@/lib/constants";
 
 export default async function StockDetails({ params }: StockDetailsPageProps) {
