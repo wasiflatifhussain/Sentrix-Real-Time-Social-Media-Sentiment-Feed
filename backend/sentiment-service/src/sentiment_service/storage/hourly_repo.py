@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import time
-from dataclasses import asdict
 from typing import Dict, List, Optional
 
 from pymongo.collection import Collection
 from pymongo.database import Database
-
 from sentiment_service.domain.aggregation import HourlyAggregate
 
 
@@ -167,13 +165,16 @@ class HourlyRepo:
         return [t for t in raw if isinstance(t, str) and t.strip()]
 
     def find_recent_by_ticker(self, *, ticker: str, hours: int) -> List[dict]:
-        """
-        Fetch last N hourly aggregate docs for a ticker (most recent first).
-        Returns raw Mongo docs.
-        """
         t = (ticker or "").strip().upper()
         if not t:
             return []
 
-        limit = max(1, int(hours))
-        return list(self._col.find({"ticker": t}).sort("hourStartUtc", -1).limit(limit))
+        hours = max(1, int(hours))
+        now = int(time.time())
+        cutoff = now - hours * 3600
+
+        return list(
+            self._col.find({"ticker": t, "hourStartUtc": {"$gte": cutoff}}).sort(
+                "hourStartUtc", 1
+            )  # ascending for charts
+        )

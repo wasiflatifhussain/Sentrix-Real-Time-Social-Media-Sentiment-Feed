@@ -69,6 +69,18 @@ export default function SentimentAnalyticsPage() {
           volume: h.count,
         }));
 
+        // Debug: log fetched points
+        const min = Math.min(...points.map((p) => p.timeMs));
+        const max = Math.max(...points.map((p) => p.timeMs));
+        console.log("hours param =", hours);
+        console.log("points =", points.length);
+        console.log(
+          "min =",
+          new Date(min).toISOString(),
+          "max =",
+          new Date(max).toISOString()
+        );
+
         setData(points);
       })
       .catch((e) => setError(e?.message ?? "Failed to load sentiment"))
