@@ -11,7 +11,7 @@ export type SentrixSignalDoc = {
   createdAtUtc: number;
   updatedAtUtc: number;
 
-  recentVolume?: number;  // optional field
+  recentVolume?: number; // optional field
   keywords?: string[];
   halfLifeHours?: number;
 };

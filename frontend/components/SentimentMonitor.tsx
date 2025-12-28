@@ -30,6 +30,7 @@ interface SentimentMonitorProps {
   className?: string;
   data: SentimentRow[];
   footerText?: string;
+  onRemove?: (ticker: string) => void;
 }
 
 const SentimentMonitor = ({
@@ -38,12 +39,13 @@ const SentimentMonitor = ({
   className,
   data,
   footerText,
+  onRemove,
 }: SentimentMonitorProps) => {
   return (
     <div className="w-full">
-      {title && (
+      {title ? (
         <h3 className="font-semibold text-2xl text-gray-100 mb-5">{title}</h3>
-      )}
+      ) : null}
 
       <div
         className={cn(
@@ -53,11 +55,12 @@ const SentimentMonitor = ({
         style={{ height }}
       >
         <div className="h-full w-full flex flex-col bg-gray-800/0">
-          <div className="px-4 py-3 border-b border-gray-600 text-xs uppercase tracking-wider text-gray-400 grid grid-cols-12 gap-3">
+          <div className="px-4 py-3 border-b border-gray-600 text-xs uppercase tracking-wider text-gray-400 grid grid-cols-13 gap-3">
             <div className="col-span-5">Stock</div>
             <div className="col-span-2">Sentiment</div>
             <div className="col-span-2">Score</div>
             <div className="col-span-3">Keywords</div>
+            <div className="col-span-1 text-right">Actions</div>
           </div>
 
           <div className="flex-1 overflow-y-auto scrollbar-hide-default">
@@ -69,7 +72,7 @@ const SentimentMonitor = ({
               data.map((row) => (
                 <div
                   key={row.symbol}
-                  className="px-4 py-3 border-b border-white/5 grid grid-cols-12 gap-3 items-center hover:bg-white/5 transition"
+                  className="px-4 py-3 border-b border-white/5 grid grid-cols-13 gap-3 items-center hover:bg-white/5 transition"
                 >
                   <div className="col-span-5 flex items-center gap-3 min-w-0">
                     <div className="text-gray-200 font-semibold">
@@ -123,6 +126,18 @@ const SentimentMonitor = ({
                         </span>
                       ))
                     )}
+                  </div>
+
+                  <div className="col-span-1 flex justify-end">
+                    {onRemove ? (
+                      <button
+                        onClick={() => onRemove(row.symbol)}
+                        className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+                        title="Remove from watchlist"
+                      >
+                        Remove
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               ))
