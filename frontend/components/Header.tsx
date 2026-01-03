@@ -1,9 +1,8 @@
-import Link from "next/link";
-import Image from "next/image";
 import NavItems from "@/components/NavItems";
-import UserDropdown from "@/components/UserDropdown";
-import { searchStocks } from "@/lib/actions/finnhub.actions";
 import SearchCommand from "@/components/SearchCommand";
+import { searchStocks } from "@/lib/actions/finnhub.actions";
+import Image from "next/image";
+import Link from "next/link";
 
 const Header = async () => {
   const initialStocks = await searchStocks();

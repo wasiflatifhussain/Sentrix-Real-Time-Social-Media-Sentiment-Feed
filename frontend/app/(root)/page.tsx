@@ -1,10 +1,9 @@
-import SentimentMonitor from "@/components/SentimentMonitor";
+import SentimentMonitorWidget from "@/components/SentimentMonitorWidget";
 import TradingViewWidget from "@/components/TradingViewWidget";
 import {
   HEATMAP_WIDGET_CONFIG,
-  MARKET_DATA_WIDGET_CONFIG,
   MARKET_OVERVIEW_WIDGET_CONFIG,
-  TOP_STORIES_WIDGET_CONFIG,
+  TOP_STORIES_WIDGET_CONFIG
 } from "@/lib/constants";
 
 const Home = () => {
@@ -29,7 +28,7 @@ const Home = () => {
             config={MARKET_DATA_WIDGET_CONFIG}
             height={600}
           /> */}
-          <SentimentMonitor title="Sentiment Monitor" height={600} />
+          <SentimentMonitorWidget height={600} />
         </div>
       </section>
       <section className="grid w-full gap-8 home-section">
