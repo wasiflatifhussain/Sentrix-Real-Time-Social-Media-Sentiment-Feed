@@ -1,5 +1,5 @@
 from huggingface_hub import InferenceClient
-from objects.objects import Event
+from sentiment_service.objects.objects import Event
 
 class FinbertClient:
     def __init__(
