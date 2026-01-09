@@ -3,6 +3,9 @@ from __future__ import annotations
 import logging
 import threading
 import time
+import os
+
+from dotenv import load_dotenv
 
 from sentiment_service.config.settings import load_kafka_settings, load_mongo_settings
 from sentiment_service.domain.scoring import StubSentimentScorer
@@ -18,6 +21,9 @@ from sentiment_service.storage.mongo_client import (
 )
 from sentiment_service.storage.signal_repo import SignalRepo
 from sentiment_service.utils.time import SECONDS_PER_HOUR, bucket_epoch_seconds_to_hour
+
+from llm_connector import FinbertClient
+from demo_file_parser import DemoKafkaParser
 
 log = logging.getLogger(__name__)
 
@@ -183,6 +189,16 @@ def main() -> None:
         stop_flag.set()
         mongo.close()
 
+def finbert_test():
+    load_dotenv()
+    api_key = os.getenv("HUGGING_FACE_API")
+    fc = FinbertClient(api_key=api_key)
+
+    dkp = DemoKafkaParser()
+    res = dkp.read_file()
+
+    return
 
 if __name__ == "__main__":
-    main()
+    finbert_test()
+    # main()

@@ -24,14 +24,14 @@ class MongoSettings:
     hourly_ttl_days: int = 7
 
 
-def _get_env(name: str, default: str | None = None) -> str:
+def _get_env(name: str, default: str = None) -> str:
     val = os.getenv(name, default)
     if val is None or val.strip() == "":
         raise ValueError(f"Missing required env var: {name}")
     return val
 
 
-def _get_env_int(name: str, default: str | None = None) -> int:
+def _get_env_int(name: str, default: str = None) -> int:
     raw = _get_env(name, default)
     try:
         return int(raw)
