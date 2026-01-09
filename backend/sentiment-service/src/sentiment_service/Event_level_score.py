@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 from typing import Optional
-from objects.objects import EventMeta, ModelOutput, EventFusionResult
+from sentiment_service.objects.objects import EventMeta, ModelOutput, EventFusionResult
 
 def clamp(x: float, low: float, high: float) -> float:
     return max(low, min(high, x))

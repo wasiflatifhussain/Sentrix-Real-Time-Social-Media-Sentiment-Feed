@@ -1,11 +1,10 @@
-# hourly_aggregation.py
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from event_scoring import clamp
+from sentiment_service.Event_level_score import clamp
 
 
 @dataclass
@@ -179,12 +178,8 @@ def aggregate_from_scores_weights(
     ]
     return aggregate_hour_weighted(events, C=C, profile=profile)
 
-
-
-
-@@ -1,29 +1,176 @@
  # hourly_aggregation.py
-from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List
 
@@ -192,7 +187,6 @@ import math
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from event_scoring import clamp
 
 
 @dataclass
