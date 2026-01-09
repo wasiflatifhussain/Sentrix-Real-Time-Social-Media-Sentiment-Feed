@@ -2,14 +2,125 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 from dotenv import load_dotenv
 
-from llm_connector import FinbertClient
+from sentiment_service.llm_connector import FinbertClient
+from sentiment_service.objects.objects import Event, HourlyLevelScore
 
+class Runner:
+    def __init__(self):
+        load_dotenv()
+        api_key = os.getenv("HUGGING_FACE_API")
+        self.fc = FinbertClient(api_key=api_key)
+
+        self.events = list()
+        self.hourly = dict()
+        '''
+        {
+            "TSLA": <HourlyLevelScore> for TSLA,
+            "AAPL": <HourlyLevelScore> for AAPL,
+        }
+        '''
+        return
+
+    def run_event_level(self, data: dict):
+        event = self.construct_event(data)
+        self.fc.run(event)
+        self.compute_event_level(event)
+
+        self.events.append(event)
+        return event
+
+    def compute_event_level(self, event: Event):
+        event.calculate()
+        return
+
+    def run_hourly_level(self, event: Event):
+        ticker: str = event.ticker
+        if self.hourly.get(ticker, None) is None:
+            self.hourly[ticker] = self.construct_hourly_level_score(event)
+        else:
+            # update the hourly model
+            self.update_hourly_level(ticker, event)
+        return
+
+    def update_hourly_level(self, ticker: str, event: Event,):
+        hm: HourlyLevelScore = self.hourly.get(ticker, None)
+
+        count = self.get_count_weighting(event)
+        hm.scoreSum = ((hm.scoreSum * hm.count) + (event.score * count)) / (hm.count + count)
+        hm.count += count
+
+        if hm.sourceBreakdown.get(event.source, None) is None:
+            hm.sourceBreakdown[event.source] = 1
+        else:
+            hm.sourceBreakdown[event.source] += 1
+        return
+
+    def construct_event(self, data) -> Event:
+        # print({data.get('ingestorEvent', {'eventId': '-1'}).get('eventId', '-1')}, "-", data.get('textView', {'textNormalized': ''}).get('textNormalized', '').replace("None", ''))
+        return Event(
+            id=data.get('ingestorEvent', {'eventId': '-1'}).get('eventId', '-1'),
+            source=data.get('ingestorEvent', {'source'}).get('source', '-1'),
+            timestamp=data.get('ingestorEvent', {'createdAtUtc': 0}).get('createdAtUtc', 0),
+            metrics=data.get('ingestorEvent', {'metrics': {}}).get('metrics', {}),
+            ticker=data.get('ingestorEvent', {'ticker': None}).get('ticker', None),
+            content=data.get('textView', {'textNormalized': ''}).get('textNormalized', '').replace("None", ''),
+            metadata=data.get('filterMeta', None),
+        )
+
+    def construct_hourly_level_score(self, event: Event) -> HourlyLevelScore:
+        count: int = self.get_count_weighting(event)
+        return HourlyLevelScore(
+            _id=f"{event.ticker}|{event.timestamp}",
+            count=count,
+            createdAtUtc=event.timestamp,
+            hourStartUtc=int(event.timestamp // 3_600) * 3_600,
+            hourEndUtc=(int(event.timestamp // 3_600) * 3_600) + 3_600,
+            scoreSum=event.score,
+            sourceBreakdown={f"{event.source}": 1},
+            ticker=event.ticker,
+            metrics=event.metrics,
+        )
+
+    def get_count_weighting(self, event):
+        count: int = 0
+        like: int = 0
+        reply: int = 0
+        comment: int = 0
+        for k in event.metrics:
+            if (
+                isinstance(event.metrics.get(k, 0), (int, float, complex)) or
+                (isinstance(event.metrics.get(k, ''), str) and event.metrics.get(k, '').isnumeric())
+            ):
+                count += int(event.metrics.get(k, 0))
+                if k.startswith("like"):
+                    like += int(event.metrics.get(k, 0))
+                elif k.startswith("reply"):
+                    reply += int(event.metrics.get(k, 0))
+                elif k.startswith("comment"):
+                    comment += int(event.metrics.get(k, 0))
+                    
+        # weighting: float = 1.0 + math.log1p(max(0, like) + max(0, comment) + max(0, reply))
+        return count
+    
+    def return_hourly_score(self):
+        res = list()
+        for k in self.hourly:
+            res.append(self.hourly[k])
+
+        return res
+'''
+s1, 6
+s2, 2
+
+(s1 * 6 + s2 * 2) / 8
+'''
 
 # -----------------------------
 # IO helpers
@@ -52,7 +163,7 @@ def _extract_metrics(rec: Dict[str, Any]) -> dict:
 
 
 def _event_meta_from_record(rec: Dict[str, Any]):
-    from Event_level_score import EventMeta
+    from sentiment_service.Event_level_score import EventMeta
 
     metrics = _extract_metrics(rec)
     likes = int(metrics.get("likeCount") or 0)
@@ -96,10 +207,10 @@ def run(
     ticker_profile: str = "moderate",
     max_hours: Optional[int] = 168,
 ) -> None:
-    from Event_level_score import ModelOutput as EventModelOutput
-    from Event_level_score import fuse_model_outputs
-    from Hour_level_score import aggregate_from_scores_weights
-    from Ticker_level_score import HourlyRow, compute_signal_for_ticker, normalize_hourly_row
+    from sentiment_service.Event_level_score import ModelOutput as EventModelOutput
+    from sentiment_service.Event_level_score import fuse_model_outputs
+    from sentiment_service.Hour_level_score import aggregate_from_scores_weights
+    from sentiment_service.Ticker_level_score import HourlyRow, compute_signal_for_ticker, normalize_hourly_row
     from sentiment_service.utils.time import bucket_epoch_seconds_to_hour
 
     finbert = FinbertClient(api_key=finbert_api_key)
@@ -230,4 +341,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    print("testing")
+    # main()
