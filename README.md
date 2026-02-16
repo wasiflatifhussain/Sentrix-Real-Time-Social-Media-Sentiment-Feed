@@ -1,8 +1,8 @@
 # Real-Time Social Media Sentiment Feed for Trading Platforms
 
-> Monorepo for the project. **Do not push directly to `main`.** Use branches and Pull Requests (PRs).  
+> Monorepo for the project. **Do not push directly to `main`.** Use branches and Pull Requests (PRs).
 
-⚠️ **Please read the information below on how to contribute to the repo.**  
+⚠️ **Please read the information below on how to contribute to the repo.**
 
 ---
 
@@ -19,15 +19,19 @@
    ```bash
    git checkout -b feature/<short-name>
    git push -u origin feature/<short-name>
+   ```
 3. **Open a Pull Request** (PR) into main.
 4. **Review & merge:**
-  - Another contributor reviews the PR (or review by yourself incase of urgency).  
-  - Address comments, then squash & merge (preferred) into main.  
-ℹ️ Branch protection on main is expected: no direct pushes.
+
+- Another contributor reviews the PR (or review by yourself incase of urgency).
+- Address comments, then squash & merge (preferred) into main.  
+  ℹ️ Branch protection on main is expected: no direct pushes.
 
 ## Repo Structure
+
 This is the mother repo. Avoid starting projects in the root.  
-Create subfolders and keep each component isolated:  
+Create subfolders and keep each component isolated:
+
 ```
 /frontend/     # web app(s)
 /backend/      # services, APIs
@@ -35,10 +39,12 @@ Create subfolders and keep each component isolated:
 /infra/        # IaC, deployment, CI/CD workflows
 /docs/         # design docs, specs, ADRs
 ```
+
 - Each subfolder can have its own README.md, .env.example, and tooling.
 - Use separate package managers/virtual envs inside each subproject.
 
 ## Quick Commands
+
 ```
 # update local main
 git checkout main
@@ -54,10 +60,49 @@ git push -u origin feature/<short-name>
 ```
 
 ## PR Checklist
+
 - Scope limited to one logical change
 - **Please updated docs/README in the affected subfolder during the PR push (does not have to be finalized documentation, but provide enough info to avoid potential breaks due to introduced changes in the future**
 
 ## Notes
+
 - Keep secrets out of the repo. Provide .env.example files instead.
 - Prefer conventional commits (feat, fix, chore, docs, refactor, test).
 - Discuss breaking changes in the PR description.
+
+Left:
+
+- Filtering Service B - full left - Wasif
+- Integrating Twitter and Telegram Data to Ingestor Service left; - Wasif
+- Frontend - polling needs fixing; - Wasif
+- Sentiment Service
+  - sentiment pipeline fixing left;
+  - MongoDB integration left;
+  - testing risk appetite based analysis left;
+  - different LLM testing left;
+  - correlation between type of stock (industry/company size/etc) and effect of social sentiment;
+- Evaluation/Assessment - Wasif
+- Deployment (containerization, k8s, GitHub Actions, AWS) - Wasif
+- Presentation preparation - Wasif and Jungmin
+- Webpage Design - Jungmin
+- Poster - Wasif and Jungmin
+- 1-min video - Jungmin
+
+- 16th Feb to 28th Feb:
+  - Wasif - Filtering Service B
+  - Jungmin - sentiment pipeline fixing left + MongoDB integration left
+  - Email Prof on 23rd Feb to schedule a meeting for week of 27th Feb to discuss progress and next steps
+  - Meet Prof on 27th Feb to discuss progress and next steps
+    - Agenda: 1) Progress update, 2) Feedback on work done (ESPEICALLY REPORT), 3) Expectations for final deliverables 4) Blockers or challenges
+    - Internal Catchup on 25th Feb to prepare for the meeting
+- 1st Mar to 15th Mar:
+  - Wasif - Integrating Twitter and Telegram Data to Ingestor Service left; + Deployment (containerization, k8s, GitHub Actions, AWS)
+  - Jungmin - testing risk appetite based analysis left; + different LLM testing left;
+- 16th Mar to 31st Mar:
+  - Meet Prof on week of 16th Mar to discuss progress and next steps
+  - Wasif - Frontend - polling needs fixing; + Evaluation/Assessment
+  - Jungmin - correlation between type of stock (industry/company size/etc) and effect of social sentiment; + Webpage Design
+- 1st Apr to 15th Apr:
+  - Meet Prof on week of 6th Apr to discuss progress and next steps
+  - Wasif - Presentation preparation + Deployment to AWS + Railway + Final Report
+  - Jungmin - Poster + 1-min video + Final Report
