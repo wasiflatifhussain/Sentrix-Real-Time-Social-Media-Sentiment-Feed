@@ -193,6 +193,34 @@ def main() -> None:
         mongo.close()
 
 ''' MAIN FUNCTION '''
+def write_hourly(hourly: list) -> None:
+    content: list[dict] = list()
+    
+    for h in hourly:
+        content.append(
+            dict(
+                _id=h._id,
+                count=h.count,
+                createdAtUtc=h.createdAtUtc,
+                hourStartUtc=h.hourStartUtc,
+                hourEndUtc=h.hourEndUtc,
+                keywordCounts=h.keywordCounts,
+                scoreSum=h.scoreSum,
+                weightedScoreSum=h._weightedScoreSum,
+                weightSum=h._weightSum,
+                avgScore=h._avgScore,
+                sourceBreakdown=h.sourceBreakdown,
+                ticker=h.ticker,
+                metrics=h.metrics,
+            )
+        )
+
+    with open("./hourly-level-score-result.json", 'w') as f:
+        f.write(json.dumps(content, indent=4))
+
+    print("Done with the write the houly-level-score-result.json")
+    return
+
 def sentiment_service():
     # Kafka
     dkp = DemoKafkaParser() # replace this with actual kafka connection
@@ -202,40 +230,19 @@ def sentiment_service():
     runner: Runner = Runner()
 
     events: list = list()
-    for data in datas[:100]:
+    for data in datas[400:500]:
         events.append(runner.run_event_level(data))
         # event.calculate() 
     # dkp.write_event(events) -> 24/7 -> deployable -> kafka -> static one time thingy
     
     for event in events:
         runner.run_hourly_level(event)
-    hourly = runner.return_hourly_score()
+    hourly = runner.return_hourly_level()
 
-    # content: list[dict] = list()
+    # write_hourly(hourly)
 
-    # for h in hourly:
-    #     content.append(
-    #         dict(
-    #             _id=h._id,
-    #             count=h.count,
-    #             createdAtUtc=h.createdAtUtc,
-    #             hourStartUtc=h.hourStartUtc,
-    #             hourEndUtc=h.hourEndUtc,
-    #             keywordCounts=h.keywordCounts,
-    #             scoreSum=h.scoreSum,
-    #             sourceBreakdown=h.sourceBreakdown,
-    #             ticker=h.ticker,
-    #             metrics=h.metrics,
-    #         )
-    #     )
-    # with open("./hourly-level-score-result.json", 'w') as f:
-    #     f.write(json.dumps(content))
+    
 
-    # ticker: list = list()
-    # for hour in hourly:
-    #     ticker.append(runner.ticker_rleated_func(hour))
-
-    # Write events, hourly and ticker to MongoDB
     return
 
 if __name__ == "__main__":

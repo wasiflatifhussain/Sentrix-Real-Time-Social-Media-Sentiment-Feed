@@ -1,5 +1,5 @@
 import json
-from sentiment_service.objects.objects import Event
+from objects.objects import Event, HourlyLevelScore
 
 class DemoKafkaParser:
     def __init__(
@@ -25,7 +25,6 @@ class DemoKafkaParser:
             return None
 
     def construct_event(self, data):
-        # print({data.get('ingestorEvent', {'eventId': '-1'}).get('eventId', '-1')}, "-", data.get('textView', {'textNormalized': ''}).get('textNormalized', '').replace("None", ''))
         return Event(
             id=data.get('ingestorEvent', {'eventId': '-1'}).get('eventId', '-1'),
             source=data.get('ingestorEvent', {'source'}).get('source', '-1'),
@@ -69,14 +68,38 @@ class DemoMongoDBParser:
     
     def read_file(self):
         with open(self.input_file_path, "r") as f:
-            for line in f:
-                data = json.loads(line)
-                if isinstance(data, list):
-                    return data
+            data = json.load(f)
+            if isinstance(data, list):
+                return data
+            return []
+        
+    def return_hourly_level(self) -> list[HourlyLevelScore]:
+        res: list[HourlyLevelScore] = []
+
+        dummy: list[dict] = self.read_file()
+
+        for hourly in dummy:
+            res.append(self._construct_hourly_level_score(hourly))
+        
+        return res
+    
+    def _construct_hourly_level_score(self, dummy: dict) -> HourlyLevelScore:
+        return HourlyLevelScore(
+            _id = dummy.get("_id", None) or f"{dummy.get('ticker', None)}|{dummy.get('hourStartUtc', None)}",
+            count = dummy.get("count", 0),
+            createdAtUtc = dummy.get("createdAtUtc"),
+            hourStartUtc = dummy.get("hourStartUtc"),
+            hourEndUtc = dummy.get("hourEndUtc"),
+            # keywordCounts = dummy.get("keywordCounts", {}),
+            scoreSum = dummy.get("scoreSum", 0.0),
+            # sourceBreakdown = dummy.get("sourceBreakdown", {}),
+            ticker = dummy.get('ticker', None),
+        )
 
 
 if __name__ == "__main__":
     dmp = DemoMongoDBParser()
-    data = dmp.read_file()
+    data = dmp.return_hourly_level()
 
-    print(data)
+    for d in data[:10]:
+        print(d, "\n")

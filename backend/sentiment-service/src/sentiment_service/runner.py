@@ -20,6 +20,7 @@ class Runner:
 
         self.events = list()
         self.hourly = dict()
+        self.ticker = dict()
         '''
         {
             "TSLA": <HourlyLevelScore> for TSLA,
@@ -51,15 +52,8 @@ class Runner:
 
     def update_hourly_level(self, ticker: str, event: Event,):
         hm: HourlyLevelScore = self.hourly.get(ticker, None)
-
-        count = self.get_count_weighting(event)
-        hm.scoreSum = ((hm.scoreSum * hm.count) + (event.score * count)) / (hm.count + count)
-        hm.count += count
-
-        if hm.sourceBreakdown.get(event.source, None) is None:
-            hm.sourceBreakdown[event.source] = 1
-        else:
-            hm.sourceBreakdown[event.source] += 1
+        weight = self.get_count_weighting(event)
+        hm.add_event(score=event.score, weight=weight, source=event.source)
         return
 
     def construct_event(self, data) -> Event:
@@ -75,18 +69,18 @@ class Runner:
         )
 
     def construct_hourly_level_score(self, event: Event) -> HourlyLevelScore:
-        count: int = self.get_count_weighting(event)
-        return HourlyLevelScore(
-            _id=f"{event.ticker}|{event.timestamp}",
-            count=count,
+        weight = self.get_count_weighting(event)
+        start_time: int = int(event.timestamp // 3_600) * 3_600
+        hm = HourlyLevelScore(
+           _id=f"{event.ticker}|{start_time}",
             createdAtUtc=event.timestamp,
-            hourStartUtc=int(event.timestamp // 3_600) * 3_600,
-            hourEndUtc=(int(event.timestamp // 3_600) * 3_600) + 3_600,
-            scoreSum=event.score,
-            sourceBreakdown={f"{event.source}": 1},
+            hourStartUtc=start_time,
+            hourEndUtc=start_time + 3_600,
             ticker=event.ticker,
             metrics=event.metrics,
         )
+        hm.add_event(score=event.score, weight=weight, source=event.source)
+        return hm
 
     def get_count_weighting(self, event):
         count: int = 0
@@ -109,7 +103,7 @@ class Runner:
         # weighting: float = 1.0 + math.log1p(max(0, like) + max(0, comment) + max(0, reply))
         return count
     
-    def return_hourly_score(self):
+    def return_hourly_level(self):
         res = list()
         for k in self.hourly:
             res.append(self.hourly[k])

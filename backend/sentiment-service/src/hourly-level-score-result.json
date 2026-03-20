@@ -1,1 +1,71 @@
-[{"_id": "TSLA|1767447376", "count": 414, "createdAtUtc": 1767447376, "hourStartUtc": 1767445200, "hourEndUtc": 1767448800, "keywordCounts": null, "scoreSum": -0.12925994810580776, "sourceBreakdown": {"REDDIT": 74}, "ticker": "TSLA", "metrics": {"likeCount": 0, "replyCount": null, "shareCount": null, "viewCount": null, "commentCount": 2}}, {"_id": "GOOGL|1767445731", "count": 457, "createdAtUtc": 1767445731, "hourStartUtc": 1767445200, "hourEndUtc": 1767448800, "keywordCounts": null, "scoreSum": 0.29673472233931797, "sourceBreakdown": {"REDDIT": 26}, "ticker": "GOOGL", "metrics": {"likeCount": 181, "replyCount": null, "shareCount": null, "viewCount": null, "commentCount": 27}}]
+[
+    {
+        "_id": "TSLA|1767369600",
+        "count": 29,
+        "createdAtUtc": 1767372665,
+        "hourStartUtc": 1767369600,
+        "hourEndUtc": 1767373200,
+        "keywordCounts": null,
+        "scoreSum": -0.052428119108080866,
+        "weightedScoreSum": -5.242811910808086,
+        "weightSum": 100.0,
+        "avgScore": -0.052428119108080866,
+        "sourceBreakdown": {
+            "REDDIT": 29
+        },
+        "ticker": "TSLA",
+        "metrics": {
+            "likeCount": 1,
+            "replyCount": null,
+            "shareCount": null,
+            "viewCount": null,
+            "commentCount": null
+        }
+    },
+    {
+        "_id": "AAPL|1767398400",
+        "count": 45,
+        "createdAtUtc": 1767401077,
+        "hourStartUtc": 1767398400,
+        "hourEndUtc": 1767402000,
+        "keywordCounts": null,
+        "scoreSum": -0.3144676530617692,
+        "weightedScoreSum": -90.8811517348513,
+        "weightSum": 289.0,
+        "avgScore": -0.3144676530617692,
+        "sourceBreakdown": {
+            "REDDIT": 45
+        },
+        "ticker": "AAPL",
+        "metrics": {
+            "likeCount": 12,
+            "replyCount": null,
+            "shareCount": null,
+            "viewCount": null,
+            "commentCount": 18
+        }
+    },
+    {
+        "_id": "MSFT|1767384000",
+        "count": 26,
+        "createdAtUtc": 1767386001,
+        "hourStartUtc": 1767384000,
+        "hourEndUtc": 1767387600,
+        "keywordCounts": null,
+        "scoreSum": -0.15162028694584026,
+        "weightedScoreSum": -38.51155288424343,
+        "weightSum": 254.0,
+        "avgScore": -0.15162028694584026,
+        "sourceBreakdown": {
+            "REDDIT": 26
+        },
+        "ticker": "MSFT",
+        "metrics": {
+            "likeCount": 0,
+            "replyCount": null,
+            "shareCount": null,
+            "viewCount": null,
+            "commentCount": 20
+        }
+    }
+]
