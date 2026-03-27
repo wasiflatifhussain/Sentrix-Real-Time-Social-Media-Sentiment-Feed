@@ -1272,3 +1272,15 @@ poetry lock
 poetry install --extras dev
 poetry run pytest -q tests/unit
 ```
+
+Integration cleanup
+Keep reason list concise (top 1–2 reasons).
+Add consistent Stage 2 signals into envelope.
+Final clamp and decision consistency checks.
+Test: combined path cases.
+E2E seeded tester pack
+cross-user copy wave
+same-account spam
+dense cluster
+high burst + high repetition
+burst-only benign

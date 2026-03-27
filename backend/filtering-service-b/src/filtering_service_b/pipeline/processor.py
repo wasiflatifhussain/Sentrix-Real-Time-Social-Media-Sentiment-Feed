@@ -18,6 +18,16 @@ from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
 
 log = logging.getLogger(__name__)
 
+_REASON_PRIORITY = [
+    "EXTREME_LOW_TICKER_RELEVANCE",
+    "UNKNOWN_TICKER_PROFILE",
+    "SAME_ACCOUNT_REPETITION",
+    "CROSS_USER_REPETITION",
+    "DENSE_SIMILARITY_CLUSTER",
+    "BURST_AMPLIFIED_REPETITION",
+    "LOW_TICKER_RELEVANCE",
+]
+
 
 @dataclass(frozen=True)
 class FilterDecision:
@@ -80,28 +90,26 @@ class FilterBPhase1Processor:
             + burst.score_delta
         )
 
-        merged_signals = dict(relevance.signals)
+        merged_signals = _build_stage2_default_signals()
+        merged_signals.update(relevance.signals)
         merged_signals.update(stage2_signals)
         merged_signals.update(repetition.signals)
         merged_signals.update(same_account.signals)
         merged_signals.update(burst.signals)
 
-        reasons: list[str] = []
-        reasons.extend(relevance.reason_codes)
-        for reason in repetition.reason_codes:
-            if reason not in reasons:
-                reasons.append(reason)
-        for reason in same_account.reason_codes:
-            if reason not in reasons:
-                reasons.append(reason)
-        for reason in burst.reason_codes:
-            if reason not in reasons:
-                reasons.append(reason)
-        reasons = reasons[:2]
+        reasons = _top_reasons(
+            relevance_reasons=relevance.reason_codes,
+            repetition_reasons=repetition.reason_codes,
+            same_account_reasons=same_account.reason_codes,
+            burst_reasons=burst.reason_codes,
+            limit=2,
+        )
 
         decision_value = relevance.decision
         if same_account.force_reject:
             decision_value = "REJECT"
+            score = 0.0
+        elif decision_value == "REJECT":
             score = 0.0
 
         return FilterDecision(
@@ -174,6 +182,81 @@ def _build_stage2_foundation_signals(event: CleanedEvent) -> dict[str, object]:
     except Exception:
         log.exception("Failed generating stage2 SimHash eventId=%s", event.event_id)
         return {"stage2SimHashReady": False}
+
+
+def _build_stage2_default_signals() -> dict[str, object]:
+    return {
+        "stage2SimHashReady": False,
+        "stage2SimHash": None,
+        "stage2CrossUserEvaluated": False,
+        "stage2CrossUserEnabled": False,
+        "stage2CrossUserTriggered": False,
+        "stage2CrossUserMatchCount": 0,
+        "stage2CrossUserUniqueAuthorCount": 0,
+        "stage2CrossUserMinHamming": None,
+        "stage2CrossUserPenaltyApplied": 0.0,
+        "stage2CrossUserReason": None,
+        "stage2ClusterEvaluated": False,
+        "stage2ClusterEnabled": False,
+        "stage2ClusterTriggered": False,
+        "stage2ClusterMatchCount": 0,
+        "stage2ClusterUniqueAuthorCount": 0,
+        "stage2ClusterTimeSpanSeconds": None,
+        "stage2ClusterAvgHamming": None,
+        "stage2ClusterPenaltyApplied": 0.0,
+        "stage2ClusterReason": None,
+        "stage2SameAccountEvaluated": False,
+        "stage2SameAccountEnabled": False,
+        "stage2SameAccountTriggered": False,
+        "stage2SameAccountMatchCount": 0,
+        "stage2SameAccountMinHamming": None,
+        "stage2SameAccountAvgHamming": None,
+        "stage2SameAccountTimeSpanSeconds": None,
+        "stage2SameAccountPenaltyApplied": 0.0,
+        "stage2SameAccountForceReject": False,
+        "stage2SameAccountReason": None,
+        "stage2BurstEvaluated": False,
+        "stage2BurstEnabled": False,
+        "stage2BurstRatio": 0.0,
+        "stage2BurstAmplified": False,
+        "stage2BurstThreshold": None,
+        "stage2BurstSlope": None,
+        "stage2BurstMultiplier": 1.0,
+        "stage2BurstMaxMultiplier": None,
+        "stage2BurstExtraPenaltyApplied": 0.0,
+        "stage2BurstReason": None,
+    }
+
+
+def _top_reasons(
+    relevance_reasons: list[str],
+    repetition_reasons: list[str],
+    same_account_reasons: list[str],
+    burst_reasons: list[str],
+    limit: int,
+) -> list[str]:
+    all_candidates: list[str] = []
+    for reason in (
+        list(relevance_reasons)
+        + list(same_account_reasons)
+        + list(repetition_reasons)
+        + list(burst_reasons)
+    ):
+        if reason and reason not in all_candidates:
+            all_candidates.append(reason)
+
+    if len(all_candidates) <= limit:
+        return all_candidates
+
+    prioritized: list[str] = []
+    for preferred in _REASON_PRIORITY:
+        if preferred in all_candidates and preferred not in prioritized:
+            prioritized.append(preferred)
+    for reason in all_candidates:
+        if reason not in prioritized:
+            prioritized.append(reason)
+
+    return prioritized[:limit]
 
 
 def _score_cross_user_repetition(

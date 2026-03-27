@@ -53,11 +53,19 @@ def _extract_summary(topic: str, payload: dict) -> str:
     stage = signals.get("stage")
     band = signals.get("relevanceBand")
     sim = signals.get("relevanceSimilarity")
+    cross_user = signals.get("stage2CrossUserTriggered")
+    cluster = signals.get("stage2ClusterTriggered")
+    same_account = signals.get("stage2SameAccountTriggered")
+    burst = signals.get("stage2BurstAmplified")
+    burst_ratio = signals.get("stage2BurstRatio")
+    burst_extra = signals.get("stage2BurstExtraPenaltyApplied")
 
     return (
         f"topic={topic} eventId={event_id} ticker={ticker} decision={decision} "
         f"reason={reason} reasons={reasons} score={score} stage={stage} "
-        f"band={band} similarity={sim}"
+        f"band={band} similarity={sim} "
+        f"crossUser={cross_user} cluster={cluster} sameAccount={same_account} "
+        f"burstAmplified={burst} burstRatio={burst_ratio} burstExtra={burst_extra}"
     )
 
 

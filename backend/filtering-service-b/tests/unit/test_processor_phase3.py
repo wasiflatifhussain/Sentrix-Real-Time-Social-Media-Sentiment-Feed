@@ -328,3 +328,91 @@ def test_processor_does_not_apply_burst_penalty_without_repetition_evidence() ->
     assert decision.credibility_score == 1.0
     assert "BURST_AMPLIFIED_REPETITION" not in decision.decision_reasons
     assert decision.signals["stage2BurstReason"] == "no_repetition_evidence"
+
+
+def test_processor_keeps_reason_list_to_top_two_prioritized_reasons() -> None:
+    scorer = StubRelevanceScorer(
+        RelevanceScore(
+            decision="KEEP",
+            score_delta=0.0,
+            similarity=0.70,
+            reason_codes=[],
+            signals={},
+        )
+    )
+    cross_user_scorer = CrossUserRepetitionScorer(
+        settings=_manipulation_settings(
+            cross_user_min_matches=1,
+            cross_user_min_unique_authors=1,
+            cluster_min_matches=1,
+            cluster_min_unique_authors=1,
+            same_account_min_matches=1,
+            burst_ratio_threshold=1.0,
+        )
+    )
+    processor = FilterBPhase1Processor(
+        relevance_scorer=scorer,
+        cross_user_scorer=cross_user_scorer,
+    )
+    current_hash = simhash64_unsigned_str(_event().text_normalized)
+    decision = processor.process(
+        _event(),
+        state_context={
+            "tickerSimilarity": [
+                {"author": "user-2", "simHash64": current_hash, "timestampUtc": 1000},
+                {"author": "user-3", "simHash64": current_hash, "timestampUtc": 1100},
+            ],
+            "authorTickerHistory": [
+                {"simHash64": current_hash, "timestampUtc": 1000},
+            ],
+            "burst": {"burstRatio": 3.0},
+        },
+    )
+
+    assert len(decision.decision_reasons) == 2
+    assert decision.decision_reasons == [
+        "SAME_ACCOUNT_REPETITION",
+        "CROSS_USER_REPETITION",
+    ]
+
+
+def test_processor_enforces_score_zero_for_reject_decision() -> None:
+    scorer = StubRelevanceScorer(
+        RelevanceScore(
+            decision="REJECT",
+            score_delta=-0.10,
+            similarity=0.10,
+            reason_codes=["EXTREME_LOW_TICKER_RELEVANCE"],
+            signals={},
+        )
+    )
+    processor = FilterBPhase1Processor(relevance_scorer=scorer)
+
+    decision = processor.process(_event(), state_context={})
+
+    assert decision.decision == "REJECT"
+    assert decision.credibility_score == 0.0
+
+
+def test_processor_has_consistent_stage2_signal_shape_when_stage2_is_unavailable() -> None:
+    scorer = StubRelevanceScorer(
+        RelevanceScore(
+            decision="KEEP",
+            score_delta=0.0,
+            similarity=0.70,
+            reason_codes=[],
+            signals={},
+        )
+    )
+    processor = FilterBPhase1Processor(
+        relevance_scorer=scorer,
+        cross_user_scorer=None,
+    )
+
+    decision = processor.process(_event(), state_context={})
+
+    assert decision.signals["stage2CrossUserEvaluated"] is False
+    assert decision.signals["stage2ClusterEvaluated"] is False
+    assert decision.signals["stage2SameAccountEvaluated"] is False
+    assert decision.signals["stage2BurstEvaluated"] is False
+    assert decision.signals["stage2BurstRatio"] == 0.0
