@@ -1166,3 +1166,8 @@ It processes already-cleaned events from Filtering Service A and decides whether
 The service is built as a **streaming event processor with short-term Redis-backed memory**, and it uses a **single running credibility score** rather than many fragmented final outputs.
 
 The development plan is intentionally phased so that the system can be implemented, tested, and tuned incrementally without overcomplicating the first working version.
+
+```bash
+poetry install  # if not installed or something new added
+uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012 --app-dir src
+```

@@ -22,9 +22,10 @@ class FilterBPhase1Processor:
     - Uses simple pass-through KEEP policy for valid events
     """
 
-    def process(self, event: CleanedEvent) -> FilterDecision:
+    def process(self, event: CleanedEvent, state_context: dict | None = None) -> FilterDecision:
         # Phase 1 keeps valid records and establishes the scoring contract.
         _ = event
+        _ = state_context
         return FilterDecision(
             decision="KEEP",
             credibility_score=1.0,
@@ -36,6 +37,7 @@ class FilterBPhase1Processor:
         original_payload: dict,
         decision: FilterDecision,
         filter_reason: str | None = None,
+        state_signals: dict | None = None,
     ) -> dict:
         now_utc = int(time.time())
         out = copy.deepcopy(original_payload)
@@ -43,6 +45,13 @@ class FilterBPhase1Processor:
         reason = filter_reason
         if reason is None and decision.decision_reasons:
             reason = decision.decision_reasons[0]
+
+        signals = {
+            "credibilityScore": float(decision.credibility_score),
+            "stage": "phase2_state_layer",
+        }
+        if state_signals:
+            signals.update(state_signals)
 
         out["filterMeta"] = {
             "filterStage": "semantic_gate_B",
@@ -52,10 +61,7 @@ class FilterBPhase1Processor:
             "credibilityScore": float(decision.credibility_score),
             "processedAtUtc": now_utc,
             "tags": None,
-            "signals": {
-                "credibilityScore": float(decision.credibility_score),
-                "stage": "phase1_kafka_io",
-            },
+            "signals": signals,
         }
 
         return out
