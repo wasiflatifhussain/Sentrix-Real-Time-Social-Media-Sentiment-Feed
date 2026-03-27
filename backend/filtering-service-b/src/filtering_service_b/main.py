@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from filtering_service_b.config.settings import (
     load_app_settings,
     load_kafka_settings,
+    load_relevance_settings,
     load_redis_settings,
     load_state_ttl_settings,
 )
@@ -19,6 +20,11 @@ from filtering_service_b.messaging.kafka_producer import KafkaProducerClient
 from filtering_service_b.messaging.schemas import parse_cleaned_event
 from filtering_service_b.observability.logging import configure_logging
 from filtering_service_b.pipeline.processor import FilterBPhase1Processor, FilterDecision
+from filtering_service_b.relevance.embedding_service import (
+    SentenceTransformerEmbeddingService,
+)
+from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
+from filtering_service_b.relevance.ticker_profiles import TickerProfileStore
 from filtering_service_b.state.author_state_store import AuthorTickerStateStore
 from filtering_service_b.state.burst_store import BurstCounterStore
 from filtering_service_b.state.novelty_state_store import AcceptedNoveltyStateStore
@@ -36,10 +42,21 @@ async def lifespan(app: FastAPI):
     kafka_settings = load_kafka_settings()
     redis_settings = load_redis_settings()
     ttl_settings = load_state_ttl_settings()
+    relevance_settings = load_relevance_settings()
 
     consumer = KafkaConsumerRunner(kafka_settings)
     producer = KafkaProducerClient(kafka_settings)
-    processor = FilterBPhase1Processor()
+    ticker_profiles = TickerProfileStore.from_json(relevance_settings.ticker_profiles_path)
+    embedding_service = SentenceTransformerEmbeddingService(
+        model_name=relevance_settings.model_name,
+        normalize_embeddings=relevance_settings.normalize_embeddings,
+    )
+    relevance_scorer = TickerRelevanceScorer(
+        embedding_service=embedding_service,
+        ticker_profiles=ticker_profiles,
+        settings=relevance_settings,
+    )
+    processor = FilterBPhase1Processor(relevance_scorer=relevance_scorer)
     stop_event = threading.Event()
 
     redis_client = RedisClient(redis_settings)

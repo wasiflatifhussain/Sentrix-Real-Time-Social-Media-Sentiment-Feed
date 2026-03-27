@@ -1171,3 +1171,12 @@ The development plan is intentionally phased so that the system can be implement
 poetry install  # if not installed or something new added
 uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012 --app-dir src
 ```
+
+
+```bash
+cd backend/filtering-service-b
+poetry lock
+poetry install --extras dev
+poetry run pytest -q tests/unit
+```
+
