@@ -44,6 +44,8 @@ def test_processor_uses_relevance_scorer_and_clamps_high_score() -> None:
     assert decision.decision == "KEEP"
     assert decision.credibility_score == 1.0
     assert decision.decision_reasons == []
+    assert decision.signals["stage2SimHashReady"] is True
+    assert isinstance(decision.signals["stage2SimHash"], str)
     assert scorer.last_ticker == "TSLA"
     assert scorer.last_event_text == "Breaking tesla earnings beat estimates"
 

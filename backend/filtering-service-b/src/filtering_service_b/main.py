@@ -103,6 +103,7 @@ async def lifespan(app: FastAPI):
             }
 
             decision = processor.process(event, state_context=state_context)
+            simhash64 = decision.signals.get("stage2SimHash")
 
             state_signals = {
                 "tickerSimilarityCount": len(state_context["tickerSimilarity"]),
@@ -130,6 +131,7 @@ async def lifespan(app: FastAPI):
                     "author": event.author,
                     "timestampUtc": event_time_utc,
                     "text": event.text_normalized,
+                    "simHash64": simhash64,
                 },
             )
             burst_store.increment(event.ticker, event_time_utc)
@@ -143,6 +145,7 @@ async def lifespan(app: FastAPI):
                         "eventId": event.event_id,
                         "timestampUtc": event_time_utc,
                         "text": event.text_normalized,
+                        "simHash64": simhash64,
                     },
                 )
 

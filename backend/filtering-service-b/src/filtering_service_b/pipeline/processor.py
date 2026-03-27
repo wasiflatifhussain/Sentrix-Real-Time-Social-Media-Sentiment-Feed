@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import copy
+import logging
 import time
 from dataclasses import dataclass, field
 
+from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
 from filtering_service_b.messaging.schemas import CleanedEvent
 from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -36,12 +40,15 @@ class FilterBPhase1Processor:
             event_text=event_text, ticker=event.ticker
         )
         score = _clamp_score(1.0 + relevance.score_delta)
+        stage2_signals = _build_stage2_foundation_signals(event)
+        merged_signals = dict(relevance.signals)
+        merged_signals.update(stage2_signals)
 
         return FilterDecision(
             decision=relevance.decision,
             credibility_score=score,
             decision_reasons=relevance.reason_codes,
-            signals=dict(relevance.signals),
+            signals=merged_signals,
         )
 
     @staticmethod
@@ -96,4 +103,14 @@ def _clamp_score(score: float) -> float:
     if score > 1.0:
         return 1.0
     return float(score)
-    return float(score)
+
+
+def _build_stage2_foundation_signals(event: CleanedEvent) -> dict[str, object]:
+    try:
+        return {
+            "stage2SimHashReady": True,
+            "stage2SimHash": simhash64_unsigned_str(event.text_normalized),
+        }
+    except Exception:
+        log.exception("Failed generating stage2 SimHash eventId=%s", event.event_id)
+        return {"stage2SimHashReady": False}
