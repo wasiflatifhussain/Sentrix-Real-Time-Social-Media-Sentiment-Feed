@@ -21,6 +21,15 @@ def _settings() -> ManipulationSettings:
         cluster_penalty=0.12,
         cluster_strong_match_threshold=6,
         cluster_strong_penalty=0.22,
+        same_account_enabled=True,
+        same_account_max_hamming_distance=5,
+        same_account_min_matches=2,
+        same_account_max_time_span_seconds=1800,
+        same_account_penalty=0.18,
+        same_account_strong_match_threshold=4,
+        same_account_strong_penalty=0.32,
+        same_account_extreme_match_threshold=6,
+        same_account_extreme_reject_enabled=False,
     )
 
 
@@ -90,3 +99,36 @@ def test_cluster_density_adds_penalty_when_dense_and_time_compact() -> None:
     assert "DENSE_SIMILARITY_CLUSTER" in result.reason_codes
     assert result.signals["stage2ClusterTriggered"] is True
     assert result.signals["stage2ClusterTimeSpanSeconds"] == 400
+
+
+def test_same_account_penalty_and_optional_extreme_reject() -> None:
+    settings = _settings()
+    scorer = CrossUserRepetitionScorer(settings=settings)
+    result = scorer.score_same_account(
+        current_simhash=15,
+        author_ticker_history=[
+            {"simHash64": 15, "timestampUtc": 1000},
+            {"simHash64": 15, "timestampUtc": 1100},
+        ],
+    )
+    assert result.score_delta == -0.18
+    assert result.reason_codes == ["SAME_ACCOUNT_REPETITION"]
+    assert result.force_reject is False
+
+    scorer_reject = CrossUserRepetitionScorer(
+        settings=ManipulationSettings(
+            **{
+                **settings.__dict__,
+                "same_account_extreme_reject_enabled": True,
+                "same_account_extreme_match_threshold": 2,
+            }
+        )
+    )
+    reject_result = scorer_reject.score_same_account(
+        current_simhash=15,
+        author_ticker_history=[
+            {"simHash64": 15, "timestampUtc": 1000},
+            {"simHash64": 15, "timestampUtc": 1100},
+        ],
+    )
+    assert reject_result.force_reject is True

@@ -8,6 +8,7 @@ from filtering_service_b.manipulation.hamming import hamming_distance_64
 
 REASON_CROSS_USER_REPETITION = "CROSS_USER_REPETITION"
 REASON_DENSE_SIMILARITY_CLUSTER = "DENSE_SIMILARITY_CLUSTER"
+REASON_SAME_ACCOUNT_REPETITION = "SAME_ACCOUNT_REPETITION"
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,14 @@ class CrossUserRepetitionScore:
     score_delta: float
     reason_codes: list[str]
     signals: dict[str, object]
+
+
+@dataclass(frozen=True)
+class SameAccountRepetitionScore:
+    score_delta: float
+    reason_codes: list[str]
+    signals: dict[str, object]
+    force_reject: bool
 
 
 class CrossUserRepetitionScorer:
@@ -125,6 +134,101 @@ class CrossUserRepetitionScorer:
                 "stage2CrossUserMaxHamming": self._settings.cross_user_max_hamming_distance,
                 **cluster_signals,
             },
+        )
+
+    def score_same_account(
+        self,
+        current_simhash: int | None,
+        author_ticker_history: list[dict[str, Any]] | None,
+    ) -> SameAccountRepetitionScore:
+        if not self._settings.same_account_enabled:
+            return SameAccountRepetitionScore(
+                score_delta=0.0,
+                reason_codes=[],
+                signals={"stage2SameAccountEvaluated": False, "stage2SameAccountEnabled": False},
+                force_reject=False,
+            )
+
+        if current_simhash is None:
+            return SameAccountRepetitionScore(
+                score_delta=0.0,
+                reason_codes=[],
+                signals={"stage2SameAccountEvaluated": False, "stage2SameAccountEnabled": True},
+                force_reject=False,
+            )
+
+        history = author_ticker_history or []
+        match_count = 0
+        min_hamming: int | None = None
+        matched_timestamps: list[int] = []
+        matched_distances: list[int] = []
+
+        for row in history:
+            if not isinstance(row, dict):
+                continue
+            candidate_hash = _parse_simhash(row.get("simHash64"))
+            if candidate_hash is None:
+                continue
+
+            distance = hamming_distance_64(current_simhash, candidate_hash)
+            if distance <= self._settings.same_account_max_hamming_distance:
+                match_count += 1
+                matched_distances.append(distance)
+                min_hamming = distance if min_hamming is None else min(min_hamming, distance)
+                parsed_ts = _parse_int(row.get("timestampUtc"))
+                if parsed_ts is not None:
+                    matched_timestamps.append(parsed_ts)
+
+        time_span_seconds: int | None = None
+        if len(matched_timestamps) >= 2:
+            time_span_seconds = max(matched_timestamps) - min(matched_timestamps)
+        elif len(matched_timestamps) == 1:
+            time_span_seconds = 0
+
+        time_dense = (
+            time_span_seconds is not None
+            and time_span_seconds <= self._settings.same_account_max_time_span_seconds
+        )
+        triggered = match_count >= self._settings.same_account_min_matches and time_dense
+
+        penalty = 0.0
+        reasons: list[str] = []
+        force_reject = False
+        if triggered:
+            applied_penalty = self._settings.same_account_penalty
+            if match_count >= self._settings.same_account_strong_match_threshold:
+                applied_penalty = self._settings.same_account_strong_penalty
+            penalty = -abs(applied_penalty)
+            reasons = [REASON_SAME_ACCOUNT_REPETITION]
+
+            if (
+                self._settings.same_account_extreme_reject_enabled
+                and match_count >= self._settings.same_account_extreme_match_threshold
+            ):
+                force_reject = True
+
+        avg_hamming: float | None = None
+        if matched_distances:
+            avg_hamming = float(sum(matched_distances)) / float(len(matched_distances))
+
+        return SameAccountRepetitionScore(
+            score_delta=penalty,
+            reason_codes=reasons,
+            signals={
+                "stage2SameAccountEvaluated": True,
+                "stage2SameAccountEnabled": True,
+                "stage2SameAccountTriggered": triggered,
+                "stage2SameAccountMatchCount": match_count,
+                "stage2SameAccountMinHamming": min_hamming,
+                "stage2SameAccountAvgHamming": avg_hamming,
+                "stage2SameAccountTimeSpanSeconds": time_span_seconds,
+                "stage2SameAccountMaxTimeSpanSeconds": self._settings.same_account_max_time_span_seconds,
+                "stage2SameAccountPenaltyApplied": float(abs(penalty)),
+                "stage2SameAccountForceReject": force_reject,
+                "stage2SameAccountExtremeRejectEnabled": self._settings.same_account_extreme_reject_enabled,
+                "stage2SameAccountExtremeMatches": self._settings.same_account_extreme_match_threshold,
+            },
+            force_reject=force_reject,
         )
 
     def _score_cluster_density(

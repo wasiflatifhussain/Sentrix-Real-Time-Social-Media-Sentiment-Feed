@@ -71,6 +71,15 @@ class ManipulationSettings:
     cluster_penalty: float
     cluster_strong_match_threshold: int
     cluster_strong_penalty: float
+    same_account_enabled: bool
+    same_account_max_hamming_distance: int
+    same_account_min_matches: int
+    same_account_max_time_span_seconds: int
+    same_account_penalty: float
+    same_account_strong_match_threshold: int
+    same_account_strong_penalty: float
+    same_account_extreme_match_threshold: int
+    same_account_extreme_reject_enabled: bool
 
 
 def _get_env(name: str, default: str | None = None) -> str:
@@ -274,6 +283,29 @@ def _validate_manipulation_settings(
             "MANIPULATION_CLUSTER_STRONG_PENALTY must be >= "
             "MANIPULATION_CLUSTER_PENALTY"
         )
+    if settings.same_account_max_hamming_distance < 0:
+        raise ValueError("MANIPULATION_SAME_ACCOUNT_MAX_HAMMING must be >= 0")
+    if settings.same_account_min_matches < 1:
+        raise ValueError("MANIPULATION_SAME_ACCOUNT_MIN_MATCHES must be >= 1")
+    if settings.same_account_max_time_span_seconds < 1:
+        raise ValueError("MANIPULATION_SAME_ACCOUNT_MAX_TIME_SPAN_SECONDS must be >= 1")
+    if settings.same_account_penalty < 0.0:
+        raise ValueError("MANIPULATION_SAME_ACCOUNT_PENALTY must be >= 0.0")
+    if settings.same_account_strong_match_threshold < settings.same_account_min_matches:
+        raise ValueError(
+            "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES must be >= "
+            "MANIPULATION_SAME_ACCOUNT_MIN_MATCHES"
+        )
+    if settings.same_account_strong_penalty < settings.same_account_penalty:
+        raise ValueError(
+            "MANIPULATION_SAME_ACCOUNT_STRONG_PENALTY must be >= "
+            "MANIPULATION_SAME_ACCOUNT_PENALTY"
+        )
+    if settings.same_account_extreme_match_threshold < settings.same_account_strong_match_threshold:
+        raise ValueError(
+            "MANIPULATION_SAME_ACCOUNT_EXTREME_MATCHES must be >= "
+            "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES"
+        )
     return settings
 
 
@@ -308,6 +340,27 @@ def load_manipulation_settings() -> ManipulationSettings:
         ),
         cluster_strong_penalty=_get_env_float(
             "MANIPULATION_CLUSTER_STRONG_PENALTY", "0.22"
+        ),
+        same_account_enabled=_get_env_bool("MANIPULATION_SAME_ACCOUNT_ENABLED", "true"),
+        same_account_max_hamming_distance=_get_env_int(
+            "MANIPULATION_SAME_ACCOUNT_MAX_HAMMING", "5"
+        ),
+        same_account_min_matches=_get_env_int("MANIPULATION_SAME_ACCOUNT_MIN_MATCHES", "2"),
+        same_account_max_time_span_seconds=_get_env_int(
+            "MANIPULATION_SAME_ACCOUNT_MAX_TIME_SPAN_SECONDS", "1800"
+        ),
+        same_account_penalty=_get_env_float("MANIPULATION_SAME_ACCOUNT_PENALTY", "0.18"),
+        same_account_strong_match_threshold=_get_env_int(
+            "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES", "4"
+        ),
+        same_account_strong_penalty=_get_env_float(
+            "MANIPULATION_SAME_ACCOUNT_STRONG_PENALTY", "0.32"
+        ),
+        same_account_extreme_match_threshold=_get_env_int(
+            "MANIPULATION_SAME_ACCOUNT_EXTREME_MATCHES", "6"
+        ),
+        same_account_extreme_reject_enabled=_get_env_bool(
+            "MANIPULATION_SAME_ACCOUNT_EXTREME_REJECT_ENABLED", "false"
         ),
     )
     return _validate_manipulation_settings(settings)

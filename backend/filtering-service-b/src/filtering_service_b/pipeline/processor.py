@@ -9,6 +9,7 @@ from typing import Any
 from filtering_service_b.manipulation.repetition_scorer import (
     CrossUserRepetitionScore,
     CrossUserRepetitionScorer,
+    SameAccountRepetitionScore,
 )
 from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
 from filtering_service_b.messaging.schemas import CleanedEvent
@@ -57,21 +58,38 @@ class FilterBPhase1Processor:
             state_context=state_context,
             relevance_decision=relevance.decision,
         )
-        score = _clamp_score(1.0 + relevance.score_delta + repetition.score_delta)
+        same_account = _score_same_account_repetition(
+            cross_user_scorer=self._cross_user_scorer,
+            stage2_signals=stage2_signals,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
+        score = _clamp_score(
+            1.0 + relevance.score_delta + repetition.score_delta + same_account.score_delta
+        )
 
         merged_signals = dict(relevance.signals)
         merged_signals.update(stage2_signals)
         merged_signals.update(repetition.signals)
+        merged_signals.update(same_account.signals)
 
         reasons: list[str] = []
         reasons.extend(relevance.reason_codes)
         for reason in repetition.reason_codes:
             if reason not in reasons:
                 reasons.append(reason)
+        for reason in same_account.reason_codes:
+            if reason not in reasons:
+                reasons.append(reason)
         reasons = reasons[:2]
 
+        decision_value = relevance.decision
+        if same_account.force_reject:
+            decision_value = "REJECT"
+            score = 0.0
+
         return FilterDecision(
-            decision=relevance.decision,
+            decision=decision_value,
             credibility_score=score,
             decision_reasons=reasons,
             signals=merged_signals,
@@ -176,6 +194,43 @@ def _score_cross_user_repetition(
         current_simhash=current_simhash,
         current_author=event.author,
         ticker_similarity_history=ticker_similarity_history,
+    )
+
+
+def _score_same_account_repetition(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    stage2_signals: dict[str, object],
+    state_context: dict[str, Any] | None,
+    relevance_decision: str,
+) -> SameAccountRepetitionScore:
+    if cross_user_scorer is None:
+        return SameAccountRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2SameAccountEvaluated": False, "stage2SameAccountEnabled": False},
+            force_reject=False,
+        )
+
+    if relevance_decision != "KEEP":
+        return SameAccountRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2SameAccountEvaluated": False,
+                "stage2SameAccountEnabled": True,
+                "stage2SameAccountReason": "skipped_relevance_reject",
+            },
+            force_reject=False,
+        )
+
+    current_simhash = _safe_int(stage2_signals.get("stage2SimHash"))
+    author_ticker_history = (state_context or {}).get("authorTickerHistory", [])
+    if not isinstance(author_ticker_history, list):
+        author_ticker_history = []
+
+    return cross_user_scorer.score_same_account(
+        current_simhash=current_simhash,
+        author_ticker_history=author_ticker_history,
     )
 
 
