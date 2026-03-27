@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from typing import Any
 
 from redis import Redis
+
+log = logging.getLogger(__name__)
 
 
 def _author_token(author: str) -> str:
@@ -23,21 +26,50 @@ class AuthorTickerStateStore:
 
     def get_recent(self, author: str, ticker: str, limit: int = 30) -> list[dict[str, Any]]:
         token = _author_token(author)
-        rows = self._redis.lrange(self._key(token, ticker), 0, max(limit - 1, 0))
+        try:
+            rows = self._redis.lrange(self._key(token, ticker), 0, max(limit - 1, 0))
+        except Exception:
+            log.exception(
+                "Failed to read author+ticker history ticker=%s author_hash=%s",
+                ticker,
+                token[:8],
+            )
+            return []
         out: list[dict[str, Any]] = []
         for row in rows:
             try:
                 out.append(json.loads(row))
-            except Exception:
+            except (TypeError, json.JSONDecodeError):
+                log.warning(
+                    "Skipping invalid author+ticker state row ticker=%s author_hash=%s",
+                    ticker,
+                    token[:8],
+                )
                 continue
         return out
 
     def add(self, author: str, ticker: str, payload: dict[str, Any]) -> None:
         token = _author_token(author)
         key = self._key(token, ticker)
-        encoded = json.dumps(payload, ensure_ascii=True)
-        pipe = self._redis.pipeline(transaction=False)
-        pipe.lpush(key, encoded)
-        pipe.ltrim(key, 0, max(self._max_items - 1, 0))
-        pipe.expire(key, self._ttl_seconds)
-        pipe.execute()
+        try:
+            encoded = json.dumps(payload, ensure_ascii=True)
+        except (TypeError, ValueError):
+            log.exception(
+                "Failed to serialize author+ticker payload ticker=%s author_hash=%s",
+                ticker,
+                token[:8],
+            )
+            return
+
+        try:
+            pipe = self._redis.pipeline(transaction=False)
+            pipe.lpush(key, encoded)
+            pipe.ltrim(key, 0, max(self._max_items - 1, 0))
+            pipe.expire(key, self._ttl_seconds)
+            pipe.execute()
+        except Exception:
+            log.exception(
+                "Failed to write author+ticker state ticker=%s author_hash=%s",
+                ticker,
+                token[:8],
+            )

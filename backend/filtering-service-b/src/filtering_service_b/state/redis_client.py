@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import logging
+
 from redis import Redis
 
 from filtering_service_b.config.settings import RedisSettings
+
+log = logging.getLogger(__name__)
 
 
 class RedisClient:
@@ -27,4 +31,7 @@ class RedisClient:
         return bool(self._client.ping())
 
     def close(self) -> None:
-        self._client.close()
+        try:
+            self._client.close()
+        except Exception:
+            log.exception("Failed to close Redis client")

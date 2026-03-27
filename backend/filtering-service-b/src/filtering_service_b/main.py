@@ -194,8 +194,14 @@ async def lifespan(app: FastAPI):
     finally:
         stop_event.set()
         worker.join(timeout=10)
-        producer.close()
-        redis_client.close()
+        try:
+            producer.close()
+        except Exception:
+            log.exception("Failed to close Kafka producer cleanly")
+        try:
+            redis_client.close()
+        except Exception:
+            log.exception("Failed to close Redis client cleanly")
         log.info("Filtering Service B worker stopped")
 
 

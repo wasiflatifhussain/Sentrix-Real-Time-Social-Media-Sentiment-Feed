@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import logging
+
 from redis import Redis
+
+log = logging.getLogger(__name__)
 
 
 class BurstCounterStore:
@@ -19,10 +23,13 @@ class BurstCounterStore:
     def increment(self, ticker: str, event_time_utc: int) -> None:
         bucket = self._minute_bucket(event_time_utc)
         key = self._bucket_key(ticker, bucket)
-        pipe = self._redis.pipeline(transaction=False)
-        pipe.incr(key)
-        pipe.expire(key, self._bucket_ttl_seconds)
-        pipe.execute()
+        try:
+            pipe = self._redis.pipeline(transaction=False)
+            pipe.incr(key)
+            pipe.expire(key, self._bucket_ttl_seconds)
+            pipe.execute()
+        except Exception:
+            log.exception("Failed to increment burst counter ticker=%s bucket=%s", ticker, bucket)
 
     def get_context(
         self,
@@ -43,11 +50,20 @@ class BurstCounterStore:
             for i in range(max(baseline_window_minutes, 1))
         ]
 
-        recent_vals = self._redis.mget(recent_keys)
-        baseline_vals = self._redis.mget(baseline_keys)
+        try:
+            recent_vals = self._redis.mget(recent_keys)
+            baseline_vals = self._redis.mget(baseline_keys)
+        except Exception:
+            log.exception("Failed to read burst counters ticker=%s", ticker)
+            return {
+                "recentCount": 0,
+                "baselineCount": 0,
+                "baselineAvgPerMinute": 0.0,
+                "burstRatio": 0.0,
+            }
 
-        recent_count = sum(int(v) for v in recent_vals if v is not None)
-        baseline_count = sum(int(v) for v in baseline_vals if v is not None)
+        recent_count = sum(_safe_int(v) for v in recent_vals if v is not None)
+        baseline_count = sum(_safe_int(v) for v in baseline_vals if v is not None)
         baseline_avg = baseline_count / float(max(baseline_window_minutes, 1))
         burst_ratio = float(recent_count) / max(baseline_avg, 1.0)
 
@@ -57,3 +73,10 @@ class BurstCounterStore:
             "baselineAvgPerMinute": baseline_avg,
             "burstRatio": burst_ratio,
         }
+
+
+def _safe_int(value: object) -> int:
+    try:
+        return int(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0

@@ -3,7 +3,7 @@ import logging
 from threading import Event
 from typing import Callable
 
-from confluent_kafka import Consumer, KafkaException, Message
+from confluent_kafka import Consumer, Message
 
 from filtering_service_b.config.settings import KafkaSettings
 
@@ -34,8 +34,8 @@ class KafkaConsumerRunner:
                     continue
 
                 if msg.error():
-                    # Non-fatal errors can happen, but keep this visible
-                    raise KafkaException(msg.error())
+                    log.error("Kafka poll error: %s", msg.error())
+                    continue
 
                 try:
                     on_message(msg)
@@ -67,4 +67,11 @@ class KafkaConsumerRunner:
         else:
             raw_str = str(raw)
 
-        return json.loads(raw_str)
+        try:
+            parsed = json.loads(raw_str)
+        except json.JSONDecodeError as ex:
+            raise ValueError("Kafka message is not valid JSON") from ex
+
+        if not isinstance(parsed, dict):
+            raise ValueError("Kafka message JSON root must be an object")
+        return parsed

@@ -32,7 +32,12 @@ class TickerProfileStore:
         path = Path(ticker_profiles_path).resolve()
         if not path.is_file():
             raise ValueError(f"Ticker profiles file not found: {path}")
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except OSError as ex:
+            raise ValueError(f"Failed to read ticker profiles file: {path}") from ex
+        except json.JSONDecodeError as ex:
+            raise ValueError(f"Ticker profiles file is not valid JSON: {path}") from ex
         if not isinstance(raw, list):
             raise ValueError(f"Ticker profile file must contain a list: {path}")
 

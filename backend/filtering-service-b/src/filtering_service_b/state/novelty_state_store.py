@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any
 
 from redis import Redis
+
+log = logging.getLogger(__name__)
 
 
 class AcceptedNoveltyStateStore:
@@ -17,20 +20,33 @@ class AcceptedNoveltyStateStore:
         return f"fsb:v1:ticker:{ticker.upper()}:accepted_novelty"
 
     def get_recent(self, ticker: str, limit: int = 30) -> list[dict[str, Any]]:
-        rows = self._redis.lrange(self._key(ticker), 0, max(limit - 1, 0))
+        try:
+            rows = self._redis.lrange(self._key(ticker), 0, max(limit - 1, 0))
+        except Exception:
+            log.exception("Failed to read novelty state ticker=%s", ticker)
+            return []
         out: list[dict[str, Any]] = []
         for row in rows:
             try:
                 out.append(json.loads(row))
-            except Exception:
+            except (TypeError, json.JSONDecodeError):
+                log.warning("Skipping invalid novelty state row ticker=%s", ticker)
                 continue
         return out
 
     def add(self, ticker: str, payload: dict[str, Any]) -> None:
         key = self._key(ticker)
-        encoded = json.dumps(payload, ensure_ascii=True)
-        pipe = self._redis.pipeline(transaction=False)
-        pipe.lpush(key, encoded)
-        pipe.ltrim(key, 0, max(self._max_items - 1, 0))
-        pipe.expire(key, self._ttl_seconds)
-        pipe.execute()
+        try:
+            encoded = json.dumps(payload, ensure_ascii=True)
+        except (TypeError, ValueError):
+            log.exception("Failed to serialize novelty payload ticker=%s", ticker)
+            return
+
+        try:
+            pipe = self._redis.pipeline(transaction=False)
+            pipe.lpush(key, encoded)
+            pipe.ltrim(key, 0, max(self._max_items - 1, 0))
+            pipe.expire(key, self._ttl_seconds)
+            pipe.execute()
+        except Exception:
+            log.exception("Failed to write novelty state ticker=%s", ticker)
