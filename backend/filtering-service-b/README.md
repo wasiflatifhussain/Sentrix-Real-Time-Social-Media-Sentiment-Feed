@@ -1194,6 +1194,12 @@ Behavior summary:
 * Strong penalty applies when:
   * `matchCount >= MANIPULATION_CROSS_USER_STRONG_MATCHES`
 
+Temporary implementation note:
+
+* Stage 2 repetition/cluster checks are evaluated per incoming event.
+* Penalties are applied only to the current event being processed.
+* Historical neighbor events are used as evidence from Redis state and are not retroactively re-scored or re-routed.
+
 The service is built as a **streaming event processor with short-term Redis-backed memory**, and it uses a **single running credibility score** rather than many fragmented final outputs.
 
 The development plan is intentionally phased so that the system can be implemented, tested, and tuned incrementally without overcomplicating the first working version.

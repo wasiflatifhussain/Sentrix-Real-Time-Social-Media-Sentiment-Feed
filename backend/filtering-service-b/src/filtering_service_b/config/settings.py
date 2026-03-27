@@ -64,6 +64,13 @@ class ManipulationSettings:
     cross_user_penalty: float
     cross_user_strong_match_threshold: int
     cross_user_strong_penalty: float
+    cluster_enabled: bool
+    cluster_min_matches: int
+    cluster_min_unique_authors: int
+    cluster_max_time_span_seconds: int
+    cluster_penalty: float
+    cluster_strong_match_threshold: int
+    cluster_strong_penalty: float
 
 
 def _get_env(name: str, default: str | None = None) -> str:
@@ -249,6 +256,24 @@ def _validate_manipulation_settings(
             "MANIPULATION_CROSS_USER_STRONG_PENALTY must be >= "
             "MANIPULATION_CROSS_USER_PENALTY"
         )
+    if settings.cluster_min_matches < 1:
+        raise ValueError("MANIPULATION_CLUSTER_MIN_MATCHES must be >= 1")
+    if settings.cluster_min_unique_authors < 1:
+        raise ValueError("MANIPULATION_CLUSTER_MIN_UNIQUE_AUTHORS must be >= 1")
+    if settings.cluster_max_time_span_seconds < 1:
+        raise ValueError("MANIPULATION_CLUSTER_MAX_TIME_SPAN_SECONDS must be >= 1")
+    if settings.cluster_penalty < 0.0:
+        raise ValueError("MANIPULATION_CLUSTER_PENALTY must be >= 0.0")
+    if settings.cluster_strong_match_threshold < settings.cluster_min_matches:
+        raise ValueError(
+            "MANIPULATION_CLUSTER_STRONG_MATCHES must be >= "
+            "MANIPULATION_CLUSTER_MIN_MATCHES"
+        )
+    if settings.cluster_strong_penalty < settings.cluster_penalty:
+        raise ValueError(
+            "MANIPULATION_CLUSTER_STRONG_PENALTY must be >= "
+            "MANIPULATION_CLUSTER_PENALTY"
+        )
     return settings
 
 
@@ -268,6 +293,21 @@ def load_manipulation_settings() -> ManipulationSettings:
         ),
         cross_user_strong_penalty=_get_env_float(
             "MANIPULATION_CROSS_USER_STRONG_PENALTY", "0.35"
+        ),
+        cluster_enabled=_get_env_bool("MANIPULATION_CLUSTER_ENABLED", "true"),
+        cluster_min_matches=_get_env_int("MANIPULATION_CLUSTER_MIN_MATCHES", "3"),
+        cluster_min_unique_authors=_get_env_int(
+            "MANIPULATION_CLUSTER_MIN_UNIQUE_AUTHORS", "3"
+        ),
+        cluster_max_time_span_seconds=_get_env_int(
+            "MANIPULATION_CLUSTER_MAX_TIME_SPAN_SECONDS", "1800"
+        ),
+        cluster_penalty=_get_env_float("MANIPULATION_CLUSTER_PENALTY", "0.12"),
+        cluster_strong_match_threshold=_get_env_int(
+            "MANIPULATION_CLUSTER_STRONG_MATCHES", "6"
+        ),
+        cluster_strong_penalty=_get_env_float(
+            "MANIPULATION_CLUSTER_STRONG_PENALTY", "0.22"
         ),
     )
     return _validate_manipulation_settings(settings)
