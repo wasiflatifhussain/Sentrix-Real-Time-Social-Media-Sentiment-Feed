@@ -1,3 +1,6 @@
+from filtering_service_b.config.settings import ManipulationSettings
+from filtering_service_b.manipulation.repetition_scorer import CrossUserRepetitionScorer
+from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
 from filtering_service_b.messaging.schemas import CleanedEvent
 from filtering_service_b.pipeline.processor import FilterBPhase1Processor
 from filtering_service_b.relevance.relevance_scorer import RelevanceScore
@@ -110,3 +113,44 @@ def test_processor_does_not_duplicate_title_if_already_in_text_normalized() -> N
         scorer.last_event_text
         == "Three straight wins got me feeling like the future’s looking bright\nBody text"
     )
+
+
+def test_processor_applies_cross_user_repetition_penalty() -> None:
+    scorer = StubRelevanceScorer(
+        RelevanceScore(
+            decision="KEEP",
+            score_delta=0.0,
+            similarity=0.70,
+            reason_codes=[],
+            signals={},
+        )
+    )
+    cross_user_scorer = CrossUserRepetitionScorer(
+        settings=ManipulationSettings(
+            cross_user_enabled=True,
+            cross_user_max_hamming_distance=0,
+            cross_user_min_matches=2,
+            cross_user_min_unique_authors=2,
+            cross_user_penalty=0.20,
+            cross_user_strong_match_threshold=4,
+            cross_user_strong_penalty=0.35,
+        )
+    )
+    processor = FilterBPhase1Processor(
+        relevance_scorer=scorer,
+        cross_user_scorer=cross_user_scorer,
+    )
+    current_hash = simhash64_unsigned_str(_event().text_normalized)
+    decision = processor.process(
+        _event(),
+        state_context={
+            "tickerSimilarity": [
+                {"author": "user-2", "simHash64": current_hash},
+                {"author": "user-3", "simHash64": current_hash},
+            ]
+        },
+    )
+
+    assert decision.decision == "KEEP"
+    assert decision.credibility_score == 0.8
+    assert "CROSS_USER_REPETITION" in decision.decision_reasons

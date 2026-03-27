@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from filtering_service_b.config.settings import (
     load_app_settings,
     load_kafka_settings,
+    load_manipulation_settings,
     load_relevance_settings,
     load_redis_settings,
     load_state_ttl_settings,
@@ -20,6 +21,7 @@ from filtering_service_b.messaging.kafka_producer import KafkaProducerClient
 from filtering_service_b.messaging.schemas import parse_cleaned_event
 from filtering_service_b.observability.logging import configure_logging
 from filtering_service_b.pipeline.processor import FilterBPhase1Processor, FilterDecision
+from filtering_service_b.manipulation.repetition_scorer import CrossUserRepetitionScorer
 from filtering_service_b.relevance.embedding_service import (
     SentenceTransformerEmbeddingService,
 )
@@ -43,6 +45,7 @@ async def lifespan(app: FastAPI):
     redis_settings = load_redis_settings()
     ttl_settings = load_state_ttl_settings()
     relevance_settings = load_relevance_settings()
+    manipulation_settings = load_manipulation_settings()
 
     consumer = KafkaConsumerRunner(kafka_settings)
     producer = KafkaProducerClient(kafka_settings)
@@ -56,7 +59,11 @@ async def lifespan(app: FastAPI):
         ticker_profiles=ticker_profiles,
         settings=relevance_settings,
     )
-    processor = FilterBPhase1Processor(relevance_scorer=relevance_scorer)
+    cross_user_scorer = CrossUserRepetitionScorer(settings=manipulation_settings)
+    processor = FilterBPhase1Processor(
+        relevance_scorer=relevance_scorer,
+        cross_user_scorer=cross_user_scorer,
+    )
     stop_event = threading.Event()
 
     redis_client = RedisClient(redis_settings)

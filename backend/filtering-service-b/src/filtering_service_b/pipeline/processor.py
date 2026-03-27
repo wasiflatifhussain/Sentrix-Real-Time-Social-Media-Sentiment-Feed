@@ -4,7 +4,12 @@ import copy
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Any
 
+from filtering_service_b.manipulation.repetition_scorer import (
+    CrossUserRepetitionScore,
+    CrossUserRepetitionScorer,
+)
 from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
 from filtering_service_b.messaging.schemas import CleanedEvent
 from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
@@ -28,8 +33,13 @@ class FilterBPhase1Processor:
     - Uses simple pass-through KEEP policy for valid events
     """
 
-    def __init__(self, relevance_scorer: TickerRelevanceScorer) -> None:
+    def __init__(
+        self,
+        relevance_scorer: TickerRelevanceScorer,
+        cross_user_scorer: CrossUserRepetitionScorer | None = None,
+    ) -> None:
         self._relevance_scorer = relevance_scorer
+        self._cross_user_scorer = cross_user_scorer
 
     def process(
         self, event: CleanedEvent, state_context: dict | None = None
@@ -39,15 +49,31 @@ class FilterBPhase1Processor:
         relevance = self._relevance_scorer.score(
             event_text=event_text, ticker=event.ticker
         )
-        score = _clamp_score(1.0 + relevance.score_delta)
         stage2_signals = _build_stage2_foundation_signals(event)
+        repetition = _score_cross_user_repetition(
+            cross_user_scorer=self._cross_user_scorer,
+            event=event,
+            stage2_signals=stage2_signals,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
+        score = _clamp_score(1.0 + relevance.score_delta + repetition.score_delta)
+
         merged_signals = dict(relevance.signals)
         merged_signals.update(stage2_signals)
+        merged_signals.update(repetition.signals)
+
+        reasons: list[str] = []
+        reasons.extend(relevance.reason_codes)
+        for reason in repetition.reason_codes:
+            if reason not in reasons:
+                reasons.append(reason)
+        reasons = reasons[:2]
 
         return FilterDecision(
             decision=relevance.decision,
             credibility_score=score,
-            decision_reasons=relevance.reason_codes,
+            decision_reasons=reasons,
             signals=merged_signals,
         )
 
@@ -114,3 +140,49 @@ def _build_stage2_foundation_signals(event: CleanedEvent) -> dict[str, object]:
     except Exception:
         log.exception("Failed generating stage2 SimHash eventId=%s", event.event_id)
         return {"stage2SimHashReady": False}
+
+
+def _score_cross_user_repetition(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    event: CleanedEvent,
+    stage2_signals: dict[str, object],
+    state_context: dict[str, Any] | None,
+    relevance_decision: str,
+) -> CrossUserRepetitionScore:
+    if cross_user_scorer is None:
+        return CrossUserRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2CrossUserEvaluated": False, "stage2CrossUserEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return CrossUserRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2CrossUserEvaluated": False,
+                "stage2CrossUserEnabled": True,
+                "stage2CrossUserReason": "skipped_relevance_reject",
+            },
+        )
+
+    current_simhash = _safe_int(stage2_signals.get("stage2SimHash"))
+    ticker_similarity_history = (state_context or {}).get("tickerSimilarity", [])
+    if not isinstance(ticker_similarity_history, list):
+        ticker_similarity_history = []
+
+    return cross_user_scorer.score(
+        current_simhash=current_simhash,
+        current_author=event.author,
+        ticker_similarity_history=ticker_similarity_history,
+    )
+
+
+def _safe_int(value: object) -> int | None:
+    try:
+        if value is None:
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None

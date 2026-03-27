@@ -1163,6 +1163,37 @@ It processes already-cleaned events from Filtering Service A and decides whether
 * manipulation/repetition behavior
 * information novelty
 
+---
+
+## Temporary Note — Phase 4 Step 2 Thresholds (Cross-User Repetition)
+
+Current implementation values in `filtering-service-b`:
+
+* `MANIPULATION_CROSS_USER_ENABLED=true`
+  Justification: keep Stage 2 signal active by default so repeated-copy behavior is not missed.
+* `MANIPULATION_CROSS_USER_MAX_HAMMING=5`
+  Justification: aligns with SimHash near-dup sensitivity used in Service A (strict near-duplicate neighborhood on 64-bit SimHash).
+* `MANIPULATION_CROSS_USER_MIN_MATCHES=2`
+  Justification: one similar post can be incidental; two or more similar matches is stronger evidence.
+* `MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS=2`
+  Justification: requires multi-account evidence, avoids treating single-user repetition as cross-user coordination.
+* `MANIPULATION_CROSS_USER_PENALTY=0.20`
+  Justification: meaningful but not overwhelming penalty; keeps Stage 1 relevance dominant unless repetition evidence is strong.
+* `MANIPULATION_CROSS_USER_STRONG_MATCHES=4`
+  Justification: higher bar for escalated action to reduce false positives.
+* `MANIPULATION_CROSS_USER_STRONG_PENALTY=0.35`
+  Justification: stronger downrank for dense repeated messaging across accounts.
+
+Behavior summary:
+
+* Penalty applies only when both conditions are true:
+  * `matchCount >= MANIPULATION_CROSS_USER_MIN_MATCHES`
+  * `uniqueAuthorCount >= MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS`
+* Candidate similarity condition is:
+  * `hammingDistance(currentSimHash, candidateSimHash) <= MANIPULATION_CROSS_USER_MAX_HAMMING`
+* Strong penalty applies when:
+  * `matchCount >= MANIPULATION_CROSS_USER_STRONG_MATCHES`
+
 The service is built as a **streaming event processor with short-term Redis-backed memory**, and it uses a **single running credibility score** rather than many fragmented final outputs.
 
 The development plan is intentionally phased so that the system can be implemented, tested, and tuned incrementally without overcomplicating the first working version.
@@ -1179,4 +1210,3 @@ poetry lock
 poetry install --extras dev
 poetry run pytest -q tests/unit
 ```
-

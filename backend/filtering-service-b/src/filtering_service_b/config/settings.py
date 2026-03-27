@@ -55,6 +55,17 @@ class RelevanceSettings:
     normalize_embeddings: bool
 
 
+@dataclass(frozen=True)
+class ManipulationSettings:
+    cross_user_enabled: bool
+    cross_user_max_hamming_distance: int
+    cross_user_min_matches: int
+    cross_user_min_unique_authors: int
+    cross_user_penalty: float
+    cross_user_strong_match_threshold: int
+    cross_user_strong_penalty: float
+
+
 def _get_env(name: str, default: str | None = None) -> str:
     val = os.getenv(name, default)
     if val is None or val.strip() == "":
@@ -215,3 +226,48 @@ def load_relevance_settings() -> RelevanceSettings:
         normalize_embeddings=_get_env_bool("RELEVANCE_NORMALIZE_EMBEDDINGS", "true"),
     )
     return _validate_relevance_settings(settings)
+
+
+def _validate_manipulation_settings(
+    settings: ManipulationSettings,
+) -> ManipulationSettings:
+    if settings.cross_user_max_hamming_distance < 0:
+        raise ValueError("MANIPULATION_CROSS_USER_MAX_HAMMING must be >= 0")
+    if settings.cross_user_min_matches < 1:
+        raise ValueError("MANIPULATION_CROSS_USER_MIN_MATCHES must be >= 1")
+    if settings.cross_user_min_unique_authors < 1:
+        raise ValueError("MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS must be >= 1")
+    if settings.cross_user_penalty < 0.0:
+        raise ValueError("MANIPULATION_CROSS_USER_PENALTY must be >= 0.0")
+    if settings.cross_user_strong_match_threshold < settings.cross_user_min_matches:
+        raise ValueError(
+            "MANIPULATION_CROSS_USER_STRONG_MATCHES must be >= "
+            "MANIPULATION_CROSS_USER_MIN_MATCHES"
+        )
+    if settings.cross_user_strong_penalty < settings.cross_user_penalty:
+        raise ValueError(
+            "MANIPULATION_CROSS_USER_STRONG_PENALTY must be >= "
+            "MANIPULATION_CROSS_USER_PENALTY"
+        )
+    return settings
+
+
+def load_manipulation_settings() -> ManipulationSettings:
+    settings = ManipulationSettings(
+        cross_user_enabled=_get_env_bool("MANIPULATION_CROSS_USER_ENABLED", "true"),
+        cross_user_max_hamming_distance=_get_env_int(
+            "MANIPULATION_CROSS_USER_MAX_HAMMING", "5"
+        ),
+        cross_user_min_matches=_get_env_int("MANIPULATION_CROSS_USER_MIN_MATCHES", "2"),
+        cross_user_min_unique_authors=_get_env_int(
+            "MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS", "2"
+        ),
+        cross_user_penalty=_get_env_float("MANIPULATION_CROSS_USER_PENALTY", "0.20"),
+        cross_user_strong_match_threshold=_get_env_int(
+            "MANIPULATION_CROSS_USER_STRONG_MATCHES", "4"
+        ),
+        cross_user_strong_penalty=_get_env_float(
+            "MANIPULATION_CROSS_USER_STRONG_PENALTY", "0.35"
+        ),
+    )
+    return _validate_manipulation_settings(settings)
