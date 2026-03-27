@@ -9,6 +9,7 @@ from filtering_service_b.manipulation.hamming import hamming_distance_64
 REASON_CROSS_USER_REPETITION = "CROSS_USER_REPETITION"
 REASON_DENSE_SIMILARITY_CLUSTER = "DENSE_SIMILARITY_CLUSTER"
 REASON_SAME_ACCOUNT_REPETITION = "SAME_ACCOUNT_REPETITION"
+REASON_BURST_AMPLIFIED_REPETITION = "BURST_AMPLIFIED_REPETITION"
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,13 @@ class SameAccountRepetitionScore:
     reason_codes: list[str]
     signals: dict[str, object]
     force_reject: bool
+
+
+@dataclass(frozen=True)
+class BurstAmplificationScore:
+    score_delta: float
+    reason_codes: list[str]
+    signals: dict[str, object]
 
 
 class CrossUserRepetitionScorer:
@@ -291,6 +299,83 @@ class CrossUserRepetitionScorer:
         }
         return penalty, reason_codes, signals
 
+    def score_burst_amplifier(
+        self,
+        burst_ratio: float | int | None,
+        repetition_score: CrossUserRepetitionScore,
+        same_account_score: SameAccountRepetitionScore,
+    ) -> BurstAmplificationScore:
+        if not self._settings.burst_enabled:
+            return BurstAmplificationScore(
+                score_delta=0.0,
+                reason_codes=[],
+                signals={"stage2BurstEvaluated": False, "stage2BurstEnabled": False},
+            )
+
+        ratio = _parse_float(burst_ratio) or 0.0
+        base_penalty_abs = abs(repetition_score.score_delta) + abs(same_account_score.score_delta)
+
+        has_repetition_evidence = (
+            bool(repetition_score.reason_codes) or bool(same_account_score.reason_codes)
+        )
+        if not has_repetition_evidence or base_penalty_abs <= 0.0:
+            return BurstAmplificationScore(
+                score_delta=0.0,
+                reason_codes=[],
+                signals={
+                    "stage2BurstEvaluated": True,
+                    "stage2BurstEnabled": True,
+                    "stage2BurstRatio": float(ratio),
+                    "stage2BurstAmplified": False,
+                    "stage2BurstReason": "no_repetition_evidence",
+                    "stage2BurstExtraPenaltyApplied": 0.0,
+                },
+            )
+
+        if ratio < self._settings.burst_ratio_threshold:
+            return BurstAmplificationScore(
+                score_delta=0.0,
+                reason_codes=[],
+                signals={
+                    "stage2BurstEvaluated": True,
+                    "stage2BurstEnabled": True,
+                    "stage2BurstRatio": float(ratio),
+                    "stage2BurstAmplified": False,
+                    "stage2BurstReason": "below_threshold",
+                    "stage2BurstThreshold": self._settings.burst_ratio_threshold,
+                    "stage2BurstExtraPenaltyApplied": 0.0,
+                },
+            )
+
+        multiplier = 1.0 + (
+            (ratio - self._settings.burst_ratio_threshold)
+            * self._settings.burst_amplifier_slope
+        )
+        multiplier = max(1.0, min(multiplier, self._settings.burst_max_multiplier))
+        amplified_abs = base_penalty_abs * multiplier
+        extra_penalty_abs = max(0.0, amplified_abs - base_penalty_abs)
+        score_delta = -extra_penalty_abs
+
+        reason_codes: list[str] = []
+        if extra_penalty_abs > 0.0:
+            reason_codes = [REASON_BURST_AMPLIFIED_REPETITION]
+
+        return BurstAmplificationScore(
+            score_delta=score_delta,
+            reason_codes=reason_codes,
+            signals={
+                "stage2BurstEvaluated": True,
+                "stage2BurstEnabled": True,
+                "stage2BurstRatio": float(ratio),
+                "stage2BurstAmplified": extra_penalty_abs > 0.0,
+                "stage2BurstThreshold": self._settings.burst_ratio_threshold,
+                "stage2BurstSlope": self._settings.burst_amplifier_slope,
+                "stage2BurstMultiplier": float(multiplier),
+                "stage2BurstMaxMultiplier": self._settings.burst_max_multiplier,
+                "stage2BurstExtraPenaltyApplied": float(extra_penalty_abs),
+            },
+        )
+
 
 def _parse_simhash(raw: object) -> int | None:
     if raw is None:
@@ -306,5 +391,14 @@ def _parse_int(raw: object) -> int | None:
         return None
     try:
         return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_float(raw: object) -> float | None:
+    if raw is None:
+        return None
+    try:
+        return float(raw)
     except (TypeError, ValueError):
         return None

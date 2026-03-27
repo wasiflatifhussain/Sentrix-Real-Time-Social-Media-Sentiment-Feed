@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from filtering_service_b.manipulation.repetition_scorer import (
+    BurstAmplificationScore,
     CrossUserRepetitionScore,
     CrossUserRepetitionScorer,
     SameAccountRepetitionScore,
@@ -64,14 +65,26 @@ class FilterBPhase1Processor:
             state_context=state_context,
             relevance_decision=relevance.decision,
         )
+        burst = _score_burst_amplifier(
+            cross_user_scorer=self._cross_user_scorer,
+            state_context=state_context,
+            repetition=repetition,
+            same_account=same_account,
+            relevance_decision=relevance.decision,
+        )
         score = _clamp_score(
-            1.0 + relevance.score_delta + repetition.score_delta + same_account.score_delta
+            1.0
+            + relevance.score_delta
+            + repetition.score_delta
+            + same_account.score_delta
+            + burst.score_delta
         )
 
         merged_signals = dict(relevance.signals)
         merged_signals.update(stage2_signals)
         merged_signals.update(repetition.signals)
         merged_signals.update(same_account.signals)
+        merged_signals.update(burst.signals)
 
         reasons: list[str] = []
         reasons.extend(relevance.reason_codes)
@@ -79,6 +92,9 @@ class FilterBPhase1Processor:
             if reason not in reasons:
                 reasons.append(reason)
         for reason in same_account.reason_codes:
+            if reason not in reasons:
+                reasons.append(reason)
+        for reason in burst.reason_codes:
             if reason not in reasons:
                 reasons.append(reason)
         reasons = reasons[:2]
@@ -231,6 +247,39 @@ def _score_same_account_repetition(
     return cross_user_scorer.score_same_account(
         current_simhash=current_simhash,
         author_ticker_history=author_ticker_history,
+    )
+
+
+def _score_burst_amplifier(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    state_context: dict[str, Any] | None,
+    repetition: CrossUserRepetitionScore,
+    same_account: SameAccountRepetitionScore,
+    relevance_decision: str,
+) -> BurstAmplificationScore:
+    if cross_user_scorer is None:
+        return BurstAmplificationScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2BurstEvaluated": False, "stage2BurstEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return BurstAmplificationScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2BurstEvaluated": False,
+                "stage2BurstEnabled": True,
+                "stage2BurstReason": "skipped_relevance_reject",
+            },
+        )
+
+    burst_ratio = ((state_context or {}).get("burst") or {}).get("burstRatio")
+    return cross_user_scorer.score_burst_amplifier(
+        burst_ratio=burst_ratio,
+        repetition_score=repetition,
+        same_account_score=same_account,
     )
 
 

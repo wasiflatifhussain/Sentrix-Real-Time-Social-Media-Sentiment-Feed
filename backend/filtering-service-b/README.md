@@ -1199,10 +1199,66 @@ Temporary implementation note:
 * Stage 2 repetition/cluster checks are evaluated per incoming event.
 * Penalties are applied only to the current event being processed.
 * Historical neighbor events are used as evidence from Redis state and are not retroactively re-scored or re-routed.
+* Burst amplification is applied only when repetition evidence already exists (cross-user and/or same-account).
+* Burst-only traffic does not get penalized in Stage 2.
 
 The service is built as a **streaming event processor with short-term Redis-backed memory**, and it uses a **single running credibility score** rather than many fragmented final outputs.
 
 The development plan is intentionally phased so that the system can be implemented, tested, and tuned incrementally without overcomplicating the first working version.
+
+## Temporary Note — Phase 4 Step 5 (Burst Amplifier Behavior)
+
+Current Stage 2 burst logic is implemented as an amplifier, not an independent penalty source.
+
+Per-event flow (what happens to one incoming event):
+
+1. Event arrives from Kafka with ticker `T` and text.
+2. Stage 1 relevance runs first.
+   - If Stage 1 rejects, Stage 2 burst logic is skipped for that event.
+3. Stage 2 repetition checks run for that same event:
+   - Cross-user: current event is compared against recent same-ticker history from Redis (`tickerSimilarity`), mostly using SimHash Hamming distance.
+   - Same-account: current event is compared against recent same-author+same-ticker history (`authorTickerHistory`).
+4. Only after those checks, burst context is read for ticker `T` from Redis (`state/burst_store.py`):
+   - `recentCount`: count in last 5 minutes
+   - `baselineCount`: count in last 30 minutes
+   - `baselineAvgPerMinute = baselineCount / baselineWindowMinutes`
+   - `burstRatio = recentCount / max(baselineAvgPerMinute, 1.0)`
+5. Burst is applied only to this current event score, and only if repetition evidence already exists.
+   - If no repetition evidence: burst adds `0.0` penalty.
+   - If repetition evidence exists but `burstRatio < threshold`: burst adds `0.0`.
+   - If repetition evidence exists and `burstRatio >= threshold`: burst adds extra negative penalty.
+6. Final score for this event is clamped to `[0.0, 1.0]`, and decision is emitted.
+   - Neighbor events are not modified retroactively.
+
+Burst amplifier math (for the current event only):
+
+* `basePenaltyAbs = abs(crossUserPenalty) + abs(sameAccountPenalty)`
+* `multiplier = 1 + (burstRatio - threshold) * slope`
+* `multiplier` is clamped to `[1.0, MANIPULATION_BURST_MAX_MULTIPLIER]`
+* `extraPenaltyAbs = basePenaltyAbs * multiplier - basePenaltyAbs`
+* `burstScoreDelta = -extraPenaltyAbs`
+
+Current env knobs:
+
+* `MANIPULATION_BURST_ENABLED=true`
+* `MANIPULATION_BURST_RATIO_THRESHOLD=2.0`
+* `MANIPULATION_BURST_AMPLIFIER_SLOPE=0.25`
+* `MANIPULATION_BURST_MAX_MULTIPLIER=1.8`
+
+Signals / reason code:
+
+* reason code: `BURST_AMPLIFIED_REPETITION` (only when extra penalty > 0)
+* signals include:
+  * `stage2BurstEvaluated`
+  * `stage2BurstEnabled`
+  * `stage2BurstRatio`
+  * `stage2BurstAmplified`
+  * `stage2BurstThreshold`
+  * `stage2BurstSlope`
+  * `stage2BurstMultiplier`
+  * `stage2BurstMaxMultiplier`
+  * `stage2BurstExtraPenaltyApplied`
+
 
 ```bash
 poetry install  # if not installed or something new added

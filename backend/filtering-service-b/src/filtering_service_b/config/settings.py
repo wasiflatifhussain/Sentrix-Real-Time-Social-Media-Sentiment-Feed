@@ -80,6 +80,10 @@ class ManipulationSettings:
     same_account_strong_penalty: float
     same_account_extreme_match_threshold: int
     same_account_extreme_reject_enabled: bool
+    burst_enabled: bool
+    burst_ratio_threshold: float
+    burst_amplifier_slope: float
+    burst_max_multiplier: float
 
 
 def _get_env(name: str, default: str | None = None) -> str:
@@ -306,6 +310,12 @@ def _validate_manipulation_settings(
             "MANIPULATION_SAME_ACCOUNT_EXTREME_MATCHES must be >= "
             "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES"
         )
+    if settings.burst_ratio_threshold < 1.0:
+        raise ValueError("MANIPULATION_BURST_RATIO_THRESHOLD must be >= 1.0")
+    if settings.burst_amplifier_slope < 0.0:
+        raise ValueError("MANIPULATION_BURST_AMPLIFIER_SLOPE must be >= 0.0")
+    if settings.burst_max_multiplier < 1.0:
+        raise ValueError("MANIPULATION_BURST_MAX_MULTIPLIER must be >= 1.0")
     return settings
 
 
@@ -362,5 +372,9 @@ def load_manipulation_settings() -> ManipulationSettings:
         same_account_extreme_reject_enabled=_get_env_bool(
             "MANIPULATION_SAME_ACCOUNT_EXTREME_REJECT_ENABLED", "false"
         ),
+        burst_enabled=_get_env_bool("MANIPULATION_BURST_ENABLED", "true"),
+        burst_ratio_threshold=_get_env_float("MANIPULATION_BURST_RATIO_THRESHOLD", "2.0"),
+        burst_amplifier_slope=_get_env_float("MANIPULATION_BURST_AMPLIFIER_SLOPE", "0.25"),
+        burst_max_multiplier=_get_env_float("MANIPULATION_BURST_MAX_MULTIPLIER", "1.8"),
     )
     return _validate_manipulation_settings(settings)

@@ -1,7 +1,12 @@
+import math
+
 from filtering_service_b.config.settings import ManipulationSettings
 from filtering_service_b.manipulation.repetition_scorer import (
+    REASON_BURST_AMPLIFIED_REPETITION,
     REASON_CROSS_USER_REPETITION,
+    CrossUserRepetitionScore,
     CrossUserRepetitionScorer,
+    SameAccountRepetitionScore,
 )
 
 
@@ -30,6 +35,10 @@ def _settings() -> ManipulationSettings:
         same_account_strong_penalty=0.32,
         same_account_extreme_match_threshold=6,
         same_account_extreme_reject_enabled=False,
+        burst_enabled=True,
+        burst_ratio_threshold=2.0,
+        burst_amplifier_slope=0.25,
+        burst_max_multiplier=1.8,
     )
 
 
@@ -132,3 +141,47 @@ def test_same_account_penalty_and_optional_extreme_reject() -> None:
         ],
     )
     assert reject_result.force_reject is True
+
+
+def test_burst_does_not_penalize_without_repetition_evidence() -> None:
+    scorer = CrossUserRepetitionScorer(settings=_settings())
+    result = scorer.score_burst_amplifier(
+        burst_ratio=4.2,
+        repetition_score=CrossUserRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={},
+        ),
+        same_account_score=SameAccountRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={},
+            force_reject=False,
+        ),
+    )
+    assert result.score_delta == 0.0
+    assert result.reason_codes == []
+    assert result.signals["stage2BurstAmplified"] is False
+    assert result.signals["stage2BurstReason"] == "no_repetition_evidence"
+
+
+def test_burst_amplifies_existing_penalty_when_ratio_is_high() -> None:
+    scorer = CrossUserRepetitionScorer(settings=_settings())
+    result = scorer.score_burst_amplifier(
+        burst_ratio=3.0,
+        repetition_score=CrossUserRepetitionScore(
+            score_delta=-0.20,
+            reason_codes=[REASON_CROSS_USER_REPETITION],
+            signals={},
+        ),
+        same_account_score=SameAccountRepetitionScore(
+            score_delta=-0.10,
+            reason_codes=[],
+            signals={},
+            force_reject=False,
+        ),
+    )
+    assert math.isclose(result.score_delta, -0.075, abs_tol=1e-9)
+    assert result.reason_codes == [REASON_BURST_AMPLIFIED_REPETITION]
+    assert math.isclose(result.signals["stage2BurstMultiplier"], 1.25, abs_tol=1e-9)
+    assert result.signals["stage2BurstAmplified"] is True
