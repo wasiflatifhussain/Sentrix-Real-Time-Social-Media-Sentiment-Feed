@@ -86,6 +86,19 @@ class ManipulationSettings:
     burst_max_multiplier: float
 
 
+@dataclass(frozen=True)
+class NoveltySettings:
+    enabled: bool
+    max_references: int
+    medium_similarity_threshold: float
+    low_similarity_threshold: float
+    medium_penalty: float
+    low_penalty: float
+    distinct_similarity_threshold: float
+    distinct_boost: float
+    min_references_for_distinct_boost: int
+
+
 def _get_env(name: str, default: str | None = None) -> str:
     val = os.getenv(name, default)
     if val is None or val.strip() == "":
@@ -404,3 +417,66 @@ def load_manipulation_settings() -> ManipulationSettings:
         burst_max_multiplier=_get_env_float("MANIPULATION_BURST_MAX_MULTIPLIER", "1.8"),
     )
     return _validate_manipulation_settings(settings)
+
+
+def _validate_novelty_settings(settings: NoveltySettings) -> NoveltySettings:
+    _ensure_int_min(settings.max_references, "NOVELTY_MAX_REFERENCES", 1)
+    _ensure_int_min(
+        settings.min_references_for_distinct_boost,
+        "NOVELTY_MIN_REFERENCES_FOR_DISTINCT_BOOST",
+        1,
+    )
+
+    for label, value in (
+        ("NOVELTY_MEDIUM_SIMILARITY_THRESHOLD", settings.medium_similarity_threshold),
+        ("NOVELTY_LOW_SIMILARITY_THRESHOLD", settings.low_similarity_threshold),
+        ("NOVELTY_DISTINCT_SIMILARITY_THRESHOLD", settings.distinct_similarity_threshold),
+    ):
+        if not 0.0 <= value <= 1.0:
+            raise ValueError(f"{label} must be in range [0.0, 1.0]")
+
+    _ensure_gte(
+        settings.low_similarity_threshold,
+        "NOVELTY_LOW_SIMILARITY_THRESHOLD",
+        settings.medium_similarity_threshold,
+        "NOVELTY_MEDIUM_SIMILARITY_THRESHOLD",
+    )
+    if settings.distinct_similarity_threshold > settings.medium_similarity_threshold:
+        raise ValueError(
+            "NOVELTY_DISTINCT_SIMILARITY_THRESHOLD must be <= "
+            "NOVELTY_MEDIUM_SIMILARITY_THRESHOLD"
+        )
+
+    _ensure_float_min(settings.medium_penalty, "NOVELTY_MEDIUM_PENALTY", 0.0)
+    _ensure_float_min(settings.low_penalty, "NOVELTY_LOW_PENALTY", 0.0)
+    _ensure_gte(
+        settings.low_penalty,
+        "NOVELTY_LOW_PENALTY",
+        settings.medium_penalty,
+        "NOVELTY_MEDIUM_PENALTY",
+    )
+    _ensure_float_min(settings.distinct_boost, "NOVELTY_DISTINCT_BOOST", 0.0)
+    return settings
+
+
+def load_novelty_settings() -> NoveltySettings:
+    settings = NoveltySettings(
+        enabled=_get_env_bool("NOVELTY_ENABLED", "true"),
+        max_references=_get_env_int("NOVELTY_MAX_REFERENCES", "20"),
+        medium_similarity_threshold=_get_env_float(
+            "NOVELTY_MEDIUM_SIMILARITY_THRESHOLD", "0.82"
+        ),
+        low_similarity_threshold=_get_env_float(
+            "NOVELTY_LOW_SIMILARITY_THRESHOLD", "0.92"
+        ),
+        medium_penalty=_get_env_float("NOVELTY_MEDIUM_PENALTY", "0.10"),
+        low_penalty=_get_env_float("NOVELTY_LOW_PENALTY", "0.20"),
+        distinct_similarity_threshold=_get_env_float(
+            "NOVELTY_DISTINCT_SIMILARITY_THRESHOLD", "0.45"
+        ),
+        distinct_boost=_get_env_float("NOVELTY_DISTINCT_BOOST", "0.03"),
+        min_references_for_distinct_boost=_get_env_int(
+            "NOVELTY_MIN_REFERENCES_FOR_DISTINCT_BOOST", "3"
+        ),
+    )
+    return _validate_novelty_settings(settings)

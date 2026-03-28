@@ -12,6 +12,7 @@ from filtering_service_b.manipulation.repetition_scorer import (
     CrossUserRepetitionScorer,
     SameAccountRepetitionScore,
 )
+from filtering_service_b.novelty.novelty_scorer import NoveltyScore, NoveltyScorer
 from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
 from filtering_service_b.messaging.schemas import CleanedEvent
 from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
@@ -26,6 +27,7 @@ _REASON_PRIORITY = [
     "DENSE_SIMILARITY_CLUSTER",
     "BURST_AMPLIFIED_REPETITION",
     "LOW_TICKER_RELEVANCE",
+    "LOW_NOVELTY",
 ]
 
 
@@ -49,9 +51,11 @@ class FilterBSemanticProcessor:
         self,
         relevance_scorer: TickerRelevanceScorer,
         cross_user_scorer: CrossUserRepetitionScorer | None = None,
+        novelty_scorer: NoveltyScorer | None = None,
     ) -> None:
         self._relevance_scorer = relevance_scorer
         self._cross_user_scorer = cross_user_scorer
+        self._novelty_scorer = novelty_scorer
 
     def process(
         self, event: CleanedEvent, state_context: Mapping[str, Any] | None = None
@@ -82,12 +86,19 @@ class FilterBSemanticProcessor:
             same_account=same_account,
             relevance_decision=relevance.decision,
         )
+        novelty = _score_novelty(
+            novelty_scorer=self._novelty_scorer,
+            event_text=event_text,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
         score = _clamp_score(
             1.0
             + relevance.score_delta
             + repetition.score_delta
             + same_account.score_delta
             + burst.score_delta
+            + novelty.score_delta
         )
 
         merged_signals = _build_stage2_default_signals()
@@ -96,12 +107,14 @@ class FilterBSemanticProcessor:
         merged_signals.update(repetition.signals)
         merged_signals.update(same_account.signals)
         merged_signals.update(burst.signals)
+        merged_signals.update(novelty.signals)
 
         reasons = _top_reasons(
             relevance_reasons=relevance.reason_codes,
             repetition_reasons=repetition.reason_codes,
             same_account_reasons=same_account.reason_codes,
             burst_reasons=burst.reason_codes,
+            novelty_reasons=novelty.reason_codes,
             limit=2,
         )
 
@@ -235,6 +248,14 @@ def _build_stage2_default_signals() -> dict[str, object]:
         "stage2BurstMaxMultiplier": None,
         "stage2BurstExtraPenaltyApplied": 0.0,
         "stage2BurstReason": None,
+        "stage3NoveltyEvaluated": False,
+        "stage3NoveltyEnabled": False,
+        "stage3NoveltyReferenceCount": 0,
+        "stage3NoveltyMaxSimilarity": None,
+        "stage3NoveltyBand": "not_evaluated",
+        "stage3NoveltyPenaltyApplied": 0.0,
+        "stage3NoveltyBoostApplied": 0.0,
+        "stage3NoveltyReason": None,
     }
 
 
@@ -243,6 +264,7 @@ def _top_reasons(
     repetition_reasons: list[str],
     same_account_reasons: list[str],
     burst_reasons: list[str],
+    novelty_reasons: list[str],
     limit: int,
 ) -> list[str]:
     all_candidates: list[str] = []
@@ -251,6 +273,7 @@ def _top_reasons(
         + list(same_account_reasons)
         + list(repetition_reasons)
         + list(burst_reasons)
+        + list(novelty_reasons)
     ):
         if reason and reason not in all_candidates:
             all_candidates.append(reason)
@@ -373,6 +396,39 @@ def _score_burst_amplifier(
         burst_ratio=burst_ratio,
         repetition_score=repetition,
         same_account_score=same_account,
+    )
+
+
+def _score_novelty(
+    novelty_scorer: NoveltyScorer | None,
+    event_text: str,
+    state_context: Mapping[str, Any] | None,
+    relevance_decision: str,
+) -> NoveltyScore:
+    if novelty_scorer is None:
+        return NoveltyScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage3NoveltyEvaluated": False, "stage3NoveltyEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return NoveltyScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage3NoveltyEvaluated": False,
+                "stage3NoveltyEnabled": True,
+                "stage3NoveltyReason": "skipped_relevance_reject",
+            },
+        )
+
+    accepted_novelty = (state_context or {}).get("acceptedNovelty", [])
+    if not isinstance(accepted_novelty, list):
+        accepted_novelty = []
+    return novelty_scorer.score(
+        event_text=event_text,
+        accepted_references=accepted_novelty,
     )
 
 

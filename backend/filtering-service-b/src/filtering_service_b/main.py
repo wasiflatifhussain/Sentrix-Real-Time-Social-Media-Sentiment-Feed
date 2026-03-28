@@ -14,6 +14,7 @@ from filtering_service_b.config.settings import (
     load_app_settings,
     load_kafka_settings,
     load_manipulation_settings,
+    load_novelty_settings,
     load_relevance_settings,
     load_redis_settings,
     load_state_ttl_settings,
@@ -24,6 +25,7 @@ from filtering_service_b.messaging.schemas import CleanedEvent, parse_cleaned_ev
 from filtering_service_b.observability.logging import configure_logging
 from filtering_service_b.pipeline.processor import FilterBSemanticProcessor, FilterDecision
 from filtering_service_b.manipulation.repetition_scorer import CrossUserRepetitionScorer
+from filtering_service_b.novelty.novelty_scorer import NoveltyScorer
 from filtering_service_b.relevance.embedding_service import (
     SentenceTransformerEmbeddingService,
 )
@@ -131,6 +133,7 @@ async def lifespan(app: FastAPI):
     ttl_settings = load_state_ttl_settings()
     relevance_settings = load_relevance_settings()
     manipulation_settings = load_manipulation_settings()
+    novelty_settings = load_novelty_settings()
 
     consumer = KafkaConsumerRunner(kafka_settings)
     producer = KafkaProducerClient(kafka_settings)
@@ -145,9 +148,14 @@ async def lifespan(app: FastAPI):
         settings=relevance_settings,
     )
     cross_user_scorer = CrossUserRepetitionScorer(settings=manipulation_settings)
+    novelty_scorer = NoveltyScorer(
+        embedding_service=embedding_service,
+        settings=novelty_settings,
+    )
     processor = FilterBSemanticProcessor(
         relevance_scorer=relevance_scorer,
         cross_user_scorer=cross_user_scorer,
+        novelty_scorer=novelty_scorer,
     )
     stop_event = threading.Event()
 
