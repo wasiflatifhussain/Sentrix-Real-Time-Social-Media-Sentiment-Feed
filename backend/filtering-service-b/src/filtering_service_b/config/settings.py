@@ -122,6 +122,21 @@ def _get_env_float(name: str, default: str | None = None) -> float:
         raise ValueError(f"Env var {name} must be float, got: {raw}") from ex
 
 
+def _ensure_int_min(value: int, label: str, minimum: int) -> None:
+    if value < minimum:
+        raise ValueError(f"{label} must be >= {minimum}")
+
+
+def _ensure_float_min(value: float, label: str, minimum: float) -> None:
+    if value < minimum:
+        raise ValueError(f"{label} must be >= {minimum}")
+
+
+def _ensure_gte(value: int | float, label: str, other: int | float, other_label: str) -> None:
+    if value < other:
+        raise ValueError(f"{label} must be >= {other_label}")
+
+
 def load_kafka_settings() -> KafkaSettings:
     return KafkaSettings(
         bootstrap_servers=_get_env("KAFKA_BOOTSTRAP_SERVERS"),
@@ -251,71 +266,82 @@ def load_relevance_settings() -> RelevanceSettings:
 def _validate_manipulation_settings(
     settings: ManipulationSettings,
 ) -> ManipulationSettings:
-    if settings.cross_user_max_hamming_distance < 0:
-        raise ValueError("MANIPULATION_CROSS_USER_MAX_HAMMING must be >= 0")
-    if settings.cross_user_min_matches < 1:
-        raise ValueError("MANIPULATION_CROSS_USER_MIN_MATCHES must be >= 1")
-    if settings.cross_user_min_unique_authors < 1:
-        raise ValueError("MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS must be >= 1")
-    if settings.cross_user_penalty < 0.0:
-        raise ValueError("MANIPULATION_CROSS_USER_PENALTY must be >= 0.0")
-    if settings.cross_user_strong_match_threshold < settings.cross_user_min_matches:
-        raise ValueError(
-            "MANIPULATION_CROSS_USER_STRONG_MATCHES must be >= "
-            "MANIPULATION_CROSS_USER_MIN_MATCHES"
-        )
-    if settings.cross_user_strong_penalty < settings.cross_user_penalty:
-        raise ValueError(
-            "MANIPULATION_CROSS_USER_STRONG_PENALTY must be >= "
-            "MANIPULATION_CROSS_USER_PENALTY"
-        )
-    if settings.cluster_min_matches < 1:
-        raise ValueError("MANIPULATION_CLUSTER_MIN_MATCHES must be >= 1")
-    if settings.cluster_min_unique_authors < 1:
-        raise ValueError("MANIPULATION_CLUSTER_MIN_UNIQUE_AUTHORS must be >= 1")
-    if settings.cluster_max_time_span_seconds < 1:
-        raise ValueError("MANIPULATION_CLUSTER_MAX_TIME_SPAN_SECONDS must be >= 1")
-    if settings.cluster_penalty < 0.0:
-        raise ValueError("MANIPULATION_CLUSTER_PENALTY must be >= 0.0")
-    if settings.cluster_strong_match_threshold < settings.cluster_min_matches:
-        raise ValueError(
-            "MANIPULATION_CLUSTER_STRONG_MATCHES must be >= "
-            "MANIPULATION_CLUSTER_MIN_MATCHES"
-        )
-    if settings.cluster_strong_penalty < settings.cluster_penalty:
-        raise ValueError(
-            "MANIPULATION_CLUSTER_STRONG_PENALTY must be >= "
-            "MANIPULATION_CLUSTER_PENALTY"
-        )
-    if settings.same_account_max_hamming_distance < 0:
-        raise ValueError("MANIPULATION_SAME_ACCOUNT_MAX_HAMMING must be >= 0")
-    if settings.same_account_min_matches < 1:
-        raise ValueError("MANIPULATION_SAME_ACCOUNT_MIN_MATCHES must be >= 1")
-    if settings.same_account_max_time_span_seconds < 1:
-        raise ValueError("MANIPULATION_SAME_ACCOUNT_MAX_TIME_SPAN_SECONDS must be >= 1")
-    if settings.same_account_penalty < 0.0:
-        raise ValueError("MANIPULATION_SAME_ACCOUNT_PENALTY must be >= 0.0")
-    if settings.same_account_strong_match_threshold < settings.same_account_min_matches:
-        raise ValueError(
-            "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES must be >= "
-            "MANIPULATION_SAME_ACCOUNT_MIN_MATCHES"
-        )
-    if settings.same_account_strong_penalty < settings.same_account_penalty:
-        raise ValueError(
-            "MANIPULATION_SAME_ACCOUNT_STRONG_PENALTY must be >= "
-            "MANIPULATION_SAME_ACCOUNT_PENALTY"
-        )
-    if settings.same_account_extreme_match_threshold < settings.same_account_strong_match_threshold:
-        raise ValueError(
-            "MANIPULATION_SAME_ACCOUNT_EXTREME_MATCHES must be >= "
-            "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES"
-        )
-    if settings.burst_ratio_threshold < 1.0:
-        raise ValueError("MANIPULATION_BURST_RATIO_THRESHOLD must be >= 1.0")
-    if settings.burst_amplifier_slope < 0.0:
-        raise ValueError("MANIPULATION_BURST_AMPLIFIER_SLOPE must be >= 0.0")
-    if settings.burst_max_multiplier < 1.0:
-        raise ValueError("MANIPULATION_BURST_MAX_MULTIPLIER must be >= 1.0")
+    _ensure_int_min(settings.cross_user_max_hamming_distance, "MANIPULATION_CROSS_USER_MAX_HAMMING", 0)
+    _ensure_int_min(settings.cross_user_min_matches, "MANIPULATION_CROSS_USER_MIN_MATCHES", 1)
+    _ensure_int_min(
+        settings.cross_user_min_unique_authors,
+        "MANIPULATION_CROSS_USER_MIN_UNIQUE_AUTHORS",
+        1,
+    )
+    _ensure_float_min(settings.cross_user_penalty, "MANIPULATION_CROSS_USER_PENALTY", 0.0)
+    _ensure_gte(
+        settings.cross_user_strong_match_threshold,
+        "MANIPULATION_CROSS_USER_STRONG_MATCHES",
+        settings.cross_user_min_matches,
+        "MANIPULATION_CROSS_USER_MIN_MATCHES",
+    )
+    _ensure_gte(
+        settings.cross_user_strong_penalty,
+        "MANIPULATION_CROSS_USER_STRONG_PENALTY",
+        settings.cross_user_penalty,
+        "MANIPULATION_CROSS_USER_PENALTY",
+    )
+
+    _ensure_int_min(settings.cluster_min_matches, "MANIPULATION_CLUSTER_MIN_MATCHES", 1)
+    _ensure_int_min(
+        settings.cluster_min_unique_authors,
+        "MANIPULATION_CLUSTER_MIN_UNIQUE_AUTHORS",
+        1,
+    )
+    _ensure_int_min(
+        settings.cluster_max_time_span_seconds,
+        "MANIPULATION_CLUSTER_MAX_TIME_SPAN_SECONDS",
+        1,
+    )
+    _ensure_float_min(settings.cluster_penalty, "MANIPULATION_CLUSTER_PENALTY", 0.0)
+    _ensure_gte(
+        settings.cluster_strong_match_threshold,
+        "MANIPULATION_CLUSTER_STRONG_MATCHES",
+        settings.cluster_min_matches,
+        "MANIPULATION_CLUSTER_MIN_MATCHES",
+    )
+    _ensure_gte(
+        settings.cluster_strong_penalty,
+        "MANIPULATION_CLUSTER_STRONG_PENALTY",
+        settings.cluster_penalty,
+        "MANIPULATION_CLUSTER_PENALTY",
+    )
+
+    _ensure_int_min(settings.same_account_max_hamming_distance, "MANIPULATION_SAME_ACCOUNT_MAX_HAMMING", 0)
+    _ensure_int_min(settings.same_account_min_matches, "MANIPULATION_SAME_ACCOUNT_MIN_MATCHES", 1)
+    _ensure_int_min(
+        settings.same_account_max_time_span_seconds,
+        "MANIPULATION_SAME_ACCOUNT_MAX_TIME_SPAN_SECONDS",
+        1,
+    )
+    _ensure_float_min(settings.same_account_penalty, "MANIPULATION_SAME_ACCOUNT_PENALTY", 0.0)
+    _ensure_gte(
+        settings.same_account_strong_match_threshold,
+        "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES",
+        settings.same_account_min_matches,
+        "MANIPULATION_SAME_ACCOUNT_MIN_MATCHES",
+    )
+    _ensure_gte(
+        settings.same_account_strong_penalty,
+        "MANIPULATION_SAME_ACCOUNT_STRONG_PENALTY",
+        settings.same_account_penalty,
+        "MANIPULATION_SAME_ACCOUNT_PENALTY",
+    )
+    _ensure_gte(
+        settings.same_account_extreme_match_threshold,
+        "MANIPULATION_SAME_ACCOUNT_EXTREME_MATCHES",
+        settings.same_account_strong_match_threshold,
+        "MANIPULATION_SAME_ACCOUNT_STRONG_MATCHES",
+    )
+
+    _ensure_float_min(settings.burst_ratio_threshold, "MANIPULATION_BURST_RATIO_THRESHOLD", 1.0)
+    _ensure_float_min(settings.burst_amplifier_slope, "MANIPULATION_BURST_AMPLIFIER_SLOPE", 0.0)
+    _ensure_float_min(settings.burst_max_multiplier, "MANIPULATION_BURST_MAX_MULTIPLIER", 1.0)
     return settings
 
 

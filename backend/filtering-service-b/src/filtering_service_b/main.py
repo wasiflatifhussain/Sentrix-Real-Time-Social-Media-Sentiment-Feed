@@ -4,8 +4,10 @@ import logging
 import threading
 import time
 from contextlib import asynccontextmanager
+from typing import Any, TypedDict
 
 import uvicorn
+from confluent_kafka import Message
 from fastapi import FastAPI
 
 from filtering_service_b.config.settings import (
@@ -18,9 +20,9 @@ from filtering_service_b.config.settings import (
 )
 from filtering_service_b.messaging.kafka_consumer import KafkaConsumerRunner
 from filtering_service_b.messaging.kafka_producer import KafkaProducerClient
-from filtering_service_b.messaging.schemas import parse_cleaned_event
+from filtering_service_b.messaging.schemas import CleanedEvent, parse_cleaned_event
 from filtering_service_b.observability.logging import configure_logging
-from filtering_service_b.pipeline.processor import FilterBPhase1Processor, FilterDecision
+from filtering_service_b.pipeline.processor import FilterBSemanticProcessor, FilterDecision
 from filtering_service_b.manipulation.repetition_scorer import CrossUserRepetitionScorer
 from filtering_service_b.relevance.embedding_service import (
     SentenceTransformerEmbeddingService,
@@ -34,6 +36,89 @@ from filtering_service_b.state.redis_client import RedisClient
 from filtering_service_b.state.ticker_state_store import TickerSimilarityStateStore
 
 log = logging.getLogger(__name__)
+
+
+class StateContext(TypedDict):
+    tickerSimilarity: list[dict[str, Any]]
+    authorTickerHistory: list[dict[str, Any]]
+    acceptedNovelty: list[dict[str, Any]]
+    burst: dict[str, Any]
+
+
+def _resolve_event_time_utc(created_at_utc: int | None) -> int:
+    if isinstance(created_at_utc, int):
+        return created_at_utc
+    return int(time.time())
+
+
+def _build_state_context(
+    event: CleanedEvent,
+    ticker_store: TickerSimilarityStateStore,
+    author_store: AuthorTickerStateStore,
+    novelty_store: AcceptedNoveltyStateStore,
+    burst_store: BurstCounterStore,
+    event_time_utc: int,
+) -> StateContext:
+    return {
+        "tickerSimilarity": ticker_store.get_recent(event.ticker, limit=30),
+        "authorTickerHistory": (
+            author_store.get_recent(event.author, event.ticker, limit=20)
+            if event.author
+            else []
+        ),
+        "acceptedNovelty": novelty_store.get_recent(event.ticker, limit=20),
+        "burst": burst_store.get_context(event.ticker, now_utc=event_time_utc),
+    }
+
+
+def _persist_runtime_state(
+    event: CleanedEvent,
+    decision: FilterDecision,
+    ticker_store: TickerSimilarityStateStore,
+    author_store: AuthorTickerStateStore,
+    novelty_store: AcceptedNoveltyStateStore,
+    burst_store: BurstCounterStore,
+    event_time_utc: int,
+) -> None:
+    simhash64 = decision.signals.get("stage2SimHash")
+
+    # Update similarity and burst state for incoming events.
+    ticker_store.add(
+        event.ticker,
+        {
+            "eventId": event.event_id,
+            "author": event.author,
+            "timestampUtc": event_time_utc,
+            "text": event.text_normalized,
+            "simHash64": simhash64,
+        },
+    )
+    burst_store.increment(event.ticker, event_time_utc)
+
+    # Update author+ticker history if author is present.
+    if event.author:
+        author_store.add(
+            event.author,
+            event.ticker,
+            {
+                "eventId": event.event_id,
+                "timestampUtc": event_time_utc,
+                "text": event.text_normalized,
+                "simHash64": simhash64,
+            },
+        )
+
+    # Update novelty memory only for kept events.
+    if decision.decision == "KEEP":
+        novelty_store.add(
+            event.ticker,
+            {
+                "eventId": event.event_id,
+                "timestampUtc": event_time_utc,
+                "text": event.text_normalized,
+                "title": event.title,
+            },
+        )
 
 
 @asynccontextmanager
@@ -60,7 +145,7 @@ async def lifespan(app: FastAPI):
         settings=relevance_settings,
     )
     cross_user_scorer = CrossUserRepetitionScorer(settings=manipulation_settings)
-    processor = FilterBPhase1Processor(
+    processor = FilterBSemanticProcessor(
         relevance_scorer=relevance_scorer,
         cross_user_scorer=cross_user_scorer,
     )
@@ -89,34 +174,30 @@ async def lifespan(app: FastAPI):
         bucket_ttl_seconds=ttl_settings.burst_bucket_ttl_seconds,
     )
 
-    def handle(msg) -> None:
+    def handle(msg: Message) -> None:
         payload = consumer.decode_json(msg)
 
         try:
             event = parse_cleaned_event(payload)
-            event_time_utc = (
-                event.created_at_utc if isinstance(event.created_at_utc, int) else int(time.time())
+            event_time_utc = _resolve_event_time_utc(event.created_at_utc)
+
+            state_context = _build_state_context(
+                event=event,
+                ticker_store=ticker_store,
+                author_store=author_store,
+                novelty_store=novelty_store,
+                burst_store=burst_store,
+                event_time_utc=event_time_utc,
             )
 
-            state_context = {
-                "tickerSimilarity": ticker_store.get_recent(event.ticker, limit=30),
-                "authorTickerHistory": (
-                    author_store.get_recent(event.author, event.ticker, limit=20)
-                    if event.author
-                    else []
-                ),
-                "acceptedNovelty": novelty_store.get_recent(event.ticker, limit=20),
-                "burst": burst_store.get_context(event.ticker, now_utc=event_time_utc),
-            }
-
             decision = processor.process(event, state_context=state_context)
-            simhash64 = decision.signals.get("stage2SimHash")
 
+            burst_context = state_context["burst"]
             state_signals = {
                 "tickerSimilarityCount": len(state_context["tickerSimilarity"]),
                 "authorTickerCount": len(state_context["authorTickerHistory"]),
                 "acceptedNoveltyCount": len(state_context["acceptedNovelty"]),
-                "burstRatio": state_context["burst"].get("burstRatio", 0.0),
+                "burstRatio": burst_context.get("burstRatio", 0.0),
             }
 
             out = processor.build_output_envelope(
@@ -130,43 +211,15 @@ async def lifespan(app: FastAPI):
             else:
                 producer.publish_rejected(out)
 
-            # Update similarity and burst state for incoming events.
-            ticker_store.add(
-                event.ticker,
-                {
-                    "eventId": event.event_id,
-                    "author": event.author,
-                    "timestampUtc": event_time_utc,
-                    "text": event.text_normalized,
-                    "simHash64": simhash64,
-                },
+            _persist_runtime_state(
+                event=event,
+                decision=decision,
+                ticker_store=ticker_store,
+                author_store=author_store,
+                novelty_store=novelty_store,
+                burst_store=burst_store,
+                event_time_utc=event_time_utc,
             )
-            burst_store.increment(event.ticker, event_time_utc)
-
-            # Update author+ticker history if author is present.
-            if event.author:
-                author_store.add(
-                    event.author,
-                    event.ticker,
-                    {
-                        "eventId": event.event_id,
-                        "timestampUtc": event_time_utc,
-                        "text": event.text_normalized,
-                        "simHash64": simhash64,
-                    },
-                )
-
-            # Update novelty memory only for kept events.
-            if decision.decision == "KEEP":
-                novelty_store.add(
-                    event.ticker,
-                    {
-                        "eventId": event.event_id,
-                        "timestampUtc": event_time_utc,
-                        "text": event.text_normalized,
-                        "title": event.title,
-                    },
-                )
 
             log.info(
                 "Processed eventId=%s ticker=%s decision=%s score=%.3f topic=%s partition=%s offset=%s",

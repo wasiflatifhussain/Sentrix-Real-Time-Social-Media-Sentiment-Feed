@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class KafkaConsumerRunner:
-    def __init__(self, settings: KafkaSettings):
+    def __init__(self, settings: KafkaSettings) -> None:
         self._settings = settings
         self._consumer = Consumer(
             {
@@ -29,7 +29,7 @@ class KafkaConsumerRunner:
 
         try:
             while not stop_event.is_set():
-                msg = self._consumer.poll(1.0)
+                msg = self._poll_message()
                 if msg is None:
                     continue
 
@@ -39,10 +39,7 @@ class KafkaConsumerRunner:
 
                 try:
                     on_message(msg)
-
-                    # Commit only after handler publishes successfully
-                    if not self._settings.enable_auto_commit:
-                        self._consumer.commit(message=msg, asynchronous=False)
+                    self._commit_if_manual(msg)
                 except Exception:
                     log.exception(
                         "Failed processing message topic=%s partition=%s offset=%s",
@@ -55,6 +52,14 @@ class KafkaConsumerRunner:
         finally:
             log.info("Closing Kafka consumer.")
             self._consumer.close()
+
+    def _poll_message(self) -> Message | None:
+        return self._consumer.poll(1.0)
+
+    def _commit_if_manual(self, msg: Message) -> None:
+        # Commit only after handler publishes successfully
+        if not self._settings.enable_auto_commit:
+            self._consumer.commit(message=msg, asynchronous=False)
 
     @staticmethod
     def decode_json(msg: Message) -> dict:

@@ -4,7 +4,7 @@ import copy
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 
 from filtering_service_b.manipulation.repetition_scorer import (
     BurstAmplificationScore,
@@ -37,12 +37,12 @@ class FilterDecision:
     signals: dict[str, object] = field(default_factory=dict)
 
 
-class FilterBPhase1Processor:
+class FilterBSemanticProcessor:
     """
-    Phase 1 processor:
+    Semantic filtering processor:
     - Reads Filter A cleaned envelope
     - Produces Filter B filtered/rejected envelope
-    - Uses simple pass-through KEEP policy for valid events
+    - Applies relevance and Stage 2 manipulation penalties
     """
 
     def __init__(
@@ -54,7 +54,7 @@ class FilterBPhase1Processor:
         self._cross_user_scorer = cross_user_scorer
 
     def process(
-        self, event: CleanedEvent, state_context: dict | None = None
+        self, event: CleanedEvent, state_context: Mapping[str, Any] | None = None
     ) -> FilterDecision:
         _ = state_context
         event_text = _build_event_text(event)
@@ -153,6 +153,16 @@ class FilterBPhase1Processor:
         }
 
         return out
+
+
+class FilterBPhase1Processor(FilterBSemanticProcessor):
+    """
+    Backward-compatible alias for the historical processor name.
+    Keep this to avoid breaking imports while code migrates to
+    FilterBSemanticProcessor.
+    """
+
+    pass
 
 
 def _build_event_text(event: CleanedEvent) -> str:
@@ -263,7 +273,7 @@ def _score_cross_user_repetition(
     cross_user_scorer: CrossUserRepetitionScorer | None,
     event: CleanedEvent,
     stage2_signals: dict[str, object],
-    state_context: dict[str, Any] | None,
+    state_context: Mapping[str, Any] | None,
     relevance_decision: str,
 ) -> CrossUserRepetitionScore:
     if cross_user_scorer is None:
@@ -299,7 +309,7 @@ def _score_cross_user_repetition(
 def _score_same_account_repetition(
     cross_user_scorer: CrossUserRepetitionScorer | None,
     stage2_signals: dict[str, object],
-    state_context: dict[str, Any] | None,
+    state_context: Mapping[str, Any] | None,
     relevance_decision: str,
 ) -> SameAccountRepetitionScore:
     if cross_user_scorer is None:
@@ -335,7 +345,7 @@ def _score_same_account_repetition(
 
 def _score_burst_amplifier(
     cross_user_scorer: CrossUserRepetitionScorer | None,
-    state_context: dict[str, Any] | None,
+    state_context: Mapping[str, Any] | None,
     repetition: CrossUserRepetitionScore,
     same_account: SameAccountRepetitionScore,
     relevance_decision: str,
