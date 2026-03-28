@@ -14,6 +14,12 @@ class KafkaSettings:
     input_topic: str
     filtered_topic: str
     rejected_topic: str
+    security_protocol: str
+    sasl_mechanism: str | None
+    sasl_username: str | None
+    sasl_password: str | None
+    ssl_ca_location: str | None
+    client_id: str | None
     auto_offset_reset: str = "earliest"
     enable_auto_commit: bool = False
 
@@ -27,9 +33,11 @@ class AppSettings:
 
 @dataclass(frozen=True)
 class RedisSettings:
+    url: str | None
     host: str
     port: int
     db: int
+    username: str | None
     password: str | None
     ssl: bool
 
@@ -168,6 +176,12 @@ def load_kafka_settings() -> KafkaSettings:
         rejected_topic=_get_env(
             "KAFKA_REJECTED_TOPIC", "sentrix.filter-service-b.rejected"
         ),
+        security_protocol=_get_env("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
+        sasl_mechanism=_get_optional_env("KAFKA_SASL_MECHANISM"),
+        sasl_username=_get_optional_env("KAFKA_SASL_USERNAME"),
+        sasl_password=_get_optional_env("KAFKA_SASL_PASSWORD"),
+        ssl_ca_location=_get_optional_env("KAFKA_SSL_CA_LOCATION"),
+        client_id=_get_optional_env("KAFKA_CLIENT_ID"),
         auto_offset_reset=_get_env("KAFKA_AUTO_OFFSET_RESET", "earliest"),
         enable_auto_commit=_get_env("KAFKA_ENABLE_AUTO_COMMIT", "false").lower()
         == "true",
@@ -189,12 +203,32 @@ def load_app_settings() -> AppSettings:
 
 def load_redis_settings() -> RedisSettings:
     return RedisSettings(
+        url=_get_optional_env("REDIS_URL"),
         host=_get_env("REDIS_HOST", "localhost"),
         port=_get_env_int("REDIS_PORT", "6379"),
         db=_get_env_int("REDIS_DB", "0"),
+        username=_get_optional_env("REDIS_USERNAME"),
         password=_get_optional_env("REDIS_PASSWORD"),
         ssl=_get_env_bool("REDIS_SSL", "false"),
     )
+
+
+def build_kafka_client_config(settings: KafkaSettings) -> dict[str, str | bool]:
+    config: dict[str, str | bool] = {
+        "bootstrap.servers": settings.bootstrap_servers,
+        "security.protocol": settings.security_protocol,
+    }
+    if settings.client_id:
+        config["client.id"] = settings.client_id
+    if settings.sasl_mechanism:
+        config["sasl.mechanism"] = settings.sasl_mechanism
+    if settings.sasl_username:
+        config["sasl.username"] = settings.sasl_username
+    if settings.sasl_password:
+        config["sasl.password"] = settings.sasl_password
+    if settings.ssl_ca_location:
+        config["ssl.ca.location"] = settings.ssl_ca_location
+    return config
 
 
 def load_state_ttl_settings() -> StateTtlSettings:

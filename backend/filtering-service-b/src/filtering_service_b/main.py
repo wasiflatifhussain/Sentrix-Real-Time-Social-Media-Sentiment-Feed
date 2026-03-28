@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -361,4 +362,6 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run("filtering_service_b.main:app", host="0.0.0.0", port=8012, reload=False)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8012"))
+    uvicorn.run("filtering_service_b.main:app", host=host, port=port, reload=False)

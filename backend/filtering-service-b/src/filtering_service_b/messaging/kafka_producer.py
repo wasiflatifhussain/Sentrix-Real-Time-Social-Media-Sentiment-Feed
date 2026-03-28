@@ -3,7 +3,7 @@ import logging
 
 from confluent_kafka import KafkaException, Producer
 
-from filtering_service_b.config.settings import KafkaSettings
+from filtering_service_b.config.settings import KafkaSettings, build_kafka_client_config
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 class KafkaProducerClient:
     def __init__(self, settings: KafkaSettings) -> None:
         self._settings = settings
-        self._producer = Producer({"bootstrap.servers": settings.bootstrap_servers})
+        self._producer = Producer(build_kafka_client_config(settings))
 
     def publish_filtered(self, payload: dict) -> None:
         self._publish(self._settings.filtered_topic, payload)
