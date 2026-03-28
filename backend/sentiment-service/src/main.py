@@ -14,6 +14,7 @@ from sentiment_service.domain.signal_stub import placeholder_signal_score
 from sentiment_service.messaging.adapters import to_domain_event
 from sentiment_service.messaging.kafka_consumer import KafkaConsumerRunner
 from sentiment_service.messaging.schemas import parse_cleaned_event
+from sentiment_service.objects.objects import HourlyLevelScore, TickerLevelScore
 from sentiment_service.observability.logging import configure_logging
 from sentiment_service.storage.hourly_repo import HourlyRepo
 from sentiment_service.storage.mongo_client import (
@@ -26,7 +27,7 @@ from sentiment_service.utils.time import SECONDS_PER_HOUR, bucket_epoch_seconds_
 from sentiment_service.llm_connector import FinbertClient
 from sentiment_service.demo_file_parser import DemoKafkaParser, DemoMongoDBParser
 
-from sentiment_service.runner import Runner
+from sentiment_service.runner import Runner as SentimentServiceRunner
 
 log = logging.getLogger(__name__)
 
@@ -45,10 +46,15 @@ def _eligible_hour_start_utc(now_utc: int, grace_seconds: int) -> int:
 
 
 def main() -> None:
+    load_dotenv()
     configure_logging("INFO")
 
     kafka_settings = load_kafka_settings()
     mongo_settings = load_mongo_settings()
+
+    # print(mongo_settings)
+
+    sentiment = SentimentServiceRunner()
 
     mongo = MongoClientFactory(
         MongoClientSettings(uri=mongo_settings.uri, db_name=mongo_settings.db_name)
@@ -118,15 +124,15 @@ def main() -> None:
                             score = placeholder_signal_score(
                                 ticker=ticker, hour_start_utc=eligible_hour_start
                             )
-                            applied = signal_repo.upsert_signal_if_new_hour(
-                                ticker=ticker,
-                                signal_score=score,
-                                as_of_hour_start_utc=eligible_hour_start,
-                                updated_at_utc=now,
-                                half_life_hours=None,
-                            )
-                            if applied:
-                                applied_count += 1
+                            # applied = signal_repo.upsert_signal_if_new_hour(
+                            #     ticker=ticker,
+                            #     signal_score=score,
+                            #     as_of_hour_start_utc=eligible_hour_start,
+                            #     updated_at_utc=now,
+                            #     half_life_hours=None,
+                            # )
+                            # if applied:
+                            #     applied_count += 1
 
                         log.info(
                             "Signal placeholder applied hourStartUtc=%s tickers=%s applied=%s",
@@ -152,29 +158,38 @@ def main() -> None:
     signal_thread = threading.Thread(
         target=signal_updater_loop, name="signal-updater", daemon=True
     )
-    signal_thread.start()
+    # signal_thread.start()
 
     runner = KafkaConsumerRunner(kafka_settings)
 
     def handle(msg):
+        log.info(f"currently handling - {msg}")
         payload = runner.decode_json(msg)
-        transport_event = parse_cleaned_event(payload)
-        domain_event = to_domain_event(transport_event)
+        domain_event = parse_cleaned_event(payload)
+        # domain_event = to_domain_event(transport_event)
+
+        sentiment.assess_event_level(domain_event)
+
+        print(domain_event)
 
         bucket = bucket_epoch_seconds_to_hour(domain_event.created_at_utc)
         scored = scorer.score(domain_event)
 
         now_utc = int(time.time())
 
-        hourly_repo.upsert_incremental(
-            ticker=domain_event.ticker,
-            hour_start_utc=bucket.hour_start_utc,
-            hour_end_utc=bucket.hour_end_utc,
-            sentiment_score=float(scored.score),
-            keywords=list(scored.keywords),
-            source=domain_event.source,
-            updated_at_utc=now_utc,
-        )
+        # hourly_repo.upsert_incremental(
+        #     ticker=domain_event.ticker,
+        #     hour_start_utc=bucket.hour_start_utc,
+        #     hour_end_utc=bucket.hour_end_utc,
+        #     sentiment_score=float(scored.score),
+        #     keywords=list(scored.keywords),
+        #     source=domain_event.source,
+        #     updated_at_utc=now_utc,
+        # )
+
+        # print(domain_event)
+        # print(payload)
+        
 
         log.info(
             "Hourly upsert ok eventId=%s ticker=%s hourStartUtc=%s topic=%s partition=%s offset=%s",
@@ -185,6 +200,8 @@ def main() -> None:
             msg.partition(),
             msg.offset(),
         )
+
+        return
 
     try:
         runner.start(handle)
@@ -197,6 +214,7 @@ def write_hourly(hourly: list) -> None:
     content: list[dict] = list()
     
     for h in hourly:
+        print(f"Writing hourly level data for {h}")
         content.append(
             dict(
                 _id=h._id,
@@ -221,13 +239,51 @@ def write_hourly(hourly: list) -> None:
     print("Done with the write the houly-level-score-result.json")
     return
 
-def sentiment_service():
+def write_ticker(ticker: list[TickerLevelScore]) -> None:
+    content: list[dict] = list()
+    
+    for t in ticker:
+        print(f"Writing ticker level data for {t.ticker}")
+        content.append(
+            dict(
+                _id = t._id,
+                ticker = t.ticker,
+                count = t.count,
+                absoluteScore = t.absolute_score,
+                reliability = t.reliability,
+                weightedScore = t.weighted_score,
+                startTimeUtc = t.startTimestamp,
+                endTimeUtc = t.endTimestamp,
+                dequeSize = len(t.hour_levels),
+            )
+        )
+
+    with open("./ticker-level-score-result.json", 'w') as f:
+        f.write(json.dumps(content, indent=4))
+    
+    return
+
+def sentiment_service() -> None:
+    ###############
+    # Set UP
+    ###############
+    runner: Runner = Runner()
+
+    dmp = DemoMongoDBParser()
+
+    prev_hourly_levels: list[HourlyLevelScore] = dmp.return_hourly_level()
+
+    for level in prev_hourly_levels:
+        runner.run_ticker_level(level)
+    ###############
+    # Set UP END
+    ###############
+
     # Kafka
     dkp = DemoKafkaParser() # replace this with actual kafka connection
     datas = dkp.read_file()
 
     # Runner
-    runner: Runner = Runner()
 
     events: list = list()
     for data in datas[400:500]:
@@ -235,17 +291,24 @@ def sentiment_service():
         # event.calculate() 
     # dkp.write_event(events) -> 24/7 -> deployable -> kafka -> static one time thingy
     
+    
     for event in events:
         runner.run_hourly_level(event)
-    hourly = runner.return_hourly_level()
+    hourlys = runner.return_hourly_level()
 
-    # write_hourly(hourly)
-
+    # write_hourly(hourlys)
     
+    for hourly in hourlys:
+        runner.run_ticker_level(hourly)
+
+    tickers = runner.return_ticker_level()
+
+    print(tickers) # for printing only
+    # write_ticker(tickers) # for writing to json.
 
     return
 
 if __name__ == "__main__":
-    sentiment_service()
-    # main()
-    # dmp = DemoMongoDBParser()
+    # sentiment_service()
+    main()
+

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 
-@dataclass(frozen=True)
+@dataclass
 class CleanedEvent:
     """
     Domain-level cleaned event.

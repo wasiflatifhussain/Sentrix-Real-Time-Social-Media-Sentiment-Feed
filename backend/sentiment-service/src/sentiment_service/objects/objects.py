@@ -27,7 +27,7 @@ class Event:
         if self.response is not None:
             for re in self.response:
                 # print(re)
-                tmp[re["label"]] = re["absolute_score"]
+                tmp[re["label"]] = re["score"]
 
         self.response = tmp
         return
@@ -85,9 +85,16 @@ class HourlyLevelScore:
     _weightSum: float = 0.0
     _avgScore: float = 0.0
 
-    def add_event(self, absolute_score: float, weight: float, source: str = None):
+    def add_event(self, event: Event,) -> None:
+        # TODO: need to cahnge the logic
+        absolute_score: float = event.absolute_score
+        weight: float = self.get_count_weighting(event)
+        source: str = event.source
+
+        # Update Count
         self.count += 1
         
+        # Update Score
         self._weightedScoreSum += (absolute_score * weight)
         self._weightSum += weight
         
@@ -95,6 +102,7 @@ class HourlyLevelScore:
             self._avgScore = self._weightedScoreSum / self._weightSum
             self.scoreSum = self._avgScore  # Update public scoreSum for backward compatibility
         
+        # Update Source
         if source:
             if self.sourceBreakdown is None:
                 self.sourceBreakdown = {}
@@ -102,6 +110,29 @@ class HourlyLevelScore:
                 self.sourceBreakdown[source] = 1
             else:
                 self.sourceBreakdown[source] += 1
+
+        return
+
+    def get_count_weighting(self, event: Event):
+        count: int = 0
+        like: int = 0
+        reply: int = 0
+        comment: int = 0
+        for k in event.metrics:
+            if (
+                isinstance(event.metrics.get(k, 0), (int, float, complex)) or
+                (isinstance(event.metrics.get(k, ''), str) and event.metrics.get(k, '').isnumeric())
+            ):
+                count += int(event.metrics.get(k, 0))
+                if k.startswith("like"):
+                    like += int(event.metrics.get(k, 0))
+                elif k.startswith("reply"):
+                    reply += int(event.metrics.get(k, 0))
+                elif k.startswith("comment"):
+                    comment += int(event.metrics.get(k, 0))
+                    
+        # weighting: float = 1.0 + math.log1p(max(0, like) + max(0, comment) + max(0, reply))
+        return count
 
     def hour_reliability(
         self,
@@ -113,6 +144,7 @@ class HourlyLevelScore:
         return min(1.0, self.count / float(min_event_cnt))
 
 
+@dataclass
 class TickerLevelScore:
     '''
     TODO list
@@ -120,56 +152,46 @@ class TickerLevelScore:
     2. initialization
     '''
     _id: str
-    hour_levels: deque
     ticker: str
-    count: int  # count of record
-    absolute_score: float  # Nt
-    reliability: float  # Dt
-    weighted_score: float  # Nt / Dt
-    startTimestamp: int
-    endTimestamp: int
+    hour_levels: deque[HourlyLevelScore] = field(
+        default_factory=lambda: deque(maxlen=168)
+    )
+    count: int = 0 # count of record
+    absolute_score: float = 0.0 # Nt
+    reliability: float = 0.0 # Dt
+    weighted_score: float = 0.0 # Nt / Dt
+    startTimestamp: int = 0
+    endTimestamp: int = 0
     beta: float = 1 - (2 ** (-1 / 24))  # Weighting of the new hourlevel
 
-    def __init__(
-        self,
-        ticker: str,
-    ) -> None:
-        self.hour_levels: deque[HourlyLevelScore] = deque(maxlen = 168)
-        self.ticker = ticker
-        self.count = 0
-        self.absolute_score = 0.0
-        self.weighted_score = 0.0
-        self.reliability = 0.0
-        return
-
     def pop_hour_levels(self) -> None | HourlyLevelScore:
-        if self.hour_levels.empty():
+        if len(self.hour_levels) == 0:
             return None
         return self.hour_levels.popleft()
 
     def top_hour_levels(self) -> HourlyLevelScore | None:
-        if self.hour_levels.empty():  # if deque is empty
+        if len(self.hour_levels) == 0:  # if deque is empty
             return None
         return self.hour_levels[0]
     
     def push_hour_levels(self, hour: HourlyLevelScore) -> None:
-        if not self.hour_levels.full():
+        if not len(self.hour_levels) == self.hour_levels.maxlen:
             self.hour_levels.append(hour)
         return        
 
     def update_hour_levels(self, hour: HourlyLevelScore):
-        togo: HourlyLevelScore = self.pop_hour_levels() if self.hour_levels.full() else None
+        togo: HourlyLevelScore = self.pop_hour_levels() if (len(self.hour_levels) == self.hour_levels.maxlen) else None
 
         self.push_hour_levels(hour)
 
         # update the absolute_score
-        self._update_score(togo = togo, new = hour)
+        self._update_score(new = hour)
 
         # update the count
         self._update_count(togo = togo, new = hour)
 
         # update the timestamp
-        self._update_timestamp(togo = togo, new = hour)
+        self._update_timestamp(new = hour)
         return
 
     def _update_absolute_score(

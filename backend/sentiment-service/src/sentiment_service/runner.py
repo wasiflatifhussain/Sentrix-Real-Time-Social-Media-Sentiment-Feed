@@ -10,7 +10,8 @@ from typing import Any, Dict, Iterable, List, Optional
 from dotenv import load_dotenv
 
 from sentiment_service.llm_connector import FinbertClient
-from sentiment_service.objects.objects import Event, HourlyLevelScore
+from sentiment_service.messaging.schemas import CleanedEvent
+from sentiment_service.objects.objects import Event, HourlyLevelScore, TickerLevelScore
 
 class Runner:
     def __init__(self):
@@ -18,15 +19,27 @@ class Runner:
         api_key = os.getenv("HUGGING_FACE_API")
         self.fc = FinbertClient(api_key=api_key)
 
-        self.events = list()
-        self.hourly = dict()
-        self.ticker = dict()
+        self.events: list[Event] = []
+
+        self.hourly: dict[str, HourlyLevelScore] = {}
         '''
         {
             "TSLA": <HourlyLevelScore> for TSLA,
             "AAPL": <HourlyLevelScore> for AAPL,
         }
         '''
+
+        self.ticker: dict[str, TickerLevelScore] = {}
+        '''
+        {
+            "TSLA": <TikcerLevelScore> for TSLA,
+            ...
+        }
+        '''
+        return
+    
+    def assess_event_level(self, event: CleanedEvent):
+        self.fc.run_cleaned_event(event)
         return
 
     def run_event_level(self, data: dict):
@@ -45,15 +58,13 @@ class Runner:
         ticker: str = event.ticker
         if self.hourly.get(ticker, None) is None:
             self.hourly[ticker] = self.construct_hourly_level_score(event)
-        else:
-            # update the hourly model
-            self.update_hourly_level(ticker, event)
+        # update the hourly model
+        self.update_hourly_level(event)
         return
 
-    def update_hourly_level(self, ticker: str, event: Event,):
-        hm: HourlyLevelScore = self.hourly.get(ticker, None)
-        weight = self.get_count_weighting(event)
-        hm.add_event(score=event.score, weight=weight, source=event.source)
+    def update_hourly_level(self, event: Event,):
+        hm: HourlyLevelScore = self.hourly.get(event.ticker, None)
+        hm.add_event(event=event,)
         return
 
     def construct_event(self, data) -> Event:
@@ -69,7 +80,6 @@ class Runner:
         )
 
     def construct_hourly_level_score(self, event: Event) -> HourlyLevelScore:
-        weight = self.get_count_weighting(event)
         start_time: int = int(event.timestamp // 3_600) * 3_600
         hm = HourlyLevelScore(
            _id=f"{event.ticker}|{start_time}",
@@ -79,42 +89,41 @@ class Runner:
             ticker=event.ticker,
             metrics=event.metrics,
         )
-        hm.add_event(score=event.score, weight=weight, source=event.source)
         return hm
 
-    def get_count_weighting(self, event):
-        count: int = 0
-        like: int = 0
-        reply: int = 0
-        comment: int = 0
-        for k in event.metrics:
-            if (
-                isinstance(event.metrics.get(k, 0), (int, float, complex)) or
-                (isinstance(event.metrics.get(k, ''), str) and event.metrics.get(k, '').isnumeric())
-            ):
-                count += int(event.metrics.get(k, 0))
-                if k.startswith("like"):
-                    like += int(event.metrics.get(k, 0))
-                elif k.startswith("reply"):
-                    reply += int(event.metrics.get(k, 0))
-                elif k.startswith("comment"):
-                    comment += int(event.metrics.get(k, 0))
-                    
-        # weighting: float = 1.0 + math.log1p(max(0, like) + max(0, comment) + max(0, reply))
-        return count
-    
     def return_hourly_level(self):
         res = list()
         for k in self.hourly:
             res.append(self.hourly[k])
 
         return res
-'''
-s1, 6
-s2, 2
+    
+    def run_ticker_level(self, hourly: HourlyLevelScore):
+        ticker: str = hourly.ticker
+        if self.ticker.get(ticker, None) is None:
+            self.ticker[ticker] = self.construct_ticker_level_score(hourly)
+            print(f"Ticker Level Score for {ticker} has been created")
+        self.update_ticker_level_score(hourly)
+        return
 
-(s1 * 6 + s2 * 2) / 8
-'''
+    def construct_ticker_level_score(self, hourly: HourlyLevelScore):
+        tls: TickerLevelScore = TickerLevelScore(
+            _id = hourly.ticker,
+            ticker = hourly.ticker,
+        )
+        return tls
+    
+    def update_ticker_level_score(self, hourly:HourlyLevelScore):
+        ticker_level_score: TickerLevelScore = self.ticker[hourly.ticker]
+        ticker_level_score.update_hour_levels(hourly)
+        return
+    
+    def return_ticker_level(self):
+        res = list()
+        for k in self.ticker:
+            res.append(self.ticker[k])
+        
+        return res
 
 # -----------------------------
 # IO helpers

@@ -1,5 +1,10 @@
+import logging
+
 from huggingface_hub import InferenceClient
+from sentiment_service.messaging.schemas import CleanedEvent
 from sentiment_service.objects.objects import Event
+
+logger = logging.getLogger(__name__)
 
 class FinbertClient:
     def __init__(
@@ -12,15 +17,44 @@ class FinbertClient:
             provider="auto",
             api_key=api_key,
         )
+
+    def run_cleaned_event(
+        self,
+        event: CleanedEvent,
+    ) -> None:
+        logger.info(
+            f"start the operation of {self.__class__.__name__} - "
+            f"getting Finbert response regarding {event.event_id}"
+        )
+        res = list()
+        try:
+            for response in self.assess(event.text_normalized):
+                res.append(
+                    dict(
+                        label = response['label'],
+                        score = response['score']
+                    )
+                )
+            event.response = res
+        except Exception as e:
+           logger.critical(
+               f"Unexpected error - {str(e)}"
+           )
+        finally:
+            logger.info(
+                f"finished the operation of {self.__class__.__name__} - getting Finbert response regarding {event.event_id}"
+            )
+
+        return
     
     def run(self, event: Event):
         print(
-            f"start the operation of {self.__class__.__name__} - getting Finbert response regarding {event.id}"
+            f"start the operation of {self.__class__.__name__} - getting Finbert response regarding {event.event_id}"
         )
         # texts \th {id}!!!")
         res = list()
         try:
-            for response in self.lets_do_it(event.content):
+            for response in self.assess(event.content):
                 res.append(
                     dict(
                         label = response['label'],
@@ -42,7 +76,7 @@ class FinbertClient:
             d = f.readlines()
         return d
 
-    def lets_do_it(self, text):
+    def assess(self, text):
         try:
             result = self.client.text_classification(
                 text,
@@ -211,7 +245,7 @@ def fuse_model_outputs(
 
 
 def _score_details(self, text: str, temperature: float = 1.5) -> ModelOutput:
-    rows = self.lets_do_it(text) or []
+    rows = self.assess(text) or []
     probs = finbert_rows_to_probs(rows)
     return model_output_from_probs("finbert", probs, temperature=temperature)
 
