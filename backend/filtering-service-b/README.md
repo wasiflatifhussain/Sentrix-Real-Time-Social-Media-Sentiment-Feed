@@ -218,6 +218,27 @@ For each event, use:
 * ticker symbol
 * prebuilt ticker/company reference text
 
+---
+
+## Runtime Monitoring (Terminal)
+
+Filter B now emits rolling terminal summaries (no Prometheus required).
+
+Per event log includes:
+* decision, score, top reasons, and latency (`latencyMs`)
+
+Rolling summary log includes (every `APP_ROLLING_SUMMARY_EVERY` events):
+* KEEP/REJECT counts and reject rate
+* invalid input count
+* avg and p95 latency
+* avg score
+* percentage of events near final threshold
+* top reason counts
+
+Config knobs:
+* `APP_ROLLING_SUMMARY_EVERY` (default `100`)
+* `APP_NEAR_THRESHOLD_WINDOW` (default `0.05`)
+
 The semantic text used for embedding can be:
 
 * `title + text`, if title exists

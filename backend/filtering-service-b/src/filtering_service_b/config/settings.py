@@ -21,6 +21,8 @@ class KafkaSettings:
 @dataclass(frozen=True)
 class AppSettings:
     log_level: str = "INFO"
+    rolling_summary_every: int = 100
+    near_threshold_window: float = 0.05
 
 
 @dataclass(frozen=True)
@@ -173,7 +175,16 @@ def load_kafka_settings() -> KafkaSettings:
 
 
 def load_app_settings() -> AppSettings:
-    return AppSettings(log_level=_get_env("APP_LOG_LEVEL", "INFO"))
+    settings = AppSettings(
+        log_level=_get_env("APP_LOG_LEVEL", "INFO"),
+        rolling_summary_every=_get_env_int("APP_ROLLING_SUMMARY_EVERY", "100"),
+        near_threshold_window=_get_env_float("APP_NEAR_THRESHOLD_WINDOW", "0.05"),
+    )
+    if settings.rolling_summary_every <= 0:
+        raise ValueError("APP_ROLLING_SUMMARY_EVERY must be >= 1")
+    if settings.near_threshold_window < 0.0:
+        raise ValueError("APP_NEAR_THRESHOLD_WINDOW must be >= 0.0")
+    return settings
 
 
 def load_redis_settings() -> RedisSettings:

@@ -24,6 +24,7 @@ from filtering_service_b.messaging.kafka_consumer import KafkaConsumerRunner
 from filtering_service_b.messaging.kafka_producer import KafkaProducerClient
 from filtering_service_b.messaging.schemas import CleanedEvent, parse_cleaned_event
 from filtering_service_b.observability.logging import configure_logging
+from filtering_service_b.observability.rolling_metrics import RollingMetricsLogger
 from filtering_service_b.pipeline.processor import FilterBSemanticProcessor, FilterDecision
 from filtering_service_b.manipulation.repetition_scorer import CrossUserRepetitionScorer
 from filtering_service_b.novelty.novelty_scorer import NoveltyScorer
@@ -160,6 +161,11 @@ async def lifespan(app: FastAPI):
         novelty_scorer=novelty_scorer,
         final_keep_threshold=final_decision_settings.keep_threshold,
     )
+    rolling_metrics = RollingMetricsLogger(
+        summary_every=app_settings.rolling_summary_every,
+        final_threshold=final_decision_settings.keep_threshold,
+        near_threshold_window=app_settings.near_threshold_window,
+    )
     stop_event = threading.Event()
 
     redis_client = RedisClient(redis_settings)
@@ -186,6 +192,7 @@ async def lifespan(app: FastAPI):
     )
 
     def handle(msg: Message) -> None:
+        start = time.perf_counter()
         payload = consumer.decode_json(msg)
 
         try:
@@ -231,13 +238,20 @@ async def lifespan(app: FastAPI):
                 burst_store=burst_store,
                 event_time_utc=event_time_utc,
             )
+            latency_ms = (time.perf_counter() - start) * 1000.0
+            rolling_metrics.record(
+                decision=decision,
+                latency_ms=latency_ms,
+            )
 
             log.info(
-                "Processed eventId=%s ticker=%s decision=%s score=%.3f topic=%s partition=%s offset=%s",
+                "Processed eventId=%s ticker=%s decision=%s score=%.3f reasons=%s latencyMs=%.2f topic=%s partition=%s offset=%s",
                 event.event_id,
                 event.ticker,
                 decision.decision,
                 decision.credibility_score,
+                decision.decision_reasons,
+                latency_ms,
                 msg.topic(),
                 msg.partition(),
                 msg.offset(),
@@ -251,6 +265,12 @@ async def lifespan(app: FastAPI):
             )
             out = processor.build_output_envelope(payload, reject, filter_reason="INVALID_INPUT")
             producer.publish_rejected(out)
+            latency_ms = (time.perf_counter() - start) * 1000.0
+            rolling_metrics.record(
+                decision=reject,
+                latency_ms=latency_ms,
+                invalid_input=True,
+            )
             log.exception("Routed INVALID_INPUT to rejected topic: %s", ex)
 
     worker = threading.Thread(
@@ -268,6 +288,7 @@ async def lifespan(app: FastAPI):
     finally:
         stop_event.set()
         worker.join(timeout=10)
+        rolling_metrics.flush()
         try:
             producer.close()
         except Exception:
