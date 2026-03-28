@@ -49,6 +49,13 @@ class StateContext(TypedDict):
     burst: dict[str, Any]
 
 
+class RuntimeStores(TypedDict):
+    ticker_store: TickerSimilarityStateStore
+    author_store: AuthorTickerStateStore
+    novelty_store: AcceptedNoveltyStateStore
+    burst_store: BurstCounterStore
+
+
 def _resolve_event_time_utc(created_at_utc: int | None) -> int:
     if isinstance(created_at_utc, int):
         return created_at_utc
@@ -125,21 +132,12 @@ def _persist_runtime_state(
         )
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app_settings = load_app_settings()
-    configure_logging(app_settings.log_level)
-
-    kafka_settings = load_kafka_settings()
-    redis_settings = load_redis_settings()
-    ttl_settings = load_state_ttl_settings()
-    relevance_settings = load_relevance_settings()
-    manipulation_settings = load_manipulation_settings()
-    novelty_settings = load_novelty_settings()
-    final_decision_settings = load_final_decision_settings()
-
-    consumer = KafkaConsumerRunner(kafka_settings)
-    producer = KafkaProducerClient(kafka_settings)
+def _build_processor(
+    relevance_settings: Any,
+    manipulation_settings: Any,
+    novelty_settings: Any,
+    final_decision_settings: Any,
+) -> FilterBSemanticProcessor:
     ticker_profiles = TickerProfileStore.from_json(relevance_settings.ticker_profiles_path)
     embedding_service = SentenceTransformerEmbeddingService(
         model_name=relevance_settings.model_name,
@@ -155,11 +153,133 @@ async def lifespan(app: FastAPI):
         embedding_service=embedding_service,
         settings=novelty_settings,
     )
-    processor = FilterBSemanticProcessor(
+    return FilterBSemanticProcessor(
         relevance_scorer=relevance_scorer,
         cross_user_scorer=cross_user_scorer,
         novelty_scorer=novelty_scorer,
         final_keep_threshold=final_decision_settings.keep_threshold,
+    )
+
+
+def _build_runtime_stores(
+    redis_client: RedisClient,
+    ttl_settings: Any,
+) -> RuntimeStores:
+    return {
+        "ticker_store": TickerSimilarityStateStore(
+            redis_client=redis_client.client,
+            ttl_seconds=ttl_settings.similarity_ttl_seconds,
+            max_items=ttl_settings.max_list_items,
+        ),
+        "author_store": AuthorTickerStateStore(
+            redis_client=redis_client.client,
+            ttl_seconds=ttl_settings.author_ticker_ttl_seconds,
+            max_items=ttl_settings.max_list_items,
+        ),
+        "novelty_store": AcceptedNoveltyStateStore(
+            redis_client=redis_client.client,
+            ttl_seconds=ttl_settings.accepted_novelty_ttl_seconds,
+            max_items=ttl_settings.max_list_items,
+        ),
+        "burst_store": BurstCounterStore(
+            redis_client=redis_client.client,
+            bucket_ttl_seconds=ttl_settings.burst_bucket_ttl_seconds,
+        ),
+    }
+
+
+def _process_message(
+    msg: Message,
+    payload: dict[str, Any],
+    processor: FilterBSemanticProcessor,
+    producer: KafkaProducerClient,
+    stores: RuntimeStores,
+    rolling_metrics: RollingMetricsLogger,
+) -> None:
+    start = time.perf_counter()
+    event = parse_cleaned_event(payload)
+    event_time_utc = _resolve_event_time_utc(event.created_at_utc)
+
+    state_context = _build_state_context(
+        event=event,
+        ticker_store=stores["ticker_store"],
+        author_store=stores["author_store"],
+        novelty_store=stores["novelty_store"],
+        burst_store=stores["burst_store"],
+        event_time_utc=event_time_utc,
+    )
+
+    decision = processor.process(event, state_context=state_context)
+
+    burst_context = state_context["burst"]
+    state_signals = {
+        "tickerSimilarityCount": len(state_context["tickerSimilarity"]),
+        "authorTickerCount": len(state_context["authorTickerHistory"]),
+        "acceptedNoveltyCount": len(state_context["acceptedNovelty"]),
+        "burstRatio": burst_context.get("burstRatio", 0.0),
+    }
+
+    out = processor.build_output_envelope(
+        payload,
+        decision,
+        state_signals=state_signals,
+    )
+
+    if decision.decision == "KEEP":
+        producer.publish_filtered(out)
+    else:
+        producer.publish_rejected(out)
+
+    _persist_runtime_state(
+        event=event,
+        decision=decision,
+        ticker_store=stores["ticker_store"],
+        author_store=stores["author_store"],
+        novelty_store=stores["novelty_store"],
+        burst_store=stores["burst_store"],
+        event_time_utc=event_time_utc,
+    )
+
+    latency_ms = (time.perf_counter() - start) * 1000.0
+    rolling_metrics.record(
+        decision=decision,
+        latency_ms=latency_ms,
+    )
+
+    log.info(
+        "Processed eventId=%s ticker=%s decision=%s score=%.3f reasons=%s latencyMs=%.2f topic=%s partition=%s offset=%s",
+        event.event_id,
+        event.ticker,
+        decision.decision,
+        decision.credibility_score,
+        decision.decision_reasons,
+        latency_ms,
+        msg.topic(),
+        msg.partition(),
+        msg.offset(),
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app_settings = load_app_settings()
+    configure_logging(app_settings.log_level)
+
+    kafka_settings = load_kafka_settings()
+    redis_settings = load_redis_settings()
+    ttl_settings = load_state_ttl_settings()
+    relevance_settings = load_relevance_settings()
+    manipulation_settings = load_manipulation_settings()
+    novelty_settings = load_novelty_settings()
+    final_decision_settings = load_final_decision_settings()
+
+    consumer = KafkaConsumerRunner(kafka_settings)
+    producer = KafkaProducerClient(kafka_settings)
+    processor = _build_processor(
+        relevance_settings=relevance_settings,
+        manipulation_settings=manipulation_settings,
+        novelty_settings=novelty_settings,
+        final_decision_settings=final_decision_settings,
     )
     rolling_metrics = RollingMetricsLogger(
         summary_every=app_settings.rolling_summary_every,
@@ -171,24 +291,9 @@ async def lifespan(app: FastAPI):
     redis_client = RedisClient(redis_settings)
     redis_client.ping()
 
-    ticker_store = TickerSimilarityStateStore(
-        redis_client=redis_client.client,
-        ttl_seconds=ttl_settings.similarity_ttl_seconds,
-        max_items=ttl_settings.max_list_items,
-    )
-    author_store = AuthorTickerStateStore(
-        redis_client=redis_client.client,
-        ttl_seconds=ttl_settings.author_ticker_ttl_seconds,
-        max_items=ttl_settings.max_list_items,
-    )
-    novelty_store = AcceptedNoveltyStateStore(
-        redis_client=redis_client.client,
-        ttl_seconds=ttl_settings.accepted_novelty_ttl_seconds,
-        max_items=ttl_settings.max_list_items,
-    )
-    burst_store = BurstCounterStore(
-        redis_client=redis_client.client,
-        bucket_ttl_seconds=ttl_settings.burst_bucket_ttl_seconds,
+    stores = _build_runtime_stores(
+        redis_client=redis_client,
+        ttl_settings=ttl_settings,
     )
 
     def handle(msg: Message) -> None:
@@ -196,65 +301,13 @@ async def lifespan(app: FastAPI):
         payload = consumer.decode_json(msg)
 
         try:
-            event = parse_cleaned_event(payload)
-            event_time_utc = _resolve_event_time_utc(event.created_at_utc)
-
-            state_context = _build_state_context(
-                event=event,
-                ticker_store=ticker_store,
-                author_store=author_store,
-                novelty_store=novelty_store,
-                burst_store=burst_store,
-                event_time_utc=event_time_utc,
-            )
-
-            decision = processor.process(event, state_context=state_context)
-
-            burst_context = state_context["burst"]
-            state_signals = {
-                "tickerSimilarityCount": len(state_context["tickerSimilarity"]),
-                "authorTickerCount": len(state_context["authorTickerHistory"]),
-                "acceptedNoveltyCount": len(state_context["acceptedNovelty"]),
-                "burstRatio": burst_context.get("burstRatio", 0.0),
-            }
-
-            out = processor.build_output_envelope(
-                payload,
-                decision,
-                state_signals=state_signals,
-            )
-
-            if decision.decision == "KEEP":
-                producer.publish_filtered(out)
-            else:
-                producer.publish_rejected(out)
-
-            _persist_runtime_state(
-                event=event,
-                decision=decision,
-                ticker_store=ticker_store,
-                author_store=author_store,
-                novelty_store=novelty_store,
-                burst_store=burst_store,
-                event_time_utc=event_time_utc,
-            )
-            latency_ms = (time.perf_counter() - start) * 1000.0
-            rolling_metrics.record(
-                decision=decision,
-                latency_ms=latency_ms,
-            )
-
-            log.info(
-                "Processed eventId=%s ticker=%s decision=%s score=%.3f reasons=%s latencyMs=%.2f topic=%s partition=%s offset=%s",
-                event.event_id,
-                event.ticker,
-                decision.decision,
-                decision.credibility_score,
-                decision.decision_reasons,
-                latency_ms,
-                msg.topic(),
-                msg.partition(),
-                msg.offset(),
+            _process_message(
+                msg=msg,
+                payload=payload,
+                processor=processor,
+                producer=producer,
+                stores=stores,
+                rolling_metrics=rolling_metrics,
             )
         except Exception as ex:
             # If parsing/processing fails, route a reject envelope and keep pipeline alive

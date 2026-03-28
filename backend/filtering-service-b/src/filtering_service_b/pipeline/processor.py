@@ -94,14 +94,14 @@ class FilterBSemanticProcessor:
             state_context=state_context,
             relevance_decision=relevance.decision,
         )
-        score = _clamp_score(
-            1.0
-            + relevance.score_delta
-            + repetition.score_delta
-            + same_account.score_delta
-            + burst.score_delta
-            + novelty.score_delta
+        raw_score = _compute_raw_score(
+            relevance_delta=relevance.score_delta,
+            repetition_delta=repetition.score_delta,
+            same_account_delta=same_account.score_delta,
+            burst_delta=burst.score_delta,
+            novelty_delta=novelty.score_delta,
         )
+        score = _clamp_score(raw_score)
 
         merged_signals = _build_stage2_default_signals()
         merged_signals.update(relevance.signals)
@@ -131,14 +131,7 @@ class FilterBSemanticProcessor:
         merged_signals.update(
             {
                 "finalThresholdUsed": self._final_keep_threshold,
-                "finalScoreBeforeDecision": _clamp_score(
-                    1.0
-                    + relevance.score_delta
-                    + repetition.score_delta
-                    + same_account.score_delta
-                    + burst.score_delta
-                    + novelty.score_delta
-                ),
+                "finalScoreBeforeDecision": _clamp_score(raw_score),
                 "finalDecisionMode": decision_mode,
             }
         )
@@ -226,6 +219,23 @@ def _clamp_score(score: float) -> float:
     if score > 1.0:
         return 1.0
     return float(score)
+
+
+def _compute_raw_score(
+    relevance_delta: float,
+    repetition_delta: float,
+    same_account_delta: float,
+    burst_delta: float,
+    novelty_delta: float,
+) -> float:
+    return (
+        1.0
+        + relevance_delta
+        + repetition_delta
+        + same_account_delta
+        + burst_delta
+        + novelty_delta
+    )
 
 
 def _build_stage2_foundation_signals(event: CleanedEvent) -> dict[str, object]:
