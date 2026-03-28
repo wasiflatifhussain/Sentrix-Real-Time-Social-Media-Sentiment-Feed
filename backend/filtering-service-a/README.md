@@ -42,6 +42,7 @@ Recommended env files:
 - Local development: `backend/filtering-service-a/.env.local`
 - Railway deployment reference: `backend/filtering-service-a/.env.railway`
 - Templates:
+  - `backend/filtering-service-a/.env.example` (local default template)
   - `backend/filtering-service-a/.env.local.example`
   - `backend/filtering-service-a/.env.railway.example`
 
@@ -55,6 +56,10 @@ Important:
 - Java 21
 - Kafka reachable from local machine
 - Redis reachable from local machine
+
+Local defaults:
+- Kafka: `localhost:9092` with `KAFKA_SECURITY_PROTOCOL=PLAINTEXT`
+- Redis: `localhost:6379`
 
 2. Set Java 21 (macOS Homebrew example)
 
@@ -88,6 +93,10 @@ Monorepo service settings:
 - Start Command: `java -jar target/*.jar`
 
 Use values from `.env.railway` in Railway Variables.
+
+Railway defaults:
+- Kafka: Confluent (`SASL_SSL` + `PLAIN` + JAAS config)
+- Redis: Railway internal (`redis.railway.internal:6379`)
 
 Redis host rule:
 - Inside Railway deployment: use internal host (for example `redis.railway.internal:6379`).

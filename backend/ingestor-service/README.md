@@ -2,7 +2,7 @@
 
 The Sentrix Ingestor Service fetches social data (currently Reddit), normalizes it into a unified event schema, and publishes events to Kafka for downstream services.
 
-## Quick Setup (Local Setup)
+## Common Setup
 
 ### 1) Prerequisites
 
@@ -18,30 +18,50 @@ export PATH="$JAVA_HOME/bin:$PATH"
 java -version
 ```
 
-### 2) Environment Variables
+### 2) Environment File Templates
 
-Use `backend/ingestor-service/.env.example` as template.
+Available env files:
+- local runtime: `backend/ingestor-service/.env.local`
+- Railway runtime: `backend/ingestor-service/.env.railway`
+- examples:
+  - `backend/ingestor-service/.env.local.example`
+  - `backend/ingestor-service/.env.railway.example`
+  - `backend/ingestor-service/.env.example` (local default template)
+
+## Local Setup
+
+### 1) Environment Variables
+
+Set Java 21 in the current terminal session first:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+```
+
+Use local env values:
+
+```bash
+cd backend/ingestor-service
+cp .env.local.example .env.local
+```
 
 Required Reddit variables:
-
 - `CLIENT_ID`
 - `CLIENT_SECRET`
 - `REDDIT_USERNAME`
 - `REDDIT_PASSWORD`
 
-Kafka variables:
-
-- `KAFKA_BOOTSTRAP_SERVERS`
-- `KAFKA_TOPIC` (default: `sentrix.ingestor.events`)
-- `KAFKA_SECURITY_PROTOCOL` (`PLAINTEXT` for local Kafka, `SASL_SSL` for Confluent)
-- `KAFKA_SASL_MECHANISM` (`PLAIN` for Confluent)
-- `KAFKA_SASL_JAAS_CONFIG` (Confluent API key/secret line)
+For local Kafka:
+- `KAFKA_BOOTSTRAP_SERVERS=localhost:9092`
+- `KAFKA_SECURITY_PROTOCOL=PLAINTEXT`
+- leave SASL vars empty
 
 Runtime variable:
+- `PORT` (default `8080`)
 
-- `PORT` (default `8080`, Railway injects this automatically)
-
-### 3) Kafka Topic
+### 2) Kafka Topic
 
 Topic used by this service:
 
@@ -52,25 +72,29 @@ Recommended topic policy:
 - `cleanup.policy=delete`
 - `retention.ms=604800000` (7 days)
 
-### 4) Run Locally
+### 3) Run Locally
 
 ```bash
 cd backend/ingestor-service
-set -a; source .env; set +a
+set -a; source .env.local; set +a
 ./mvnw spring-boot:run
 ```
 
-Note: Spring Boot does not auto-load `.env` by default. `source .env` is required unless your IDE run config injects env vars.
+Note: Spring Boot does not auto-load `.env` files by default. `source .env.local` is required unless your IDE run config injects env vars.
 
-### 5) Trigger a Manual Ingestion Run
+### 4) Trigger a Manual Ingestion Run
 
 ```bash
 curl -X POST http://localhost:8080/debug/reddit/run
 ```
 
-## Confluent Cloud Setup (Kafka)
+## Railway Setup
 
-For Confluent Cloud, use these values:
+### 1) Environment Variables
+
+Use `backend/ingestor-service/.env.railway` values in Railway Variables.
+
+For Railway + Confluent Cloud:
 
 ```env
 KAFKA_BOOTSTRAP_SERVERS=<pkc-xxxxx...:9092>
@@ -80,9 +104,9 @@ KAFKA_SASL_MECHANISM=PLAIN
 KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="<API_KEY>" password="<API_SECRET>";
 ```
 
-If logs show `localhost:9092`, the service is not receiving Kafka env vars and is falling back to defaults.
+If logs show `localhost:9092`, Railway vars are missing or not applied and service is using defaults.
 
-## Railway Deployment (Monorepo)
+### 2) Railway Deployment (Monorepo)
 
 Use one Railway service for this microservice, with this monorepo path:
 
@@ -90,7 +114,7 @@ Use one Railway service for this microservice, with this monorepo path:
 - Build command: `./mvnw -DskipTests package`
 - Start command: `java -jar target/*.jar`
 
-Set the same env vars on Railway as local `.env` (including Reddit + Kafka values).
+Set the same Reddit vars as local, but Kafka vars from `.env.railway`.
 
 Use HTTPS and POST for manual trigger:
 

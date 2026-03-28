@@ -1,6 +1,4 @@
-############################
-# OS / Editor
-############################
+# OS and editor files
 .DS_Store
 Thumbs.db
 *.swp
@@ -8,29 +6,29 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
+*.iws
+*.ipr
 
-############################
-# Secrets / Env files
-############################
+# Secrets and env files
 .env
 .env.*
-!.env.example
-!.env.local.example
-!.env.railway.example
+!**/.env.example
+!**/.env.local.example
+!**/.env.railway.example
 *.pem
 *.key
 *.crt
 
-############################
-# Logs
-############################
+# Logs and debug artifacts
 *.log
 logs/
 log/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-############################
-# Node / Frontend (monorepo-safe)
-############################
+# Node / frontend
 **/node_modules/
 **/.next/
 **/out/
@@ -38,30 +36,44 @@ log/
 **/.vercel/
 **/dist/
 **/build/
+**/coverage/
 **/.cache/
 **/.parcel-cache/
 **/.eslintcache
 **/.stylelintcache
+**/.pnp
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/versions
 **/*.tsbuildinfo
 **/next-env.d.ts
 
-############################
-# Java / Spring Boot
-############################
+# Java / JVM
 **/target/
+**/build/
+**/.mvn/wrapper/maven-wrapper.jar
 **/.classpath
 **/.project
 **/.settings/
+**/.apt_generated
+**/.factorypath
+**/.springBeans
+**/.sts4-cache
 **/.gradle/
+**/.nb-gradle/
+**/nbproject/private/
+**/nbbuild/
+**/nbdist/
 **/*.class
 **/*.jar
 **/*.war
 **/*.ear
 **/hs_err_pid*
 
-############################
-# Python / Poetry
-############################
+# Python
 **/__pycache__/
 **/*.py[cod]
 **/*$py.class
@@ -71,22 +83,16 @@ log/
 **/.coverage
 **/htmlcov/
 **/.ipynb_checkpoints/
-
-# Virtual environments
 .venv/
 **/.venv/
 venv/
 ENV/
 env/
-
-# Packaging
 **/*.egg-info/
 **/.tox/
 **/pip-wheel-metadata/
 
-############################
-# Data / Outputs / Artifacts
-############################
+# Data and generated outputs
 **/data/
 **/datasets/
 **/outputs/
@@ -98,9 +104,7 @@ env/
 **/*.sqlite
 **/*.db
 
-############################
 # Misc
-############################
 .coverage.*
 *.tmp
 *.bak
