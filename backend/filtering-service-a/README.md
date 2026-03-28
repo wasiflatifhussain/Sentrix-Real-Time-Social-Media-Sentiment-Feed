@@ -1,253 +1,257 @@
-# Filtering Service A — Fast Filtration & Cleaning (Hard Gate)
+# Sentrix Filtering Service A
 
-Filtering Service A is the **first hard-gate** in the pipeline. It standardizes incoming social events, drops only
-**definitely unusable** inputs + **slam-dunk structural spam**, removes ingestion-level duplicates, and annotates
-near-duplicate waves for downstream analysis.
+Filtering Service A is the first hard-gate in the Sentrix pipeline.
+It consumes ingestor events, applies deterministic filtering/normalization, and routes each event to cleaned vs dropped topics.
 
-✅ **Implemented up to Phase 6** (Phase 7–8 are planned).
+## What This Service Does
 
----
+Input topic:
+- `sentrix.ingestor.events`
 
-## Contract
+Output topics:
+- `sentrix.filter-service-a.cleaned` (`KEEP`)
+- `sentrix.filter-service-a.dropped` (`DROP`)
 
-### Input
+Core responsibilities:
+- validate minimum event integrity
+- normalize text and build deterministic text features
+- drop clearly invalid / low-quality events
+- perform exact dedup checks (ID + content hash)
+- add near-dup wave metadata for downstream services
 
-We **reuse the ingestor `KafkaEvent` contract** (no schema fork).
+Non-goals:
+- sentiment scoring
+- semantic relevance/credibility ranking (handled downstream by Filter B)
 
-Service A expects (required for KEEP):
+## Tech Stack
 
-* `eventId` **or** `dedupKey`
-* `source`
-* `entityType` (POST/COMMENT/etc.)
-* time: at least one of `createdAtUtc` or `ingestedAtUtc`
-* content: at least one meaningful text field (`text`, optionally `title`)
-* `ticker` (required for ticker-based routing/dedup rules)
+- Java 21
+- Spring Boot 4
+- Spring Kafka
+- Spring Data Redis (Lettuce)
+- Maven wrapper (`./mvnw`)
 
-All other fields are optional and passed through unchanged.
+## Setup and Configuration
 
-### Output
+### Config files and env files
 
-Service A publishes a **filtered envelope** to two Kafka topics:
+Main config file:
+- `src/main/resources/application.yml`
 
-* `sentrix.filter-service-a.cleaned` — **KEEP**
-* `sentrix.filter-service-a.dropped` — **DROP** (audit + evaluation)
+Recommended env files:
+- Local development: `backend/filtering-service-a/.env.local`
+- Railway deployment reference: `backend/filtering-service-a/.env.railway`
+- Templates:
+  - `backend/filtering-service-a/.env.local.example`
+  - `backend/filtering-service-a/.env.railway.example`
 
-“cleaned” means: passed hard-gate checks (schema + obvious junk), normalization/features attached. It does **not**
-guarantee sentiment validity.
+Important:
+- Spring Boot does not auto-load shell `.env` files.
+- For local terminal runs, export values first (`set -a; source ...; set +a`).
 
-### Envelope metadata
+### Local setup
 
-For both KEEP and DROP, Service A attaches:
+1. Prerequisites
+- Java 21
+- Kafka reachable from local machine
+- Redis reachable from local machine
 
-* `filterStage = "hard_gate_A"`
-* `filterReasons[]` (non-empty for DROP; may be empty for KEEP)
-* normalized text view (`textNormalized`) when available
-* extracted features (counts/domains/etc.) when available
-
-Note: for unrecoverable inputs (e.g., JSON parse failure), the envelope will contain the raw payload (or minimal
-context) and reason codes, but may not contain normalization/features.
-
----
-
-## Pipeline (Phases 0–6)
-
-### Phase 0 — Lock the contract ✅ DONE
-
-* Reuse ingestor event contract
-* Two-topic output (cleaned/dropped)
-* Wrap original event in an envelope with filter metadata
-
-### Phase 1 — Spring skeleton + Kafka IO ✅ DONE
-
-* Consume `sentrix.ingestor.events` with **manual ack**
-* Publish exactly once to cleaned/dropped
-* **Ack only after publish succeeds**
-* Poison-pill policy: malformed/unparseable events → dropped + **ack** (no retry)
-
-### Phase 2 — Canonicalization + feature extraction ✅ DONE
-
-Normalization (on `title + text`):
-
-* URLs → `<URL>`
-* cashtags normalized consistently
-* whitespace cleanup
-* optional truncation support (`max-len`) + `wasTruncated` signal
-
-Feature extraction:
-
-* counts: word/url/emoji/cashtag/hashtag/mention, caps ratio, repeated char signals
-* domains extracted from URLs (where applicable)
-
-### Phase 3 — Schema validation + hard failures ✅ DONE
-
-Drop only **definitely broken/unusable** events, config-driven:
-
-* missing required fields
-* empty/too-short normalized text
-* too old (per configured max age)
-* oversize handling: truncate (optionally drop if configured)
-
-Reason codes include:
-
-* `MISSING_FIELD`, `EMPTY_TEXT`, `TOO_OLD`, `OVERSIZE_TRUNCATED`, `RAW_PARSE_FAIL`, etc.
-
-### Phase 4 — Exact Deduplication (ID + Content Hash) ✅ DONE
-
-1. **Event ID dedup**
-
-* drop duplicates by `dedupKey` (and/or stable id fallback)
-
-2. **Content dedup (time-bucketed)**
-   Drops identical `(source, normalized_text, ticker)` **only within a short ingestion-relevant window**:
-
-```
-hash(source | normalized_text | ticker | time_bucket)
-time_bucket = event_epoch_seconds / bucket_seconds
-```
-
-Why buckets: catches overlap/retry/pagination artifacts without suppressing legitimate reposts across long windows.
-
-TTL controls memory retention; buckets control dedup semantics.
-
-### Phase 5 — Heuristic spam rules (slam-dunks only) ✅ DONE
-
-Deterministic rules; **DROP only when extremely high-confidence**:
-
-1. Absurd URL spam
-2. Extreme emoji abuse
-3. Repeated character abuse
-4. Excessive cashtags / tickers
-
-No semantic scam detection, no denylist domains, no phrase matching in Service A.
-
-### Phase 6 — Near-duplicate fingerprinting (annotate only) ✅ DONE
-
-Goal: detect coordinated repost/copy-paste waves without dropping.
-
-* fingerprint: SimHash (or equivalent) over normalized text (only for sufficiently long texts)
-* scope: `source + ticker + rolling window`
-* compare via Hamming distance
-* if match evidence crosses thresholds: KEEP + attach tag (e.g., `NEAR_DUP_WAVE`) with evidence
-
-This phase is best-effort and approximate; it produces a **soft signal** only.
-
----
-
-## Kafka Topics & Ops
-
-### Topics used
-
-* Input: `sentrix.ingestor.events`
-* Output KEEP: `sentrix.filter-service-a.cleaned`
-* Output DROP: `sentrix.filter-service-a.dropped`
-
-### Create topics (local)
+2. Set Java 21 (macOS Homebrew example)
 
 ```bash
-# Create events.cleaned topic
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---create \
---topic sentrix.filter-service-a.cleaned \
---bootstrap-server localhost:9092 \
---partitions 3 \
---replication-factor 1 \
---config cleanup.policy=delete \
---config retention.ms=604800000
-
-# Create events.dropped topic (audit + evaluation)
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---create \
---topic sentrix.filter-service-a.dropped \
---bootstrap-server localhost:9092 \
---partitions 3 \
---replication-factor 1 \
---config cleanup.policy=delete \
---config retention.ms=604800000
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
 ```
 
-### Verify topics
+3. Run locally
 
 ```bash
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---describe \
---bootstrap-server localhost:9092 \
---topic sentrix.filter-service-a.cleaned
-
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---describe \
---bootstrap-server localhost:9092 \
---topic sentrix.filter-service-a.dropped
+cd backend/filtering-service-a
+set -a
+source .env.local
+set +a
+./mvnw spring-boot:run
 ```
 
-### Delete topics
+4. Confirm env loaded
 
 ```bash
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---delete \
---topic sentrix.filter-service-a.cleaned \
---bootstrap-server localhost:9092
-
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---delete \
---topic sentrix.filter-service-a.dropped \
---bootstrap-server localhost:9092
+env | egrep '^(KAFKA_|APP_KAFKA_|REDIS_|PORT)'
 ```
 
----
+### Railway setup
 
-## Kafka Consumption & Failure Handling (Design Notes)
+Monorepo service settings:
+- Root Directory: `backend/filtering-service-a`
+- Build Command: `./mvnw -DskipTests package`
+- Start Command: `java -jar target/*.jar`
 
-Filtering Service A uses **manual Kafka acknowledgments** to control when events are considered “processed”.
+Use values from `.env.railway` in Railway Variables.
 
-* `enable-auto-commit=false`
-* After processing:
+Redis host rule:
+- Inside Railway deployment: use internal host (for example `redis.railway.internal:6379`).
+- From local machine: use Railway public Redis host+port (proxy endpoint), not internal host.
 
-    * KEEP → publish to `sentrix.filter-service-a.cleaned`
-    * DROP → publish to `sentrix.filter-service-a.dropped`
-* **Offsets are acknowledged only after publish succeeds**, preventing silent loss.
+### Kafka topics and retention
 
-### Poison-pill handling (intentional)
+Service A reads:
+- `APP_KAFKA_TOPIC_RAW` (default `sentrix.ingestor.events`)
 
-Unrecoverable inputs (e.g., JSON parse failure / malformed messages) are:
+Service A writes:
+- `APP_KAFKA_TOPIC_CLEANED` (default `sentrix.filter-service-a.cleaned`)
+- `APP_KAFKA_TOPIC_DROPPED` (default `sentrix.filter-service-a.dropped`)
 
-* routed to `sentrix.filter-service-a.dropped`
-* **acknowledged**
-* **not retried**
+Consumer group:
+- `APP_KAFKA_CONSUMER_GROUP_ID` (default `filter-service-a`)
 
-This prevents the consumer from stalling on bad messages while still preserving them for audit/evaluation.
+Target retention policy:
+- 7 days (`retention.ms=604800000`) for Service A output topics.
 
----
+Create output topics with 7-day retention:
 
-## Future Work (Not Implemented Yet)
+```bash
+kafka-topics --bootstrap-server <BOOTSTRAP> --create --if-not-exists \
+  --topic sentrix.filter-service-a.cleaned \
+  --partitions 3 --replication-factor 1 \
+  --config retention.ms=604800000
 
-### Phase 7 — Source-aware tuning (Reddit vs Twitter vs Telegram)
+kafka-topics --bootstrap-server <BOOTSTRAP> --create --if-not-exists \
+  --topic sentrix.filter-service-a.dropped \
+  --partitions 3 --replication-factor 1 \
+  --config retention.ms=604800000
+```
 
-**Goal:** one pipeline, but thresholds vary by `event.source` (without branching logic inside rules).
+If topics already exist, enforce 7-day retention:
 
-Planned steps:
+```bash
+kafka-configs --bootstrap-server <BOOTSTRAP> --alter --entity-type topics \
+  --entity-name sentrix.filter-service-a.cleaned \
+  --add-config retention.ms=604800000
 
-* Add `SourcePolicy` config with per-source overrides for:
+kafka-configs --bootstrap-server <BOOTSTRAP> --alter --entity-type topics \
+  --entity-name sentrix.filter-service-a.dropped \
+  --add-config retention.ms=604800000
+```
 
-    * `min-text-len`
-    * URL/emoji/caps thresholds
-    * near-dup sensitivity (`minWords`, `maxHamming`, `minMatches`, window)
-* Resolve policy early in the pipeline (`policy = resolve(event.source)`), then **inject into**:
+### Kafka security (Confluent Cloud)
 
-    * Phase 5 rule thresholds
-    * Phase 6 near-dup parameters
-* Keep a default policy fallback so unknown sources still work.
+Required when using Confluent Cloud:
+- `KAFKA_SECURITY_PROTOCOL=SASL_SSL`
+- `KAFKA_SASL_MECHANISM=PLAIN`
+- `KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="<API_KEY>" password="<API_SECRET>";`
 
-Why: same schema ≠ same distribution; prevents “tuned-for-Reddit” thresholds from harming Twitter/Telegram later.
+## Runtime Architecture
 
-### Phase 8 — Observability + evaluation hooks (FYP-friendly)
+Pipeline shape:
+- Kafka consumer (manual ack)
+- deterministic filtering pipeline (ordered stages)
+- Kafka producer to cleaned/dropped topics
+- Redis state for dedup and near-dup memory
 
-**Goal:** report measurable improvements without hiding mistakes.
+Reliability behavior:
+- offsets are acknowledged only after publish succeeds
+- malformed/unparseable input is routed to dropped and acknowledged (poison-pill fail-safe)
 
-Planned steps:
+## What Service A Adds to Each Event
 
-* Counters per reason code (drops + tags), plus per-source breakdown
-* Keep vs drop rate + top reasons over time
-* Sampled logging of dropped events (small %, safe for volume)
-* Retain `sentrix.filter-service-a.dropped` for offline evaluation (7–30 days)
+Instead of redefining the full ingestor contract, Service A adds a filtering envelope around it:
 
-Why: makes the system auditable and gives you clean “before/after” evidence for the FYP write-up.
+- `ingestorEvent`: original incoming event
+- `filterMeta`: decision and filtering metadata
+  - `decision`: `KEEP` or `DROP`
+  - `dropReason` / rule reason when dropped
+  - timestamps and rule tags/signals used in filtering
+- `textView`: normalized/canonical text representation
+  - normalization outputs (cleaned text, truncation flags)
+- `eventFeatures`: deterministic feature counts/signals
+  - url count, emoji count, cashtag count, repeated-char indicators, etc.
+
+This is what downstream services consume as the filtered artifact.
+
+## Filtering Stages and Why They Exist
+
+### Stage 1: baseline integrity checks
+
+What it does:
+- confirms required structural fields are present and minimally valid
+
+Why it exists:
+- invalid structure cannot be recovered downstream; fail early keeps the stream healthy
+
+### Stage 2: normalization and feature extraction
+
+What it does:
+- builds canonical text view
+- computes deterministic text features used by later rules
+
+Why it exists:
+- dedup and rule checks require stable, comparable text
+- deterministic features are cheap, explainable, and fast
+
+### Stage 3: hard validation rules
+
+What it does:
+- enforces bounds like minimum text length, event age window, truncation policy
+
+Why it exists:
+- removes stale/invalid records before they consume downstream resources
+
+### Stage 4: exact dedup
+
+What it does:
+- ID dedup (`dedup:id:*`)
+- content hash dedup (`dedup:hash:*`) with TTL/time bucketing
+
+Why it exists:
+- catches retries and exact reposts with high precision and low cost
+
+### Stage 5: deterministic heuristic drops
+
+What it does:
+- applies conservative high-confidence drop rules (spam-like URL density, repeated chars, excessive emoji/cashtags)
+
+Why it exists:
+- removes obvious junk without introducing black-box behavior
+
+### Stage 6: near-dup wave detection (metadata)
+
+What it does:
+- uses SimHash + Hamming distance against recent fingerprints in Redis buckets
+- flags copy-wave patterns in metadata
+
+Why it exists:
+- preserves recall (often still KEEP) while surfacing repetition patterns for downstream ranking/relevance
+
+## Redis Usage Notes
+
+Redis stores short-lived state for:
+- ID/content-hash dedup windows
+- near-dup fingerprint buckets
+
+Fail-open behavior:
+- if Redis is unavailable, warnings are logged and affected checks degrade
+- service continues processing to avoid full stream stoppage
+
+## Useful Commands
+
+Run unit tests:
+
+```bash
+cd backend/filtering-service-a
+./mvnw test
+```
+
+Build jar:
+
+```bash
+cd backend/filtering-service-a
+./mvnw -DskipTests package
+```
+
+Run app locally (after env export):
+
+```bash
+cd backend/filtering-service-a
+./mvnw spring-boot:run
+```
