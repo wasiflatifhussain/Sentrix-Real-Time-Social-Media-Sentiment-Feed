@@ -1,226 +1,124 @@
-# Sentiment Service — Market-Like Sentiment Signal (Hourly + Serving API)
+# Sentiment Service
 
-## Purpose
+Sentiment Service has two runtime components in the same codebase:
+- Worker: consumes filtered events from Kafka, computes hourly aggregates, and updates latest ticker signal snapshots.
+- API: serves sentiment data from MongoDB for frontend/backend clients.
 
-This service consumes **cleaned social events** from Kafka, performs **sentiment scoring and keyword extraction**, and exposes sentiment data through a **backend API** for frontend consumption.
+## 1) Setup
 
-The system intentionally separates sentiment processing into **two layers**:
+### 1.1 Prerequisites
 
-1. **Hourly per-ticker aggregates** (raw, time-series data)
-2. **Latest sentiment signal per ticker** (fast, serving-layer snapshot)
+- Python 3.12+
+- Poetry
+- MongoDB Atlas cluster (used in both local and Railway)
+- Kafka (local for local runs, Confluent Cloud for Railway runs)
 
-This mirrors how market data systems work:
+### 1.2 Install dependencies
 
-> noisy events → hourly bars → indicator snapshot
-
-The frontend never consumes Kafka data directly and never scans large event histories.
-It polls **pre-computed MongoDB data** through a stable API.
-
----
-
-## What is implemented now (scope of current system)
-
-### ✔ Implemented
-
-* Kafka → hourly sentiment aggregation (streaming, incremental)
-* MongoDB storage with TTL for hourly data
-* Periodic signal updater (placeholder logic)
-* One latest signal document per ticker
-* FastAPI backend exposing:
-
-  * list of tickers
-  * latest signals (single or many)
-  * hourly sentiment history for charts
-
-### ❌ Not implemented yet (by design)
-
-* Historical signal (EMA) time-series storage
-* Real sentiment model (currently stubbed)
-* Advanced indicators (trend, confidence, decay curves)
-
-These are listed under **Future Improvements**.
-
----
-
-## High-Level Architecture
-
-### Data flow
-
-1. **Ingestor Service**
-
-   * Publishes raw social events to Kafka
-
-2. **Filtering Service**
-
-   * Normalizes, filters, deduplicates
-   * Publishes cleaned events
-
-3. **Sentiment Service (this repo)**
-
-   * Consumes cleaned events
-   * Scores sentiment (stub)
-   * Builds hourly aggregates
-   * Periodically updates latest signal
-
-4. **Backend API (FastAPI)**
-
-   * Reads MongoDB only
-   * Serves frontend requests
-
-5. **Frontend**
-
-   * Polls backend APIs
-   * Displays dashboard + charts
-
----
-
-## Processing Model
-
-### 1) Streaming path (event-driven)
-
-Runs continuously.
-
-For each cleaned Kafka event:
-
-* Bucket event into UTC hour
-* Compute sentiment score (stub)
-* Increment hourly MongoDB document using `$inc`
-
-Result:
-
-* Exactly one MongoDB document per `(ticker, hour)`
-* Replay-safe, no read-before-write
-
----
-
-### 2) Signal update path (time-driven)
-
-Runs periodically (e.g. every minute).
-
-Logic:
-
-* Determine the most recent **fully closed hour** (with grace window)
-* For each active ticker:
-
-  * Read that hour’s aggregate
-  * Compute a placeholder signal value
-  * Update **one signal document per ticker**
-  * Guard against double application using `asOfHourStartUtc`
-
-Result:
-
-* Latest signal snapshot per ticker
-* Cheap reads for frontend
-* No historical signal stored yet
-
----
-
-## Storage Model (MongoDB)
-
-### Database
-
-Example: `sentrix`
-
----
-
-### Collection: `ticker_sentiment_hourly`
-
-**Purpose:**
-Raw time-series data for charts, debugging, and recomputation.
-
-**One document per (ticker, hour)**
-
-**Key fields:**
-
-* `_id`: `${ticker}|${hourStartUtc}`
-* `ticker`
-* `hourStartUtc`, `hourEndUtc`
-* `count`
-* `scoreSum`
-* `keywordCounts`
-* `sourceBreakdown`
-* `updatedAtUtc`
-* `expireAtUtc` (TTL)
-
-**Retention:**
-
-* Automatically expires after configured TTL (e.g. 7–30 days)
-
-**Used for:**
-
-* Hourly sentiment charts
-* Transparency and demo
-* Future signal recomputation
-
----
-
-### Collection: `ticker_sentiment_signal`
-
-**Purpose:**
-Serving-layer snapshot of **current sentiment per ticker**.
-
-**One document per ticker**
-
-**Key fields:**
-
-* `_id`: `ticker`
-* `ticker`
-* `signalScore`
-* `asOfHourStartUtc`
-* `updatedAtUtc`
-
-**Optional fields (future):**
-
-* `recentVolume`
-* `keywords`
-* `halfLifeHours`
-* trend indicators
-
-**Used for:**
-
-* Dashboards
-* Fast polling
-* Overview pages
-
----
-
-## Backend API
-
-All endpoints are prefixed with:
-
+```bash
+cd backend/sentiment-service
+poetry install
 ```
+
+### 1.3 Environment files
+
+- Local: `.env.local` from `.env.local.example`
+- Railway: `.env.railway` from `.env.railway.example`
+- Mongo stays Atlas in both.
+
+## 2) Sentiment Worker Setup
+
+### 2.1 Local (Worker)
+
+```bash
+cd backend/sentiment-service
+cp .env.local.example .env.local
+# edit .env.local
+set -a
+source .env.local
+set +a
+poetry run python -m sentiment_service.main
+```
+
+### 2.2 Railway (Worker)
+
+Railway service config:
+- Root directory: `backend/sentiment-service`
+- Start command: `poetry run python -m sentiment_service.main`
+- Variables: copy from `.env.railway` (or `.env.railway.example` + real secrets)
+
+## 3) Sentiment API Setup
+
+### 3.1 Local (API)
+
+```bash
+cd backend/sentiment-service
+cp .env.local.example .env.local
+# edit .env.local
+set -a
+source .env.local
+set +a
+poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8000
+```
+
+Local API base URL:
+
+```text
+http://localhost:8000/api/v1
+```
+
+### 3.2 Railway (API)
+
+Railway service config:
+- Root directory: `backend/sentiment-service`
+- Start command: `poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8080`
+- Set `PORT='8080'`
+- Variables: copy from `.env.railway` (or `.env.railway.example` + real secrets)
+
+## 4) Data Flow and Architecture
+
+Pipeline flow:
+1. Filtering Service B publishes cleaned events to Kafka topic `sentrix.filter-service-b.filtered`.
+2. Sentiment worker consumes that topic.
+3. Each event is parsed from envelope shape (`ingestorEvent`, `textView`, `filterMeta`).
+4. Worker computes per-event sentiment (currently stub scorer), extracts keywords, and increments hourly aggregate documents in MongoDB.
+5. Background signal loop computes and upserts one latest signal document per ticker for the latest eligible closed hour.
+6. API reads MongoDB only and serves frontend/backend clients.
+
+Why two Mongo collections:
+- `ticker_sentiment_hourly`: raw hourly series for charts, transparency, recomputation.
+- `ticker_sentiment_signal`: one latest snapshot per ticker for cheap low-latency reads.
+
+This separation keeps chart reads accurate and signal reads fast.
+
+## 5) API Endpoints
+
+Base prefix:
+
+```text
 /api/v1
 ```
 
----
+### 5.1 `GET /api/v1/health`
 
-### `GET /api/v1/health`
+Purpose:
+- Liveness check.
 
-**Purpose:**
-Health check endpoint.
-
-**Returns:**
+Response:
 
 ```json
 { "ok": true }
 ```
 
-Used for monitoring and sanity checks.
+### 5.2 `GET /api/v1/tickers`
 
----
+Purpose:
+- List recent tickers from hourly aggregates.
 
-### `GET /api/v1/tickers`
+Query params:
+- `limit` (optional, default `2000`, min `1`, max `20000`)
 
-**Purpose:**
-List all tickers currently present in the system.
-
-Used to populate frontend dropdowns / autocomplete.
-
-**Query params:**
-
-* `limit` (optional, default 2000)
-
-**Returns:**
+Response shape:
 
 ```json
 {
@@ -229,16 +127,16 @@ Used to populate frontend dropdowns / autocomplete.
 }
 ```
 
----
+Notes:
+- `tickers` is sliced by `limit`.
+- `count` is total distinct recent tickers before slicing.
 
-### `POST /api/v1/signals/latest`
+### 5.3 `POST /api/v1/signals/latest`
 
-**Purpose:**
-Fetch latest sentiment signals for **multiple tickers at once**.
+Purpose:
+- Batch fetch latest signal docs for many tickers.
 
-Used by dashboard list views.
-
-**Request body:**
+Request body:
 
 ```json
 {
@@ -246,187 +144,139 @@ Used by dashboard list views.
 }
 ```
 
-**Returns:**
+Validation:
+- Empty `tickers` list returns `400`.
+
+Response shape:
 
 ```json
 {
   "requested": ["AAPL", "TSLA", "MSFT"],
-  "found": 3,
+  "found": 2,
   "signals": {
-    "AAPL": { ... },
-    "TSLA": { ... }
+    "AAPL": {
+      "_id": "AAPL",
+      "ticker": "AAPL",
+      "signalScore": 0.42,
+      "asOfHourStartUtc": 1774584000,
+      "updatedAtUtc": 1774587600
+    },
+    "TSLA": {
+      "_id": "TSLA",
+      "ticker": "TSLA",
+      "signalScore": -0.10,
+      "asOfHourStartUtc": 1774584000,
+      "updatedAtUtc": 1774587600
+    }
   }
 }
 ```
 
----
+### 5.4 `GET /api/v1/tickers/{ticker}/sentiment`
 
-### `GET /api/v1/tickers/{ticker}/sentiment`
+Purpose:
+- Ticker detail endpoint for chart + latest signal.
 
-**Purpose:**
-Fetch detailed sentiment data for **one ticker**.
+Query params:
+- `hours` (optional, default `48`, min `1`, max `336`)
 
-Used for:
-
-* detail pages
-* charts
-
-**Query params:**
-
-* `hours` (default 48, max 336)
-
-**Returns:**
+Response shape:
 
 ```json
 {
   "ticker": "TSLA",
-  "signal": { ... },
+  "signal": {
+    "_id": "TSLA",
+    "ticker": "TSLA",
+    "signalScore": 0.35,
+    "asOfHourStartUtc": 1774584000,
+    "updatedAtUtc": 1774587600
+  },
   "hourly": [
-    { "hourStartUtc": ..., "count": ..., "scoreSum": ... }
+    {
+      "_id": "TSLA|1774580400",
+      "ticker": "TSLA",
+      "hourStartUtc": 1774580400,
+      "hourEndUtc": 1774583999,
+      "count": 18,
+      "scoreSum": 4.3,
+      "keywordCounts": {"delivery": 3, "earnings": 2},
+      "sourceBreakdown": {"REDDIT": 18},
+      "updatedAtUtc": 1774584100,
+      "expireAtUtc": 1775188799
+    }
   ]
 }
 ```
 
----
+Error case:
+- If both signal and hourly data are missing for the ticker, returns `404`.
 
-## How charts work (current behavior)
+## 6) Storage Model
 
-* Charts use **hourly aggregates**
-* Data reflects **raw hourly sentiment**, not smoothed signal
-* This is intentional and correct for a first version
+### 6.1 `ticker_sentiment_hourly`
 
-Dashboard:
+Purpose:
+- Event-driven hourly aggregation store.
 
-* shows **latest signal**
+Behavior:
+- One doc per `(ticker, hour)` with `_id = {ticker}|{hourStartUtc}`.
+- Updated via `$inc` so streaming writes are replay-friendly and do not require read-before-write.
+- TTL via `expireAtUtc` + TTL index (rolling retention).
 
-Charts:
+Primary fields:
+- `_id`, `ticker`, `hourStartUtc`, `hourEndUtc`
+- `count`, `scoreSum`
+- `keywordCounts`, `sourceBreakdown`
+- `updatedAtUtc`, `expireAtUtc`
 
-* show **what happened per hour**
+### 6.2 `ticker_sentiment_signal`
 
----
+Purpose:
+- Serving snapshot store.
 
-## How to run the system locally
+Behavior:
+- One doc per ticker (`_id = ticker`).
+- Updated only when the new hour is strictly newer than existing `asOfHourStartUtc`.
+- Prevents duplicate same-hour signal application.
 
-### Terminal 1 — Sentiment Service (Kafka consumer + signal updater)
+Primary fields:
+- `_id`, `ticker`, `signalScore`
+- `asOfHourStartUtc`, `updatedAtUtc`
+- optional future fields: `recentVolume`, `keywords`, `halfLifeHours`
+
+## 7) What Is Implemented
+
+- Kafka consumer for cleaned events (`sentrix.filter-service-b.filtered`)
+- Envelope parsing from filter output
+- Stub sentiment scoring + keyword extraction
+- Incremental hourly aggregation into Mongo
+- TTL-managed hourly retention
+- Periodic signal updater loop
+- Latest signal upsert with per-hour idempotency guard
+- FastAPI serving layer with health/tickers/signals/detail endpoints
+
+## 8) Not Implemented Yet (Planned)
+
+- Real sentiment model (currently stub)
+- Historical signal series storage (only latest snapshot stored)
+- Advanced signal features (confidence, volatility, trend strength)
+- richer API-level analytics endpoints
+
+## 9) Quick API Test Commands
 
 ```bash
-poetry install
-poetry run python -m sentiment_service.main
+# health
+curl http://localhost:8000/api/v1/health
+
+# ticker list
+curl "http://localhost:8000/api/v1/tickers?limit=50"
+
+# latest signals
+curl -X POST http://localhost:8000/api/v1/signals/latest \
+  -H 'Content-Type: application/json' \
+  -d '{"tickers":["TSLA","AAPL","MSFT"]}'
+
+# ticker detail
+curl "http://localhost:8000/api/v1/tickers/TSLA/sentiment?hours=48"
 ```
-
-This starts:
-
-* Kafka consumer
-* hourly aggregation
-* signal updater loop
-
----
-
-### Terminal 2 — Backend API (FastAPI)
-
-Install API dependencies if not already installed:
-
-```bash
-poetry add fastapi uvicorn
-```
-
-Run API server:
-
-```bash
-poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8000
-```
-
-API base URL (local):
-
-```
-http://localhost:8000/api/v1
-```
-
----
-
-## Testing with Postman
-
-### Health
-
-```
-GET http://localhost:8000/api/v1/health
-```
-
----
-
-### List tickers
-
-```
-GET http://localhost:8000/api/v1/tickers
-```
-
----
-
-### Latest signals (multiple tickers)
-
-```
-POST http://localhost:8000/api/v1/signals/latest
-```
-
-Body:
-
-```json
-{
-  "tickers": ["TSLA", "AAPL"]
-}
-```
-
----
-
-### Ticker detail + chart data
-
-```
-GET http://localhost:8000/api/v1/tickers/TSLA/sentiment?hours=48
-```
-
----
-
-## Future Improvements
-
-### 1) Real sentiment model
-
-* Replace stub sentiment scorer with:
-
-  * transformer model
-  * lexicon-based scoring
-  * or hybrid approach
-
-### 2) Historical signal series
-
-* Store **signal per hour** (7-day rolling window)
-* Enable “signal line” charts
-* Keep latest snapshot for fast reads
-
-### 3) On-demand signal recomputation
-
-* Compute EMA in API from hourly data
-* Avoid extra storage initially
-
-### 4) Confidence metrics
-
-* Volume-weighted confidence
-* Volatility indicators
-* Trend strength
-
----
-
-## Summary
-
-This system intentionally prioritizes:
-
-* correctness
-* clarity
-* frontend usability
-* extensibility
-
-Hourly data provides transparency and charts.
-Signal snapshots provide stable UX and scalability.
-
-The architecture is production-grade and ready for incremental intelligence upgrades without breaking APIs or storage contracts.
-
----
