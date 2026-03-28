@@ -1261,8 +1261,9 @@ Signals / reason code:
 
 
 ```bash
-poetry install  # if not installed or something new added
-uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012 --app-dir src
+cd backend/filtering-service-b
+poetry install
+poetry run uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012 --app-dir src
 ```
 
 
