@@ -52,10 +52,12 @@ class FilterBSemanticProcessor:
         relevance_scorer: TickerRelevanceScorer,
         cross_user_scorer: CrossUserRepetitionScorer | None = None,
         novelty_scorer: NoveltyScorer | None = None,
+        final_keep_threshold: float = 0.0,
     ) -> None:
         self._relevance_scorer = relevance_scorer
         self._cross_user_scorer = cross_user_scorer
         self._novelty_scorer = novelty_scorer
+        self._final_keep_threshold = final_keep_threshold
 
     def process(
         self, event: CleanedEvent, state_context: Mapping[str, Any] | None = None
@@ -118,12 +120,28 @@ class FilterBSemanticProcessor:
             limit=2,
         )
 
-        decision_value = relevance.decision
-        if same_account.force_reject:
-            decision_value = "REJECT"
+        decision_value, decision_mode = self._resolve_final_decision(
+            relevance_decision=relevance.decision,
+            same_account_force_reject=same_account.force_reject,
+            score=score,
+        )
+        if decision_value == "REJECT":
             score = 0.0
-        elif decision_value == "REJECT":
-            score = 0.0
+
+        merged_signals.update(
+            {
+                "finalThresholdUsed": self._final_keep_threshold,
+                "finalScoreBeforeDecision": _clamp_score(
+                    1.0
+                    + relevance.score_delta
+                    + repetition.score_delta
+                    + same_account.score_delta
+                    + burst.score_delta
+                    + novelty.score_delta
+                ),
+                "finalDecisionMode": decision_mode,
+            }
+        )
 
         return FilterDecision(
             decision=decision_value,
@@ -131,6 +149,20 @@ class FilterBSemanticProcessor:
             decision_reasons=reasons,
             signals=merged_signals,
         )
+
+    def _resolve_final_decision(
+        self,
+        relevance_decision: str,
+        same_account_force_reject: bool,
+        score: float,
+    ) -> tuple[str, str]:
+        if same_account_force_reject:
+            return "REJECT", "override_same_account_extreme"
+        if relevance_decision == "REJECT":
+            return "REJECT", "override_relevance_reject"
+        if score >= self._final_keep_threshold:
+            return "KEEP", "threshold_keep"
+        return "REJECT", "threshold_reject"
 
     @staticmethod
     def build_output_envelope(

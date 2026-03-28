@@ -11,6 +11,7 @@ from confluent_kafka import Message
 from fastapi import FastAPI
 
 from filtering_service_b.config.settings import (
+    load_final_decision_settings,
     load_app_settings,
     load_kafka_settings,
     load_manipulation_settings,
@@ -134,6 +135,7 @@ async def lifespan(app: FastAPI):
     relevance_settings = load_relevance_settings()
     manipulation_settings = load_manipulation_settings()
     novelty_settings = load_novelty_settings()
+    final_decision_settings = load_final_decision_settings()
 
     consumer = KafkaConsumerRunner(kafka_settings)
     producer = KafkaProducerClient(kafka_settings)
@@ -156,6 +158,7 @@ async def lifespan(app: FastAPI):
         relevance_scorer=relevance_scorer,
         cross_user_scorer=cross_user_scorer,
         novelty_scorer=novelty_scorer,
+        final_keep_threshold=final_decision_settings.keep_threshold,
     )
     stop_event = threading.Event()
 
@@ -240,7 +243,7 @@ async def lifespan(app: FastAPI):
                 msg.offset(),
             )
         except Exception as ex:
-            # If parsing/processing fails, route a reject envelope and keep pipeline alive.
+            # If parsing/processing fails, route a reject envelope and keep pipeline alive
             reject = FilterDecision(
                 decision="REJECT",
                 credibility_score=0.0,

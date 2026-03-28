@@ -99,6 +99,11 @@ class NoveltySettings:
     min_references_for_distinct_boost: int
 
 
+@dataclass(frozen=True)
+class FinalDecisionSettings:
+    keep_threshold: float
+
+
 def _get_env(name: str, default: str | None = None) -> str:
     val = os.getenv(name, default)
     if val is None or val.strip() == "":
@@ -480,3 +485,10 @@ def load_novelty_settings() -> NoveltySettings:
         ),
     )
     return _validate_novelty_settings(settings)
+
+
+def load_final_decision_settings() -> FinalDecisionSettings:
+    keep_threshold = _get_env_float("FINAL_KEEP_THRESHOLD", "0.40")
+    if not 0.0 <= keep_threshold <= 1.0:
+        raise ValueError("FINAL_KEEP_THRESHOLD must be in range [0.0, 1.0]")
+    return FinalDecisionSettings(keep_threshold=keep_threshold)
