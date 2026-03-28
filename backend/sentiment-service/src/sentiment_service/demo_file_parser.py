@@ -1,5 +1,5 @@
 import json
-from objects.objects import Event, HourlyLevelScore
+from sentiment_service.objects.objects import Event, HourlyLevelScore
 
 class DemoKafkaParser:
     def __init__(
