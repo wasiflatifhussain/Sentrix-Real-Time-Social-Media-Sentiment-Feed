@@ -1,6 +1,6 @@
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       acks: all
       retries: 10
@@ -10,6 +10,9 @@ spring:
         enable.idempotence: true
         delivery.timeout.ms: 120000
         request.timeout.ms: 30000
+        security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+        sasl.mechanism: ${KAFKA_SASL_MECHANISM:}
+        sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
 
 reddit:
   client-id: ${CLIENT_ID}
@@ -22,7 +25,7 @@ reddit:
 
 app:
   kafka:
-    topic: sentrix.ingestor.events
+    topic: ${KAFKA_TOPIC:sentrix.ingestor.events}
 
 logging:
   level:
@@ -30,4 +33,4 @@ logging:
     com.sentrix.ingestor_service.adapter.reddit: INFO
 
 server:
-  port: 8080
+  port: ${PORT:8080}
