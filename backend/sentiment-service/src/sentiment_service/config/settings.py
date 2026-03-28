@@ -57,7 +57,7 @@ def load_kafka_settings() -> KafkaSettings:
     return KafkaSettings(
         bootstrap_servers=_get_env("KAFKA_BOOTSTRAP_SERVERS"),
         group_id=_get_env("KAFKA_GROUP_ID", "sentiment-service"),
-        input_topic=_get_env("KAFKA_INPUT_TOPIC", "CLEANED_EVENTS"),
+        input_topic=_get_env("KAFKA_INPUT_TOPIC", "sentrix.filter-service-b.filtered"),
         security_protocol=_get_env("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
         sasl_mechanism=_get_optional_env("KAFKA_SASL_MECHANISM"),
         sasl_username=_get_optional_env("KAFKA_SASL_USERNAME"),
