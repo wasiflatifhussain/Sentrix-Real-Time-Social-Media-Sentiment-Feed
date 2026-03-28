@@ -47,7 +47,7 @@ Math/AI used:
 - `src/filtering_service_b/observability/*` logging + rolling metrics
 - `tests/unit/*` unit tests
 
-## Setup
+## Common Setup
 
 From repo root:
 
@@ -59,45 +59,71 @@ poetry install
 
 If `poetry install` says lock is stale, run `poetry lock` first, then install again.
 
-## Environment Variables
+## Local Setup
 
-Copy example and adjust:
+Create local env file:
 
 ```bash
 cd backend/filtering-service-b
-cp .env.example .env
+cp .env.local.example .env.local
 ```
 
-Main groups in `.env`:
-- Kafka: bootstrap, topics, consumer group, offset mode
-- Redis: host/port/db/password/ssl
-- State TTL and list-size caps
-- Relevance thresholds/penalties/model
-- Manipulation thresholds/penalties
-- Novelty thresholds/penalties
-- Final decision threshold (`FINAL_KEEP_THRESHOLD`)
-- Rolling observability (`APP_ROLLING_SUMMARY_EVERY`, `APP_NEAR_THRESHOLD_WINDOW`)
+Recommended local env behavior:
+- Kafka: `KAFKA_SECURITY_PROTOCOL=PLAINTEXT`
+- Redis: leave `REDIS_URL` empty and use `REDIS_HOST=localhost`, `REDIS_PORT=6379`
+- Keep `PORT=8012` unless you need a different local port
 
 Optional speed-up for model fetch:
-- Set `HF_TOKEN` in your shell or `.env` to reduce Hugging Face unauthenticated throttling warnings.
+- Set `HF_TOKEN` in your shell or `.env.local` to reduce Hugging Face unauthenticated throttling warnings.
 
-## Run Service
-
-From `backend/filtering-service-b`:
+Run locally:
 
 ```bash
-poetry run uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012
+cd backend/filtering-service-b
+set -a
+source .env.local
+set +a
+poetry run python -m filtering_service_b.main
 ```
 
 Run with explicit threshold override:
 
 ```bash
-FINAL_KEEP_THRESHOLD=0.40 poetry run uvicorn filtering_service_b.main:app --host 0.0.0.0 --port 8012
+cd backend/filtering-service-b
+set -a
+source .env.local
+set +a
+FINAL_KEEP_THRESHOLD=0.40 poetry run python -m filtering_service_b.main
 ```
 
-Important:
-- Prefer `poetry run ...` so dependency environment is consistent.
-- If you start with plain `uvicorn` from base conda env, missing-package errors are expected.
+## Railway Setup
+
+Create Railway env template copy:
+
+```bash
+cd backend/filtering-service-b
+cp .env.railway.example .env.railway
+```
+
+In Railway variables, fill values from `.env.railway`:
+- Kafka security for Confluent:
+  - `KAFKA_SECURITY_PROTOCOL=SASL_SSL`
+  - `KAFKA_SASL_MECHANISM=PLAIN`
+  - `KAFKA_SASL_USERNAME=<API_KEY>`
+  - `KAFKA_SASL_PASSWORD=<API_SECRET>`
+- Redis:
+  - preferred: set `REDIS_URL`
+  - fallback: set `REDIS_HOST/PORT/DB/USERNAME/PASSWORD/SSL`
+
+Suggested Railway service settings:
+- Root Directory: `backend/filtering-service-b`
+- Build Command: `poetry install --no-interaction --no-ansi`
+- Start Command: `poetry run python -m filtering_service_b.main`
+
+Notes:
+- Runtime port is read from `PORT` env (Railway sets this automatically).
+- Internal Redis hostnames like `redis.railway.internal` resolve only inside Railway.
+- Prefer `poetry run ...` for consistent dependency/runtime behavior.
 
 ## How Filtering Works (Stage by Stage)
 
