@@ -247,7 +247,7 @@ def load_state_ttl_settings() -> StateTtlSettings:
 
 def _default_ticker_profiles_path() -> str:
     current = Path(__file__).resolve()
-    relative = Path("backend/ingestor-service/src/main/resources/tickers.json")
+    relative = Path("filtering_service_b/resources/tickers.json")
     for parent in current.parents:
         candidate = parent / relative
         if candidate.is_file():

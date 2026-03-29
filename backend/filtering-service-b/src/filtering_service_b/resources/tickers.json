@@ -1,0 +1,202 @@
+[
+  {
+    "ticker": "TSLA",
+    "company": "Tesla",
+    "queries": [
+      "$TSLA",
+      "TSLA (stock OR shares OR price OR earnings OR valuation OR buy OR sell)",
+      "Tesla stock",
+      "TSLA earnings OR \"Tesla earnings\""
+    ]
+  },
+  {
+    "ticker": "AAPL",
+    "company": "Apple",
+    "queries": [
+      "$AAPL",
+      "AAPL (stock OR shares OR price OR earnings OR valuation)",
+      "Apple stock",
+      "AAPL earnings OR \"Apple earnings\""
+    ]
+  },
+  {
+    "ticker": "MSFT",
+    "company": "Microsoft",
+    "queries": [
+      "$MSFT",
+      "MSFT (stock OR shares OR price OR earnings OR valuation)",
+      "Microsoft stock",
+      "MSFT earnings OR \"Microsoft earnings\""
+    ]
+  },
+  {
+    "ticker": "NVDA",
+    "company": "NVIDIA",
+    "queries": [
+      "$NVDA",
+      "NVDA (stock OR shares OR price OR earnings OR valuation)",
+      "NVIDIA stock",
+      "NVDA earnings OR \"NVIDIA earnings\""
+    ]
+  },
+  {
+    "ticker": "AMZN",
+    "company": "Amazon",
+    "queries": [
+      "$AMZN",
+      "AMZN (stock OR shares OR price OR earnings OR valuation)",
+      "Amazon stock",
+      "AMZN earnings OR \"Amazon earnings\""
+    ]
+  },
+  {
+    "ticker": "GOOGL",
+    "company": "Alphabet",
+    "queries": [
+      "$GOOGL",
+      "GOOGL (stock OR shares OR price OR earnings OR valuation)",
+      "Google stock",
+      "GOOGL earnings OR \"Google earnings\""
+    ]
+  },
+  {
+    "ticker": "META",
+    "company": "Meta",
+    "queries": [
+      "$META",
+      "META (stock OR shares OR price OR earnings OR valuation)",
+      "Meta stock",
+      "META earnings OR \"Meta earnings\""
+    ]
+  },
+  {
+    "ticker": "BRK.B",
+    "company": "Berkshire Hathaway",
+    "queries": [
+      "$BRK.B",
+      "BRK.B (stock OR shares OR price OR earnings OR valuation)",
+      "Berkshire Hathaway stock",
+      "Berkshire earnings OR \"Berkshire Hathaway earnings\""
+    ]
+  },
+  {
+    "ticker": "JPM",
+    "company": "JPMorgan Chase",
+    "queries": [
+      "$JPM",
+      "JPM (stock OR shares OR price OR earnings OR valuation)",
+      "JPMorgan stock",
+      "JPMorgan Chase & Co OR \"JPMorgan earnings\""
+    ]
+  },
+  {
+    "ticker": "V",
+    "company": "Visa",
+    "queries": [
+      "$V",
+      "Visa (stock OR shares OR price OR earnings OR valuation)",
+      "Visa stock",
+      "Visa earnings"
+    ]
+  },
+  {
+    "ticker": "MA",
+    "company": "Mastercard",
+    "queries": [
+      "$MA",
+      "Mastercard (stock OR shares OR price OR earnings OR valuation)",
+      "Mastercard stock",
+      "Mastercard earnings"
+    ]
+  },
+  {
+    "ticker": "WMT",
+    "company": "Walmart",
+    "queries": [
+      "$WMT",
+      "WMT (stock OR shares OR price OR earnings OR valuation)",
+      "Walmart stock",
+      "Walmart earnings"
+    ]
+  },
+  {
+    "ticker": "LLY",
+    "company": "Eli Lilly",
+    "queries": [
+      "$LLY",
+      "LLY (stock OR shares OR price OR earnings OR valuation)",
+      "Eli Lilly stock",
+      "Eli Lilly earnings"
+    ]
+  },
+  {
+    "ticker": "XOM",
+    "company": "Exxon Mobil",
+    "queries": [
+      "$XOM",
+      "XOM (stock OR shares OR price OR earnings OR valuation)",
+      "Exxon stock",
+      "Exxon earnings"
+    ]
+  },
+  {
+    "ticker": "JNJ",
+    "company": "Johnson & Johnson",
+    "queries": [
+      "$JNJ",
+      "JNJ (stock OR shares OR price OR earnings OR valuation)",
+      "Johnson & Johnson stock",
+      "Johnson & Johnson earnings"
+    ]
+  },
+  {
+    "ticker": "ORCL",
+    "company": "Oracle",
+    "queries": [
+      "$ORCL",
+      "ORCL (stock OR shares OR price OR earnings OR valuation)",
+      "Oracle stock",
+      "Oracle earnings"
+    ]
+  },
+  {
+    "ticker": "AVGO",
+    "company": "Broadcom",
+    "queries": [
+      "$AVGO",
+      "AVGO (stock OR shares OR price OR earnings OR valuation)",
+      "Broadcom stock",
+      "Broadcom earnings"
+    ]
+  },
+  {
+    "ticker": "COST",
+    "company": "Costco",
+    "queries": [
+      "$COST",
+      "COST (stock OR shares OR price OR earnings OR valuation)",
+      "Costco stock",
+      "Costco earnings"
+    ]
+  },
+  {
+    "ticker": "NKE",
+    "company": "Nike",
+    "queries": [
+      "$NKE",
+      "NKE (stock OR shares OR price OR earnings OR valuation)",
+      "Nike stock",
+      "Nike earnings"
+    ]
+  },
+  {
+    "ticker": "PFE",
+    "company": "Pfizer",
+    "queries": [
+      "$PFE",
+      "PFE (stock OR shares OR price OR earnings OR valuation)",
+      "Pfizer stock",
+      "Pfizer earnings"
+    ]
+  }
+]
