@@ -37,14 +37,15 @@ cp .env.local.example .env.local
 set -a
 source .env.local
 set +a
-poetry run python -m sentiment_service.main
+PYTHONPATH=src poetry run python -m sentiment_service.main
 ```
 
 ### 2.2 Railway (Worker)
 
 Railway service config:
 - Root directory: `backend/sentiment-service`
-- Start command: `poetry run python -m sentiment_service.main`
+- Build command: `poetry install --no-interaction --no-ansi`
+- Start command: `PYTHONPATH=src poetry run python -m sentiment_service.main`
 - Variables: copy from `.env.railway` (or `.env.railway.example` + real secrets)
 
 ## 3) Sentiment API Setup
@@ -58,7 +59,7 @@ cp .env.local.example .env.local
 set -a
 source .env.local
 set +a
-poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8000
+poetry run uvicorn --app-dir src sentiment_service.api.app:app --host 0.0.0.0 --port 8000
 ```
 
 Local API base URL:
@@ -71,7 +72,8 @@ http://localhost:8000/api/v1
 
 Railway service config:
 - Root directory: `backend/sentiment-service`
-- Start command: `poetry run uvicorn sentiment_service.api.app:app --host 0.0.0.0 --port 8080`
+- Build command: `poetry install --no-interaction --no-ansi`
+- Start command: `poetry run uvicorn --app-dir src sentiment_service.api.app:app --host 0.0.0.0 --port $PORT`
 - Set `PORT='8080'`
 - Variables: copy from `.env.railway` (or `.env.railway.example` + real secrets)
 
