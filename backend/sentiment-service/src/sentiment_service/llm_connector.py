@@ -6,6 +6,7 @@ from sentiment_service.objects.objects import Event
 
 logger = logging.getLogger(__name__)
 
+
 class FinbertClient:
     def __init__(
         self,
@@ -48,10 +49,11 @@ class FinbertClient:
         return
     
     def run(self, event: Event):
-        print(
-            f"start the operation of {self.__class__.__name__} - getting Finbert response regarding {event.event_id}"
+        logger.info(
+            "start the operation of %s - getting Finbert response regarding %s",
+            self.__class__.__name__,
+            getattr(event, "id", None),
         )
-        # texts \th {id}!!!")
         res = list()
         try:
             for response in self.assess(event.content):
@@ -62,13 +64,17 @@ class FinbertClient:
                     )
                 )
             event.response = res
-        except Exception as e:
-            print(
-                f"Unexpected error: {str(e)}"
+        except Exception:
+            logger.exception(
+                "Unexpected error during %s for eventId=%s",
+                self.__class__.__name__,
+                getattr(event, "id", None),
             )
-        finally: 
-            print(
-                f"finished the operation of {self.__class__.__name__} - getting Finbert response regarding {event.id}"
+        finally:
+            logger.info(
+                "finished the operation of %s - getting Finbert response regarding %s",
+                self.__class__.__name__,
+                getattr(event, "id", None),
             )
 
     def read_results_str(self,):
@@ -83,9 +89,9 @@ class FinbertClient:
                 model="ProsusAI/finbert",
             )
             return result
-        except Exception as e:
-            print(f"Error Occurred: {str(e)}")
-            return None
+        except Exception:
+            logger.exception("Error occurred during FinBERT text classification")
+            return []
 
     def write_texts_to_file(self, texts) -> None:
         import json
