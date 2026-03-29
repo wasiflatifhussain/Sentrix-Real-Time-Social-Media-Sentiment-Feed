@@ -27,7 +27,6 @@ cp .env.example .env
 5. Set required values in `.env`:
 ```env
 NODE_ENV='development'
-NEXT_PUBLIC_BASE_URL='http://localhost:3000'
 FINNHUB_API_KEY='<YOUR_FINNHUB_API_KEY>'
 FINNHUB_BASE_URL='https://finnhub.io/api/v1'
 NEXT_PUBLIC_SENTRIX_API_BASE_URL='http://localhost:8000/api/v1'
@@ -44,7 +43,6 @@ npm run dev
 2. Set Railway variables using `.env.railway.example` as template:
 ```env
 NODE_ENV='production'
-NEXT_PUBLIC_BASE_URL='https://<your-frontend-domain>'
 FINNHUB_API_KEY='<YOUR_FINNHUB_API_KEY>'
 FINNHUB_BASE_URL='https://finnhub.io/api/v1'
 NEXT_PUBLIC_SENTRIX_API_BASE_URL='https://sentiment-api-production-c71c.up.railway.app/api/v1'
