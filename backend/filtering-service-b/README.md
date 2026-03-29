@@ -96,7 +96,53 @@ set +a
 FINAL_KEEP_THRESHOLD=0.40 poetry run python -m filtering_service_b.main
 ```
 
-## Railway Setup
+## Railway Setup (Docker Image)
+
+This service includes:
+- `backend/filtering-service-b/Dockerfile`
+- `backend/filtering-service-b/.dockerignore`
+
+The container runs Filter B directly with:
+- `python -m filtering_service_b.main`
+
+### Use the existing CI-built image (recommended)
+
+Filter B already has GitHub Actions CI/CD for Docker:
+- Workflow: `.github/workflows/filter-b-docker.yml`
+- It builds and pushes image tags to Docker Hub on push.
+- You can find the image in Docker Hub under your repository:
+  - `<dockerhub-user>/filtering-service-b`
+  - tags include `latest`, `sha-*`, and branch tags.
+
+In Railway:
+- Deploy method: **From Docker Image**
+- Image reference: `wasiflh/filtering-service-b`
+- Build Command: leave empty
+- Start Command: leave empty (Docker `CMD` is used)
+
+Then set Railway variables from `.env.railway` (or `.env.railway.example`).
+
+### Build your own image manually (if you want)
+
+If you want to publish your own tag instead of CI, build and push manually.
+Use `linux/amd64` for Railway compatibility:
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  -f backend/filtering-service-b/Dockerfile \
+  -t <dockerhub-user>/filtering-service-b:latest \
+  --push \
+  backend/filtering-service-b
+```
+
+Optional local smoke run:
+
+```bash
+docker run --rm -p 8012:8012 --env-file backend/filtering-service-b/.env.local <dockerhub-user>/filtering-service-b:latest
+```
+
+### Railway variables and runtime notes
 
 Create Railway env template copy:
 
@@ -115,15 +161,15 @@ In Railway variables, fill values from `.env.railway`:
   - preferred: set `REDIS_URL`
   - fallback: set `REDIS_HOST/PORT/DB/USERNAME/PASSWORD/SSL`
 
-Suggested Railway service settings:
-- Root Directory: `backend/filtering-service-b`
-- Build Command: `poetry install --no-interaction --no-ansi`
-- Start Command: `poetry run python -m filtering_service_b.main`
+Important env for ticker profiles in container:
+- `RELEVANCE_TICKER_PROFILES_PATH=/app/src/filtering_service_b/resources/tickers.json`
 
 Notes:
 - Runtime port is read from `PORT` env (Railway sets this automatically).
 - Internal Redis hostnames like `redis.railway.internal` resolve only inside Railway.
-- Prefer `poetry run ...` for consistent dependency/runtime behavior.
+- Required GitHub secrets for CI image publish:
+  - `DOCKERHUB_USERNAME`
+  - `DOCKERHUB_TOKEN`
 
 ## How Filtering Works (Stage by Stage)
 
