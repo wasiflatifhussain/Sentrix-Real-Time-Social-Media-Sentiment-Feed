@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/filtering-service-b
+  IMAGE_NAME: wasiflh/filtering-service-b
 
 jobs:
   build-and-push:
