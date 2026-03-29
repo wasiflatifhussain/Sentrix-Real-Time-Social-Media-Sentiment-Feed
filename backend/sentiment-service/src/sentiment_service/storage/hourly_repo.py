@@ -62,6 +62,10 @@ class HourlyRepo:
         keywords: list[str],
         source: Optional[str],
         updated_at_utc: int,
+        weighted_score_increment: Optional[float] = None,
+        weight_increment: Optional[float] = None,
+        avg_score: Optional[float] = None,
+        hour_reliability: Optional[float] = None,
         ttl_days: Optional[int] = None,
     ) -> None:
         """
@@ -74,6 +78,11 @@ class HourlyRepo:
             "count": 1,
             "scoreSum": float(sentiment_score),
         }
+        if weighted_score_increment is not None:
+            inc_ops["weightedScoreSum"] = float(weighted_score_increment)
+        if weight_increment is not None:
+            inc_ops["weightSum"] = float(weight_increment)
+
         set_ops: Dict[str, object] = {
             "ticker": ticker,
             "hourStartUtc": int(hour_start_utc),
@@ -81,6 +90,10 @@ class HourlyRepo:
             "updatedAtUtc": int(updated_at_utc),
             "expireAtUtc": int(expire_at_utc),
         }
+        if avg_score is not None:
+            set_ops["avgScore"] = float(avg_score)
+        if hour_reliability is not None:
+            set_ops["hourReliability"] = float(hour_reliability)
 
         # Store counts for keywords (incremental)
         # keywordCounts.<kw> += 1

@@ -85,6 +85,18 @@ class HourlyLevelScore:
     _weightSum: float = 0.0
     _avgScore: float = 0.0
 
+    @staticmethod
+    def get_metrics_weighting(metrics: dict | None) -> float:
+        count: int = 0
+        metrics = metrics or {}
+        for k in metrics:
+            value = metrics.get(k, 0)
+            if isinstance(value, (int, float, complex)):
+                count += int(value)
+            elif isinstance(value, str) and value.isnumeric():
+                count += int(value)
+        return float(count)
+
     def add_event(self, event: Event,) -> None:
         # TODO: need to cahnge the logic
         absolute_score: float = event.absolute_score
@@ -133,6 +145,41 @@ class HourlyLevelScore:
                     
         # weighting: float = 1.0 + math.log1p(max(0, like) + max(0, comment) + max(0, reply))
         return count
+
+    def add_scored_cleaned_event(
+        self,
+        *,
+        cleaned_event: Any,
+        sentiment_score: float,
+        metrics: dict | None = None,
+    ) -> dict[str, float]:
+        metrics = metrics or {}
+        self.metrics = metrics
+
+        weight = self.get_metrics_weighting(metrics)
+        source = getattr(cleaned_event, "source", None)
+
+        self.count += 1
+        self._weightedScoreSum += float(sentiment_score) * weight
+        self._weightSum += weight
+
+        if self._weightSum > 0:
+            self._avgScore = self._weightedScoreSum / self._weightSum
+            self.scoreSum = self._avgScore
+
+        if source:
+            if self.sourceBreakdown is None:
+                self.sourceBreakdown = {}
+            if self.sourceBreakdown.get(source) is None:
+                self.sourceBreakdown[source] = 1
+            else:
+                self.sourceBreakdown[source] += 1
+
+        return {
+            "event_weight": weight,
+            "avg_score": float(self._avgScore),
+            "hour_reliability": float(self.hour_reliability()),
+        }
 
     def hour_reliability(
         self,
