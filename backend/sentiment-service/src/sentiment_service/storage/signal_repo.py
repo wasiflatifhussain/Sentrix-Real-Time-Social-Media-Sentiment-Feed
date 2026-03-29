@@ -5,6 +5,7 @@ from typing import Optional
 
 from pymongo.collection import Collection
 from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
 
 class SignalRepo:
@@ -34,6 +35,11 @@ class SignalRepo:
         recent_volume: Optional[int] = None,
         keywords: Optional[list[str]] = None,
         half_life_hours: Optional[int] = None,
+        absolute_score: Optional[float] = None,
+        reliability: Optional[float] = None,
+        weighted_score: Optional[float] = None,
+        start_time_utc: Optional[int] = None,
+        end_time_utc: Optional[int] = None,
     ) -> bool:
         """
         Insert or update the market sentiment signal for a ticker.
@@ -44,12 +50,13 @@ class SignalRepo:
         Returns True if an update was applied, False if skipped.
         """
         now = int(time.time()) if updated_at_utc is None else int(updated_at_utc)
+        incoming_hour_start = int(as_of_hour_start_utc)
 
         doc = {
             "_id": ticker,
             "ticker": ticker,
             "signalScore": float(signal_score),
-            "asOfHourStartUtc": int(as_of_hour_start_utc),
+            "asOfHourStartUtc": incoming_hour_start,
             "updatedAtUtc": now,
         }
 
@@ -59,21 +66,48 @@ class SignalRepo:
             doc["keywords"] = keywords
         if half_life_hours is not None:
             doc["halfLifeHours"] = int(half_life_hours)
+        if absolute_score is not None:
+            doc["absoluteScore"] = float(absolute_score)
+        if reliability is not None:
+            doc["reliability"] = float(reliability)
+        if weighted_score is not None:
+            doc["weightedScore"] = float(weighted_score)
+        if start_time_utc is not None:
+            doc["startTimeUtc"] = int(start_time_utc)
+        if end_time_utc is not None:
+            doc["endTimeUtc"] = int(end_time_utc)
 
-        res = self._col.update_one(
-            {
-                "_id": ticker,
-                "$or": [
-                    {"asOfHourStartUtc": {"$exists": False}},
-                    {"asOfHourStartUtc": {"$lt": int(as_of_hour_start_utc)}},
-                ],
-            },
-            {"$set": doc, "$setOnInsert": {"createdAtUtc": now}},
-            upsert=True,
-        )
+        update_filter = {
+            "_id": ticker,
+            "$or": [
+                {"asOfHourStartUtc": {"$exists": False}},
+                {"asOfHourStartUtc": {"$lt": incoming_hour_start}},
+            ],
+        }
 
-        applied = (res.matched_count > 0) or (res.upserted_id is not None)
-        return applied
+        existing = self._col.find_one({"_id": ticker}, {"asOfHourStartUtc": 1})
+        if existing is not None:
+            existing_hour_start = existing.get("asOfHourStartUtc")
+            if existing_hour_start is not None and int(existing_hour_start) >= incoming_hour_start:
+                return False
+
+            res = self._col.update_one(
+                update_filter,
+                {"$set": doc},
+                upsert=False,
+            )
+            return res.matched_count > 0
+
+        try:
+            self._col.insert_one({**doc, "createdAtUtc": now})
+            return True
+        except DuplicateKeyError:
+            res = self._col.update_one(
+                update_filter,
+                {"$set": doc},
+                upsert=False,
+            )
+            return res.matched_count > 0
 
     def find_by_tickers(self, tickers: list[str]) -> list[dict]:
         """

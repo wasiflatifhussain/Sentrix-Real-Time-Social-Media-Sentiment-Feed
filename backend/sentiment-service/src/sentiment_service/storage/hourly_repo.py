@@ -191,3 +191,28 @@ class HourlyRepo:
                 "hourStartUtc", 1
             )  # ascending for charts
         )
+
+    def find_by_ticker_up_to_hour(
+        self,
+        *,
+        ticker: str,
+        hour_start_utc: int,
+        limit_hours: int,
+    ) -> List[dict]:
+        t = (ticker or "").strip().upper()
+        if not t:
+            return []
+
+        limit_hours = max(1, int(limit_hours))
+        rows = list(
+            self._col.find(
+                {
+                    "ticker": t,
+                    "hourStartUtc": {"$lte": int(hour_start_utc)},
+                }
+            )
+            .sort("hourStartUtc", -1)
+            .limit(limit_hours)
+        )
+        rows.reverse()
+        return rows
