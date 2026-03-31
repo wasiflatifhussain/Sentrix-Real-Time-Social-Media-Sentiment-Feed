@@ -38,6 +38,9 @@ class SignalRepo:
         absolute_score: Optional[float] = None,
         reliability: Optional[float] = None,
         weighted_score: Optional[float] = None,
+        raw_weighted_score: Optional[float] = None,
+        normalized_volatility: Optional[float] = None,
+        adjusted_weighted_score: Optional[float] = None,
         start_time_utc: Optional[int] = None,
         end_time_utc: Optional[int] = None,
     ) -> bool:
@@ -72,6 +75,12 @@ class SignalRepo:
             doc["reliability"] = float(reliability)
         if weighted_score is not None:
             doc["weightedScore"] = float(weighted_score)
+        if raw_weighted_score is not None:
+            doc["rawWeightedScore"] = float(raw_weighted_score)
+        if normalized_volatility is not None:
+            doc["normalizedVolatility"] = float(normalized_volatility)
+        if adjusted_weighted_score is not None:
+            doc["adjustedWeightedScore"] = float(adjusted_weighted_score)
         if start_time_utc is not None:
             doc["startTimeUtc"] = int(start_time_utc)
         if end_time_utc is not None:

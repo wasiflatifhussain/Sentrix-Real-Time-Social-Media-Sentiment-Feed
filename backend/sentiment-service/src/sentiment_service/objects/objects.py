@@ -207,6 +207,9 @@ class TickerLevelScore:
     absolute_score: float = 0.0 # Nt
     reliability: float = 0.0 # Dt
     weighted_score: float = 0.0 # Nt / Dt
+    raw_weighted_score: float = 0.0
+    normalized_volatility: float = 1.0
+    adjusted_weighted_score: float = 0.0
     startTimestamp: int = 0
     endTimestamp: int = 0
     beta: float = 1 - (2 ** (-1 / 24))  # Weighting of the new hourlevel
@@ -263,6 +266,9 @@ class TickerLevelScore:
         return
     
     def _update_weighted_score(self) -> None:
+        if self.reliability == 0:
+            self.weighted_score = 0.0
+            return
         self.weighted_score = self.absolute_score / self.reliability
         return
 
@@ -279,6 +285,22 @@ class TickerLevelScore:
 
         self._update_weighted_score()
 
+        return
+
+    def apply_normalized_volatility(
+        self,
+        factor: float,
+    ) -> None:
+        try:
+            resolved_factor = float(factor)
+        except (TypeError, ValueError):
+            resolved_factor = 1.0
+
+        self.raw_weighted_score = float(self.weighted_score)
+        self.normalized_volatility = resolved_factor
+        self.adjusted_weighted_score = (
+            self.raw_weighted_score * self.normalized_volatility
+        )
         return
     
     def _update_count(

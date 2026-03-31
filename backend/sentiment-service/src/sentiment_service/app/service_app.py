@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import logging
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
@@ -29,7 +31,18 @@ SIGNAL_GRACE_SECONDS = 15 * 60
 TICKER_LEVEL_WINDOW_HOURS = 168
 
 
+'''
+; SentimentServiceAppliction
+
+    - Manages the logic loop for the followings:
+        1. kafka reading from KafkaConsummer
+        2. Conduct data transformation, e.g., dict to DTOs
+        3. Write it to Mongo DB
+
+'''
 class SentimentServiceApp:
+    DEFAULT_VOLATILITY_PATH = "sentiment_service/config/volatility.json"
+
     def __init__(self) -> None:
         load_dotenv()
         configure_logging("INFO")
@@ -58,19 +71,58 @@ class SentimentServiceApp:
         self.signal_repo.ensure_indexes()
 
         self.scorer = StubSentimentScorer(max_keywords=10)
+
+        self.normalized_volatility: dict[str, float] = self._load_normalized_volatility()
+
         self.hourly_cache: dict[str, HourlyLevelScore] = {}
         self.hourly_additive_score_sum: dict[str, float] = {}
+
         self.last_applied_signal_hour: int | None = None
+
         self.stop_flag = threading.Event()
+
         self.runner = KafkaConsumerRunner(self.kafka_settings)
         self.signal_thread = threading.Thread(
             target=self._signal_updater_loop, name="signal-updater", daemon=True
         )
         log.info(
-            "Sentiment service initialized hourly_collection=%s signal_collection=%s",
+            "Sentiment service initialized hourly_collection=%s signal_collection=%s volatility_tickers=%s",
             self.mongo_settings.hourly_collection,
             self.mongo_settings.signal_collection,
+            len(self.normalized_volatility),
         )
+
+    @classmethod
+    def _load_normalized_volatility(
+        cls,
+        input_file: str | Path | None = None,
+    ) -> dict[str, float]:
+        input_path = Path(input_file or cls.DEFAULT_VOLATILITY_PATH)
+        with input_path.open("r", encoding="utf-8") as f:
+            raw = json.load(f)
+
+        if not isinstance(raw, dict):
+            raise ValueError("normalized volatility config must be a JSON object")
+
+        normalized_volatility: dict[str, float] = {}
+        for ticker, value in raw.items():
+            normalized_ticker = str(ticker).strip().upper()
+            if not normalized_ticker:
+                continue
+            try:
+                normalized_volatility[normalized_ticker] = float(value)
+            except (TypeError, ValueError) as e:
+                raise ValueError(
+                    f"invalid normalized volatility value for ticker {normalized_ticker}: {value}"
+                ) from e
+
+        return normalized_volatility
+
+    def _normalized_volatility_for_ticker(self, ticker: str) -> float:
+        normalized_ticker = (ticker or "").strip().upper()
+        if not normalized_ticker:
+            return 1.0
+        return float(self.normalized_volatility.get(normalized_ticker, 1.0))
 
     @staticmethod
     def _eligible_hour_start_utc(now_utc: int, grace_seconds: int) -> int:
@@ -256,6 +308,9 @@ class SentimentServiceApp:
         ticker_level = TickerLevelScore(_id=ticker, ticker=ticker)
         for hourly_doc in hourly_docs:
             ticker_level.update_hour_levels(self._hourly_doc_to_hourly_level(hourly_doc))
+        ticker_level.apply_normalized_volatility(
+            self._normalized_volatility_for_ticker(ticker)
+        )
         return ticker_level
 
     def _persist_ticker_signal(
@@ -267,7 +322,7 @@ class SentimentServiceApp:
     ) -> bool:
         return self.signal_repo.upsert_signal_if_new_hour(
             ticker=ticker_level.ticker,
-            signal_score=float(ticker_level.weighted_score),
+            signal_score=float(ticker_level.adjusted_weighted_score),
             as_of_hour_start_utc=as_of_hour_start_utc,
             updated_at_utc=updated_at_utc,
             recent_volume=int(ticker_level.count),
@@ -275,6 +330,9 @@ class SentimentServiceApp:
             absolute_score=float(ticker_level.absolute_score),
             reliability=float(ticker_level.reliability),
             weighted_score=float(ticker_level.weighted_score),
+            raw_weighted_score=float(ticker_level.raw_weighted_score),
+            normalized_volatility=float(ticker_level.normalized_volatility),
+            adjusted_weighted_score=float(ticker_level.adjusted_weighted_score),
             start_time_utc=int(ticker_level.startTimestamp),
             end_time_utc=int(ticker_level.endTimestamp),
         )
@@ -364,7 +422,7 @@ class SentimentServiceApp:
 
         domain_event.created_at_utc = event_ts_utc
         bucket = bucket_epoch_seconds_to_hour(event_ts_utc)
-        scored = self.scorer.score(domain_event)
+        scored = self.scorer.score(domain_event)  # Calculate the ai result into avgScore, absolute_score
 
         now_utc = int(time.time())
         metrics = self._extract_event_metrics(payload) if isinstance(payload, dict) else {}
@@ -414,12 +472,14 @@ class SentimentServiceApp:
             msg.offset(),
         )
 
+        return
+
     def run(self) -> None:
         log.info("Starting signal updater thread")
         self.signal_thread.start()
         try:
             log.info("Starting Kafka consumer loop")
-            self.runner.start(self.handle)
+            self.runner.start(self.handle)  # Kafka runner
         finally:
             self.stop_flag.set()
             log.info("Stopping sentiment service application")
