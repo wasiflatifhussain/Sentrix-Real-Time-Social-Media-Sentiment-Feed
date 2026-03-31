@@ -11,9 +11,7 @@ class FinbertClient:
     def __init__(
         self,
         api_key,
-        output_file_path = "./finbert_result_test.json",
     ):
-        self.output_file_path = output_file_path
         self.client = InferenceClient(
             provider="auto",
             api_key=api_key,
@@ -93,11 +91,14 @@ class FinbertClient:
             logger.exception("Error occurred during FinBERT text classification")
             return []
 
-    def write_texts_to_file(self, texts) -> None:
-        import json
-        with open(self.output_file_path, "w") as f:
-            json.dump(texts, f, indent=4)
-        return
+
+class LlamaClient:
+    pass
+
+
+class FinGPT:
+    pass
+
 
 def main():
     pass
