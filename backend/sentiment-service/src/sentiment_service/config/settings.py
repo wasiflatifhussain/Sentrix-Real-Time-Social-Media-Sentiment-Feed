@@ -21,6 +21,7 @@ class MongoSettings:
     db_name: str
     hourly_collection: str
     signal_collection: str
+    price_correlation_collection: str
     hourly_ttl_days: int = 7
 
 
@@ -59,6 +60,9 @@ def load_mongo_settings() -> MongoSettings:
         ),
         signal_collection=_get_env(
             "MONGO_SIGNAL_COLLECTION", "ticker_sentiment_signal"
+        ),
+        price_correlation_collection=_get_env(
+            "MONGO_PRICE_CORRELATION_COLLECTION", "ticker_price_correlation"
         ),
         hourly_ttl_days=_get_env_int("MONGO_HOURLY_TTL_DAYS", "7"),
     )
