@@ -92,10 +92,10 @@ export default function SentimentAnalyticsPage() {
   }, [ticker, hours]);
 
   return (
-    <div className="container py-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-gray-100">
+    <div className="py-4 sm:py-8">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 sm:mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-100">
             Sentiment Analytics
           </h1>
           <p className="text-sm text-gray-400 mt-1">
@@ -103,8 +103,8 @@ export default function SentimentAnalyticsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-white/50 hidden sm:block">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <p className="text-sm text-white/50 hidden md:block">
             Click to change ticker
           </p>
 
@@ -120,7 +120,7 @@ export default function SentimentAnalyticsPage() {
 
             <PopoverContent
               align="end"
-              className="p-0 w-80 border border-gray-600 bg-[#0b1220]"
+              className="p-0 w-[min(20rem,calc(100vw-2rem))] border border-gray-600 bg-[#0b1220]"
             >
               <Command className="bg-transparent text-gray-200">
                 <CommandInput placeholder="Search ticker..." />
@@ -148,13 +148,13 @@ export default function SentimentAnalyticsPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
         {RANGE_OPTIONS.map((r) => (
           <button
             key={r.hours}
             onClick={() => setHours(r.hours)}
             className={cn(
-              "px-3 py-1.5 text-xs rounded-md border transition",
+              "h-9 px-2 sm:px-3 text-xs sm:text-sm rounded-md border transition",
               hours === r.hours
                 ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
                 : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
@@ -165,9 +165,9 @@ export default function SentimentAnalyticsPage() {
         ))}
       </div>
 
-      <div className="border border-gray-600 rounded-lg p-4 bg-black/30 min-h-[420px]">
+      <div className="border border-gray-600 rounded-lg p-3 sm:p-4 bg-black/30 min-h-[360px] sm:min-h-[420px]">
         {loading ? (
-          <div className="flex items-center justify-center h-[380px]">
+          <div className="flex items-center justify-center h-[320px] sm:h-[380px]">
             <Spinner />
           </div>
         ) : error ? (

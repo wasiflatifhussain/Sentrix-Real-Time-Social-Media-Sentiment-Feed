@@ -14,10 +14,18 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
 
   return (
-    <div className="flex min-h-screen p-4 md:p-6 lg:p-8">
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+    <div className="flex min-h-screen p-3 sm:p-4 md:p-6 lg:p-8">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
+        <div className="md:hidden">
+          <WatchlistButton
+            symbol={symbol.toUpperCase()}
+            company={symbol.toUpperCase()}
+            isInWatchlist={false}
+          />
+        </div>
+
         {/* Left column */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 md:gap-6">
           <TradingViewWidget
             scriptUrl={`${scriptUrl}symbol-info.js`}
             config={SYMBOL_INFO_WIDGET_CONFIG(symbol)}
@@ -40,8 +48,8 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
         </div>
 
         {/* Right column */}
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:gap-6">
+          <div className="hidden md:flex items-center justify-between">
             <WatchlistButton
               symbol={symbol.toUpperCase()}
               company={symbol.toUpperCase()}

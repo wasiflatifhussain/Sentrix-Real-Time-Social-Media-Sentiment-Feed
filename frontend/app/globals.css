@@ -155,10 +155,10 @@
     @apply w-full gap-8 grid-cols-1 md:grid-cols-2 xl:grid-cols-3;
   }
   .header {
-    @apply z-50 w-full h-[70px] bg-gray-800;
+    @apply z-50 w-full min-h-[70px] bg-gray-800 border-b border-gray-600;
   }
   .header-wrapper {
-    @apply flex justify-between items-center px-6 py-4 text-gray-500;
+    @apply flex flex-col items-stretch gap-3 py-3 text-gray-500 md:flex-row md:items-center md:justify-between md:gap-6;
   }
   .auth-layout {
     @apply flex flex-col justify-between lg:flex-row h-screen bg-gray-900 relative overflow-hidden;
@@ -248,7 +248,7 @@
     @apply font-medium text-base text-gray-400;
   }
   .nav-list {
-    @apply flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium;
+    @apply flex flex-wrap items-center gap-x-5 gap-y-2 text-sm sm:text-base font-medium;
   }
   .stock-details-container {
     @apply w-full grid-cols-1 gap-6 xl:grid-cols-3 space-y-6 sm:space-y-8;

@@ -218,9 +218,9 @@ export default function SentimentMonitorWidget({
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="flex items-start justify-between mb-2 gap-3">
+      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col">
-          <h3 className="font-semibold text-2xl text-gray-100">
+          <h3 className="font-semibold text-xl lg:text-2xl text-gray-100">
             Sentiment Monitor
           </h3>
           {lastFetchedAt ? (
@@ -230,12 +230,12 @@ export default function SentimentMonitorWidget({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
           <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="border-gray-600 bg-transparent text-gray-200 hover:bg-white/5"
+                className="h-9 border-gray-600 bg-transparent text-gray-200 hover:bg-white/5"
               >
                 + Add ticker
               </Button>
@@ -243,7 +243,7 @@ export default function SentimentMonitorWidget({
 
             <PopoverContent
               align="end"
-              className="p-0 w-72 overflow-hidden border border-gray-600 bg-[#0b1220] text-gray-200 shadow-xl"
+              className="p-0 w-[min(18rem,calc(100vw-2rem))] overflow-hidden border border-gray-600 bg-[#0b1220] text-gray-200 shadow-xl"
             >
               <Command className="bg-transparent text-gray-200 [&_[cmdk-input-wrapper]]:border-b [&_[cmdk-input-wrapper]]:border-gray-600 [&_[cmdk-input-wrapper]]:bg-transparent [&_[cmdk-list]]:bg-transparent [&_[cmdk-group-heading]]:text-gray-500">
                 <CommandInput
@@ -283,7 +283,7 @@ export default function SentimentMonitorWidget({
 
           <Button
             variant="outline"
-            className="border-gray-600 bg-transparent text-gray-200 hover:bg-white/5"
+            className="h-9 border-gray-600 bg-transparent text-gray-200 hover:bg-white/5"
             onClick={() => refreshSignals()}
             disabled={loading}
           >
@@ -313,7 +313,7 @@ export default function SentimentMonitorWidget({
             <button
               key={t}
               onClick={() => removeTicker(t)}
-              className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+              className="text-xs px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
               title="Remove from watchlist"
             >
               {t} ✕
