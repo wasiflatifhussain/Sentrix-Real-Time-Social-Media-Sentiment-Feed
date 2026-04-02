@@ -24,6 +24,7 @@ import {
 import SentimentTimeSeriesChart, {
   SentimentChartPoint,
 } from "@/components/SentimentTimeSeriesChart";
+import PerformanceEvaluationNotebook from "@/components/PerformanceEvaluationNotebook";
 import Spinner from "@/components/Spinner";
 
 const DEFAULT_TICKER = "AAPL";
@@ -45,6 +46,9 @@ export default function SentimentAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [data, setData] = useState<SentimentChartPoint[]>([]);
+  const [activeEvaluation, setActiveEvaluation] = useState<
+    "ingestor" | "sentiment" | "filtering"
+  >("ingestor");
 
   useEffect(() => {
     fetchTickers(200)
@@ -176,6 +180,62 @@ export default function SentimentAnalyticsPage() {
           <SentimentTimeSeriesChart data={data} />
         )}
       </div>
+
+      <section className="mt-8 sm:mt-10">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-100">
+              Performance Evaluation
+            </h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Notebook-style demo for service-level evaluation metrics
+            </p>
+          </div>
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+            <button
+              onClick={() => setActiveEvaluation("ingestor")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "ingestor"
+                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/40"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Ingestor Service
+            </button>
+            <button
+              onClick={() => setActiveEvaluation("filtering")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "filtering"
+                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/40"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Filtering Services
+            </button>
+            <button
+              onClick={() => setActiveEvaluation("sentiment")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "sentiment"
+                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/40"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Sentiment Service
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-600 bg-gradient-to-b from-teal-400/5 to-black/30 p-3 sm:p-4 shadow-[0_0_0_1px_rgba(15,237,190,0.06),0_14px_30px_-20px_rgba(15,237,190,0.35)]">
+          {activeEvaluation === "ingestor" ? (
+            <PerformanceEvaluationNotebook />
+          ) : (
+            <div className="min-h-[120px]" />
+          )}
+        </div>
+      </section>
     </div>
   );
 }

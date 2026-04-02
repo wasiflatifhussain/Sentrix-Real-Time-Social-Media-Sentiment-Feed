@@ -99,6 +99,9 @@ env/
 **/result/
 **/results/
 **/rough-work/
+!evaluation/data/
+!evaluation/data/*.csv
+!evaluation/data/*.json
 **/*.jsonl
 **/*.parquet
 **/*.sqlite
