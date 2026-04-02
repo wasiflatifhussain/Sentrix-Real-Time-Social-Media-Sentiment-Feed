@@ -254,7 +254,7 @@ export default function SentimentMonitorWidget({
                   No tickers found.
                 </CommandEmpty>
 
-                <CommandGroup className="bg-transparent">
+                <CommandGroup className="max-h-[220px] overflow-y-auto bg-transparent">
                   {addableTickers.map((ticker) => (
                     <CommandItem
                       key={ticker}

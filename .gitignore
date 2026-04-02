@@ -102,6 +102,10 @@ env/
 !evaluation/data/
 !evaluation/data/*.csv
 !evaluation/data/*.json
+!frontend/data/
+!frontend/data/evaluation/
+!frontend/data/evaluation/*.csv
+!frontend/data/evaluation/*.json
 **/*.jsonl
 **/*.parquet
 **/*.sqlite
