@@ -72,6 +72,19 @@ class TickerRelevanceScorer:
         similarity = _cosine_similarity(event_vector, profile_vector)
 
         if similarity < self._settings.low_similarity_threshold:
+            if not self._settings.hard_reject_extreme_low:
+                return RelevanceScore(
+                    decision=DECISION_KEEP,
+                    score_delta=-abs(self._settings.extreme_low_relevance_penalty),
+                    similarity=similarity,
+                    reason_codes=[REASON_EXTREME_LOW_TICKER_RELEVANCE],
+                    signals=self._build_signals(
+                        similarity=similarity,
+                        band="extreme_low_relevance_soft",
+                        ticker_profile_found=True,
+                        score_delta=-abs(self._settings.extreme_low_relevance_penalty),
+                    ),
+                )
             return RelevanceScore(
                 decision=DECISION_REJECT,
                 score_delta=-1.0,

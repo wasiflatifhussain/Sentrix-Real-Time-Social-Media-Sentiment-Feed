@@ -61,6 +61,8 @@ class RelevanceSettings:
     strong_relevance_boost: float
     medium_relevance_penalty: float
     low_relevance_penalty: float
+    hard_reject_extreme_low: bool
+    extreme_low_relevance_penalty: float
     reject_unknown_ticker_profile: bool
     normalize_embeddings: bool
 
@@ -283,6 +285,8 @@ def _validate_relevance_settings(settings: RelevanceSettings) -> RelevanceSettin
         raise ValueError("RELEVANCE_MEDIUM_PENALTY must be >= 0.0")
     if settings.low_relevance_penalty < 0.0:
         raise ValueError("RELEVANCE_LOW_PENALTY must be >= 0.0")
+    if settings.extreme_low_relevance_penalty < 0.0:
+        raise ValueError("RELEVANCE_EXTREME_LOW_PENALTY must be >= 0.0")
 
     ticker_path = Path(settings.ticker_profiles_path).expanduser().resolve()
     if not ticker_path.is_file():
@@ -297,6 +301,8 @@ def _validate_relevance_settings(settings: RelevanceSettings) -> RelevanceSettin
         strong_relevance_boost=settings.strong_relevance_boost,
         medium_relevance_penalty=settings.medium_relevance_penalty,
         low_relevance_penalty=settings.low_relevance_penalty,
+        hard_reject_extreme_low=settings.hard_reject_extreme_low,
+        extreme_low_relevance_penalty=settings.extreme_low_relevance_penalty,
         reject_unknown_ticker_profile=settings.reject_unknown_ticker_profile,
         normalize_embeddings=settings.normalize_embeddings,
     )
@@ -317,7 +323,9 @@ def load_relevance_settings() -> RelevanceSettings:
         low_similarity_threshold=_get_env_float("RELEVANCE_LOW_SIMILARITY_THRESHOLD", "0.30"),
         strong_relevance_boost=_get_env_float("RELEVANCE_STRONG_BOOST", "0.02"),
         medium_relevance_penalty=_get_env_float("RELEVANCE_MEDIUM_PENALTY", "0.15"),
-        low_relevance_penalty=_get_env_float("RELEVANCE_LOW_PENALTY", "0.40"),
+        low_relevance_penalty=_get_env_float("RELEVANCE_LOW_PENALTY", "0.20"),
+        hard_reject_extreme_low=_get_env_bool("RELEVANCE_HARD_REJECT_EXTREME_LOW", "false"),
+        extreme_low_relevance_penalty=_get_env_float("RELEVANCE_EXTREME_LOW_PENALTY", "0.20"),
         reject_unknown_ticker_profile=_get_env_bool(
             "RELEVANCE_REJECT_UNKNOWN_TICKER_PROFILE", "true"
         ),

@@ -248,12 +248,14 @@ def _process_message(
     )
 
     log.info(
-        "Processed eventId=%s ticker=%s decision=%s score=%.3f reasons=%s latencyMs=%.2f topic=%s partition=%s offset=%s",
+        "Processed eventId=%s ticker=%s decision=%s score=%.3f reasons=%s relevanceBand=%s relevanceSimilarity=%s latencyMs=%.2f topic=%s partition=%s offset=%s",
         event.event_id,
         event.ticker,
         decision.decision,
         decision.credibility_score,
         decision.decision_reasons,
+        decision.signals.get("relevanceBand"),
+        decision.signals.get("relevanceSimilarity"),
         latency_ms,
         msg.topic(),
         msg.partition(),

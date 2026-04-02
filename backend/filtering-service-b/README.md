@@ -188,7 +188,9 @@ Outcomes:
 - Strong similarity (`>= RELEVANCE_STRONG_SIMILARITY_THRESHOLD`): optional small score boost.
 - Medium similarity (`>= RELEVANCE_MEDIUM_SIMILARITY_THRESHOLD` and below strong): mild score penalty.
 - Low similarity (`>= RELEVANCE_LOW_SIMILARITY_THRESHOLD` and below medium): stronger score penalty + `LOW_TICKER_RELEVANCE`.
-- Extreme low similarity (`< RELEVANCE_LOW_SIMILARITY_THRESHOLD`): immediate reject path + `EXTREME_LOW_TICKER_RELEVANCE`.
+- Extreme low similarity (`< RELEVANCE_LOW_SIMILARITY_THRESHOLD`):
+  - when `RELEVANCE_HARD_REJECT_EXTREME_LOW=true`: immediate reject path + `EXTREME_LOW_TICKER_RELEVANCE`
+  - when `RELEVANCE_HARD_REJECT_EXTREME_LOW=false`: keep-path with configurable penalty (`RELEVANCE_EXTREME_LOW_PENALTY`) + `EXTREME_LOW_TICKER_RELEVANCE`
 - Unknown ticker profile: immediate reject path + `UNKNOWN_TICKER_PROFILE` (when `RELEVANCE_REJECT_UNKNOWN_TICKER_PROFILE=true`).
 
 Why it exists:

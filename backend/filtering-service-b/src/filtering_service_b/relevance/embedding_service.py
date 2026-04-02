@@ -25,6 +25,7 @@ class SentenceTransformerEmbeddingService(EmbeddingService):
                 texts,
                 convert_to_numpy=True,
                 normalize_embeddings=self._normalize_embeddings,
+                show_progress_bar=False,
             )
         except Exception as ex:
             raise RuntimeError("Failed generating embeddings for batch") from ex

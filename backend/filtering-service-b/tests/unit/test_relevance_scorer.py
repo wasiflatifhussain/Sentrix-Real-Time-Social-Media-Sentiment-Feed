@@ -32,6 +32,8 @@ def _settings() -> RelevanceSettings:
         strong_relevance_boost=0.02,
         medium_relevance_penalty=0.15,
         low_relevance_penalty=0.40,
+        hard_reject_extreme_low=True,
+        extreme_low_relevance_penalty=0.70,
         reject_unknown_ticker_profile=True,
         normalize_embeddings=True,
     )
@@ -83,6 +85,44 @@ def test_relevance_bands_and_reason_codes() -> None:
     assert extreme.score_delta == -1.0
     assert extreme.reason_codes == ["EXTREME_LOW_TICKER_RELEVANCE"]
     assert extreme.signals["relevanceBand"] == "extreme_low_relevance"
+
+
+def test_extreme_low_can_be_soft_penalty_without_hard_reject() -> None:
+    ticker_profile = TickerProfile(
+        ticker="TSLA", company="Tesla", profile_text="profile_tsla"
+    )
+    profiles = TickerProfileStore({"TSLA": ticker_profile})
+    embeddings = FakeEmbeddingService(
+        vectors_by_text={
+            "profile_tsla": [1.0, 0.0],
+            "extreme": _make_vector(0.10),
+        }
+    )
+    settings = _settings()
+    settings = RelevanceSettings(
+        model_name=settings.model_name,
+        ticker_profiles_path=settings.ticker_profiles_path,
+        strong_similarity_threshold=settings.strong_similarity_threshold,
+        medium_similarity_threshold=settings.medium_similarity_threshold,
+        low_similarity_threshold=settings.low_similarity_threshold,
+        strong_relevance_boost=settings.strong_relevance_boost,
+        medium_relevance_penalty=settings.medium_relevance_penalty,
+        low_relevance_penalty=settings.low_relevance_penalty,
+        hard_reject_extreme_low=False,
+        extreme_low_relevance_penalty=0.70,
+        reject_unknown_ticker_profile=settings.reject_unknown_ticker_profile,
+        normalize_embeddings=settings.normalize_embeddings,
+    )
+    scorer = TickerRelevanceScorer(
+        embedding_service=embeddings, ticker_profiles=profiles, settings=settings
+    )
+
+    extreme = scorer.score(event_text="extreme", ticker="TSLA")
+
+    assert extreme.decision == "KEEP"
+    assert extreme.score_delta == -0.70
+    assert extreme.reason_codes == ["EXTREME_LOW_TICKER_RELEVANCE"]
+    assert extreme.signals["relevanceBand"] == "extreme_low_relevance_soft"
 
 
 def test_unknown_ticker_profile_rejected() -> None:
