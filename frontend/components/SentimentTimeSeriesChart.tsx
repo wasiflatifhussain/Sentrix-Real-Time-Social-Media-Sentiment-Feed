@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -22,13 +23,20 @@ export type SentimentChartPoint = {
 const LOCALE = "en-HK";
 const TZ = "Asia/Hong_Kong";
 
-function formatTick(ms: number) {
+function formatTick(ms: number, compact: boolean) {
   return new Date(ms).toLocaleString(LOCALE, {
     timeZone: TZ,
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: true,
+    ...(compact
+      ? {
+          month: "short",
+          day: "2-digit",
+        }
+      : {
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          hour12: true,
+        }),
   });
 }
 
@@ -49,18 +57,30 @@ export default function SentimentTimeSeriesChart({
 }: {
   data: SentimentChartPoint[];
 }) {
+  const [isNarrowPhone, setIsNarrowPhone] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 430px)");
+    const apply = () => setIsNarrowPhone(mediaQuery.matches);
+
+    apply();
+    mediaQuery.addEventListener("change", apply);
+
+    return () => mediaQuery.removeEventListener("change", apply);
+  }, []);
+
   // Older -> newer left-to-right
   const sorted = [...data].sort((a, b) => a.timeMs - b.timeMs);
 
   return (
-    <ResponsiveContainer width="100%" height={460}>
+    <ResponsiveContainer width="100%" height={isNarrowPhone ? 340 : 460}>
       <LineChart
         data={sorted}
         margin={{
           top: 12,
           right: 12,
           left: 0,
-          bottom: 92, // space for angled ticks (does NOT shrink chart height; container is taller)
+          bottom: isNarrowPhone ? 70 : 92, // space for angled ticks
         }}
       >
         {/* Zones */}
@@ -76,14 +96,14 @@ export default function SentimentTimeSeriesChart({
           type="number"
           scale="time"
           domain={["dataMin", "dataMax"]}
-          tickFormatter={(v) => formatTick(Number(v))}
+          tickFormatter={(v) => formatTick(Number(v), isNarrowPhone)}
           stroke="#9ca3af"
-          tick={{ fontSize: 11, fill: "#9ca3af" }}
-          angle={-35}
+          tick={{ fontSize: isNarrowPhone ? 10 : 11, fill: "#9ca3af" }}
+          angle={isNarrowPhone ? -20 : -35}
           textAnchor="end"
-          height={5}
-          tickMargin={14}
-          minTickGap={16}
+          height={isNarrowPhone ? 54 : 60}
+          tickMargin={isNarrowPhone ? 10 : 14}
+          minTickGap={isNarrowPhone ? 28 : 16}
           interval="preserveStartEnd"
           allowDuplicatedCategory={false}
         />
@@ -104,7 +124,11 @@ export default function SentimentTimeSeriesChart({
             borderRadius: 12,
           }}
           labelFormatter={(label) => formatTooltipLabel(Number(label))}
-          formatter={(value: number, _k, p: any) => [
+          formatter={(
+            value: number,
+            _k,
+            p: { payload?: { volume?: number } }
+          ) => [
             Number(value).toFixed(3),
             `Avg Sentiment (posts: ${p?.payload?.volume ?? 0})`,
           ]}
