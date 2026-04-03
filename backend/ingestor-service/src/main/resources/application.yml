@@ -30,6 +30,11 @@ app:
   kafka:
     topic: ${KAFKA_TOPIC:sentrix.ingestor.events}
 
+ingestion:
+  scheduler:
+    cron: ${INGESTION_SCHEDULER_CRON:0 0 * * * *}
+    zone: ${INGESTION_SCHEDULER_ZONE:UTC}
+
 logging:
   level:
     com.sentrix.ingestor_service.service.KafkaEventPublisher: INFO

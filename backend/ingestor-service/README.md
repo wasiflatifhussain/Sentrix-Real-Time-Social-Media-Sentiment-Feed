@@ -66,6 +66,10 @@ For local Kafka:
 Runtime variable:
 - `PORT` (default `8080`)
 
+Optional scheduler controls:
+- `INGESTION_SCHEDULER_CRON` (default `0 0 * * * *`)
+- `INGESTION_SCHEDULER_ZONE` (default `UTC`)
+
 ### 2) Kafka Topic
 
 Topic used by this service:
@@ -143,6 +147,8 @@ Key runtime bindings:
 - `reddit.search-time-filter -> REDDIT_SEARCH_TIME_FILTER`
 - `reddit.search-limit -> REDDIT_SEARCH_LIMIT`
 - `reddit.search-sort -> REDDIT_SEARCH_SORT`
+- `ingestion.scheduler.cron -> INGESTION_SCHEDULER_CRON`
+- `ingestion.scheduler.zone -> INGESTION_SCHEDULER_ZONE`
 - `server.port -> PORT`
 
 ## Architecture and Design Justifications
