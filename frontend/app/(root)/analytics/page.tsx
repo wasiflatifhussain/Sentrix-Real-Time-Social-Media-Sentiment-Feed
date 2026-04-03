@@ -27,6 +27,7 @@ import SentimentTimeSeriesChart, {
 import PerformanceEvaluationNotebook from "@/components/PerformanceEvaluationNotebook";
 import FilterAPerformanceNotebook from "@/components/FilterAPerformanceNotebook";
 import FilterBPerformanceNotebook from "@/components/FilterBPerformanceNotebook";
+import SentimentPerformanceNotebook from "@/components/SentimentPerformanceNotebook";
 import Spinner from "@/components/Spinner";
 
 const DEFAULT_TICKER = "AAPL";
@@ -266,7 +267,7 @@ export default function SentimentAnalyticsPage() {
             </div>
           )}
 
-          {activeEvaluation === "sentiment" && <div className="min-h-[120px]" />}
+          {activeEvaluation === "sentiment" && <SentimentPerformanceNotebook />}
         </div>
       </section>
     </div>
