@@ -24,6 +24,10 @@ import {
 import SentimentTimeSeriesChart, {
   SentimentChartPoint,
 } from "@/components/SentimentTimeSeriesChart";
+import PerformanceEvaluationNotebook from "@/components/PerformanceEvaluationNotebook";
+import FilterAPerformanceNotebook from "@/components/FilterAPerformanceNotebook";
+import FilterBPerformanceNotebook from "@/components/FilterBPerformanceNotebook";
+import SentimentPerformanceNotebook from "@/components/SentimentPerformanceNotebook";
 import Spinner from "@/components/Spinner";
 
 const DEFAULT_TICKER = "AAPL";
@@ -45,6 +49,10 @@ export default function SentimentAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [data, setData] = useState<SentimentChartPoint[]>([]);
+  const [activeEvaluation, setActiveEvaluation] = useState<
+    "ingestor" | "sentiment" | "filtering"
+  >("ingestor");
+  const [activeFilterEvaluation, setActiveFilterEvaluation] = useState<"a" | "b">("b");
 
   useEffect(() => {
     fetchTickers(200)
@@ -125,7 +133,7 @@ export default function SentimentAnalyticsPage() {
               <Command className="bg-transparent text-gray-200">
                 <CommandInput placeholder="Search ticker..." />
                 <CommandEmpty>No tickers found.</CommandEmpty>
-                <CommandGroup>
+                <CommandGroup className="max-h-[220px] overflow-y-auto">
                   {tickers.map((t) => (
                     <CommandItem
                       key={t}
@@ -176,6 +184,92 @@ export default function SentimentAnalyticsPage() {
           <SentimentTimeSeriesChart data={data} />
         )}
       </div>
+
+      <section className="mt-8 sm:mt-10">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-100">
+              Performance Evaluation
+            </h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Notebook-style demo for service-level evaluation metrics
+            </p>
+          </div>
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+            <button
+              onClick={() => setActiveEvaluation("ingestor")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "ingestor"
+                  ? "bg-teal-400/15 text-teal-300 border-teal-400/45 shadow-[0_0_0_1px_rgba(15,237,190,0.18),0_8px_18px_-14px_rgba(15,237,190,0.5)]"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Ingestor Service
+            </button>
+            <button
+              onClick={() => setActiveEvaluation("filtering")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "filtering"
+                  ? "bg-teal-400/15 text-teal-300 border-teal-400/45 shadow-[0_0_0_1px_rgba(15,237,190,0.18),0_8px_18px_-14px_rgba(15,237,190,0.5)]"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Filtering Services
+            </button>
+            <button
+              onClick={() => setActiveEvaluation("sentiment")}
+              className={cn(
+                "h-9 px-3 text-xs sm:text-sm rounded-md border transition",
+                activeEvaluation === "sentiment"
+                  ? "bg-teal-400/15 text-teal-300 border-teal-400/45 shadow-[0_0_0_1px_rgba(15,237,190,0.18),0_8px_18px_-14px_rgba(15,237,190,0.5)]"
+                  : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+              )}
+            >
+              Sentiment Service
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-600 bg-gradient-to-b from-teal-400/5 to-black/30 p-3 sm:p-4 shadow-[0_0_0_1px_rgba(15,237,190,0.06),0_14px_30px_-20px_rgba(15,237,190,0.35)]">
+          {activeEvaluation === "ingestor" && <PerformanceEvaluationNotebook />}
+
+          {activeEvaluation === "filtering" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveFilterEvaluation("a")}
+                  className={cn(
+                    "h-8 px-3 text-xs sm:text-sm rounded-md border transition",
+                    activeFilterEvaluation === "a"
+                      ? "bg-teal-400/15 text-teal-300 border-teal-400/45 shadow-[0_0_0_1px_rgba(15,237,190,0.18),0_8px_18px_-14px_rgba(15,237,190,0.5)]"
+                      : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                  )}
+                >
+                  Filter A
+                </button>
+                <button
+                  onClick={() => setActiveFilterEvaluation("b")}
+                  className={cn(
+                    "h-8 px-3 text-xs sm:text-sm rounded-md border transition",
+                    activeFilterEvaluation === "b"
+                      ? "bg-teal-400/15 text-teal-300 border-teal-400/45 shadow-[0_0_0_1px_rgba(15,237,190,0.18),0_8px_18px_-14px_rgba(15,237,190,0.5)]"
+                      : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                  )}
+                >
+                  Filter B
+                </button>
+              </div>
+
+              {activeFilterEvaluation === "a" && <FilterAPerformanceNotebook />}
+              {activeFilterEvaluation === "b" && <FilterBPerformanceNotebook />}
+            </div>
+          )}
+
+          {activeEvaluation === "sentiment" && <SentimentPerformanceNotebook />}
+        </div>
+      </section>
     </div>
   );
 }
