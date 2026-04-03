@@ -8,6 +8,7 @@ import com.sentrix.ingestor_service.adapter.reddit.mapper.RedditEventMapper;
 import com.sentrix.ingestor_service.adapter.reddit.mapper.RedditNormalizer;
 import com.sentrix.ingestor_service.adapter.reddit.model.RedditComment;
 import com.sentrix.ingestor_service.adapter.reddit.model.RedditPost;
+import com.sentrix.ingestor_service.config.RedditConfig;
 import com.sentrix.ingestor_service.config.TickerConfig;
 import com.sentrix.ingestor_service.config.TickerConfigLoader;
 import com.sentrix.ingestor_service.messaging.producer.KafkaEventPublisher;
@@ -35,6 +36,7 @@ public class RedditAdapter implements SocialSourceAdapter {
 
   private final RedditAuthClient authClient;
   private final RedditApiClient apiClient;
+  private final RedditConfig redditConfig;
   private final RateLimiterRegistry rateLimiterRegistry;
   private final DeduplicationService deduplicationService;
   private final TickerConfigLoader tickerConfigLoader;
@@ -51,6 +53,10 @@ public class RedditAdapter implements SocialSourceAdapter {
   public void runIngestion() {
     long ingestedAt = Instant.now().getEpochSecond();
     log.info("[RUN] Reddit ingestion start ingestedAtUtc={}", ingestedAt);
+
+    String timeFilter = redditConfig.getSearchTimeFilter();
+    int limit = redditConfig.getSearchLimit();
+    String sort = redditConfig.getSearchSort();
 
     String token = authClient.fetchAccessToken().block();
     if (token == null || token.isBlank()) {
@@ -87,8 +93,8 @@ public class RedditAdapter implements SocialSourceAdapter {
           CaptureMeta capture =
               CaptureMeta.builder()
                   .query(query)
-                  .sort("new")
-                  .timeWindow("week")
+                  .sort(sort)
+                  .timeWindow(timeFilter)
                   .fetchedFrom("r/" + subreddit)
                   .searchMode("search")
                   .build();
@@ -98,7 +104,7 @@ public class RedditAdapter implements SocialSourceAdapter {
           // Search posts (rate-limited)
           rateLimiterRegistry.forSource(SourceType.REDDIT).acquire();
           JsonNode rawSearch =
-              apiClient.searchPostsRaw(token, subreddit, query, 50, "new", "week").block();
+              apiClient.searchPostsRaw(token, subreddit, query, limit, sort, timeFilter).block();
 
           List<RedditPost> posts = RedditNormalizer.normalizePosts(rawSearch);
           log.info("[SEARCH] {} | r/{} | posts={}", ticker, subreddit, posts.size());
