@@ -37,3 +37,21 @@ Run:
 ```bash
 python3 evaluation/scripts/evaluate_filter_a.py
 ```
+
+## Filtering Service-B
+
+Files:
+
+- `data/filter_b_runs_2026-03-21_to_2026-03-27.csv`
+- `data/filter_b_runs_2026-03-21_to_2026-03-27.json`
+- `notebooks/filter_b_assessment.ipynb`
+
+Run quick checks:
+
+```bash
+python3 - <<'PY'
+import pandas as pd
+df = pd.read_csv("evaluation/data/filter_b_runs_2026-03-21_to_2026-03-27.csv")
+print(round((df["manual_correct_count"].sum()/df["manual_sample_size"].sum())*100, 2))
+PY
+```

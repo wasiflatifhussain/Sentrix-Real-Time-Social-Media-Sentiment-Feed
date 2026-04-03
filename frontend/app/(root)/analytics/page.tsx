@@ -26,6 +26,7 @@ import SentimentTimeSeriesChart, {
 } from "@/components/SentimentTimeSeriesChart";
 import PerformanceEvaluationNotebook from "@/components/PerformanceEvaluationNotebook";
 import FilterAPerformanceNotebook from "@/components/FilterAPerformanceNotebook";
+import FilterBPerformanceNotebook from "@/components/FilterBPerformanceNotebook";
 import Spinner from "@/components/Spinner";
 
 const DEFAULT_TICKER = "AAPL";
@@ -50,7 +51,7 @@ export default function SentimentAnalyticsPage() {
   const [activeEvaluation, setActiveEvaluation] = useState<
     "ingestor" | "sentiment" | "filtering"
   >("ingestor");
-  const [activeFilterEvaluation, setActiveFilterEvaluation] = useState<"a" | "b">("a");
+  const [activeFilterEvaluation, setActiveFilterEvaluation] = useState<"a" | "b">("b");
 
   useEffect(() => {
     fetchTickers(200)
@@ -260,11 +261,8 @@ export default function SentimentAnalyticsPage() {
                 </button>
               </div>
 
-              {activeFilterEvaluation === "a" ? (
-                <FilterAPerformanceNotebook />
-              ) : (
-                <div className="min-h-[120px]" />
-              )}
+              {activeFilterEvaluation === "a" && <FilterAPerformanceNotebook />}
+              {activeFilterEvaluation === "b" && <FilterBPerformanceNotebook />}
             </div>
           )}
 
