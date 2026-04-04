@@ -10,7 +10,7 @@ class FilterMeta:
     processed_at_utc: Optional[int]
 
 
-@dataclass(frozen=True)
+@dataclass
 class CleanedEvent:
     """
     Transport-level cleaned event produced by Filtering Service A/B.
@@ -27,6 +27,10 @@ class CleanedEvent:
     title: Optional[str]
     author: Optional[str]
     filter_meta: Optional[FilterMeta]
+    response: dict | None = None
+    absolute_score: float = 0.0
+    conf: float = 0.0
+    label: str = "neutral"
 
 
 def _require(d: dict[str, Any], key: str) -> Any:
@@ -79,7 +83,7 @@ def parse_cleaned_event(payload: dict[str, Any]) -> CleanedEvent:
         ticker=str(ticker),
         source=str(source),
         entity_type=str(entity_type),
-        created_at_utc=ing.get("createdAtUtc"),
+        created_at_utc=ing.get("createdAtUtc", 0),
         ingested_at_utc=ing.get("ingestedAtUtc"),
         text_normalized=str(text_norm),
         title=ing.get("title"),

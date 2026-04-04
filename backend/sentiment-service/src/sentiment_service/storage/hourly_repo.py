@@ -62,6 +62,10 @@ class HourlyRepo:
         keywords: list[str],
         source: Optional[str],
         updated_at_utc: int,
+        weighted_score_increment: Optional[float] = None,
+        weight_increment: Optional[float] = None,
+        avg_score: Optional[float] = None,
+        hour_reliability: Optional[float] = None,
         ttl_days: Optional[int] = None,
     ) -> None:
         """
@@ -74,6 +78,11 @@ class HourlyRepo:
             "count": 1,
             "scoreSum": float(sentiment_score),
         }
+        if weighted_score_increment is not None:
+            inc_ops["weightedScoreSum"] = float(weighted_score_increment)
+        if weight_increment is not None:
+            inc_ops["weightSum"] = float(weight_increment)
+
         set_ops: Dict[str, object] = {
             "ticker": ticker,
             "hourStartUtc": int(hour_start_utc),
@@ -81,6 +90,10 @@ class HourlyRepo:
             "updatedAtUtc": int(updated_at_utc),
             "expireAtUtc": int(expire_at_utc),
         }
+        if avg_score is not None:
+            set_ops["avgScore"] = float(avg_score)
+        if hour_reliability is not None:
+            set_ops["hourReliability"] = float(hour_reliability)
 
         # Store counts for keywords (incremental)
         # keywordCounts.<kw> += 1
@@ -178,3 +191,64 @@ class HourlyRepo:
                 "hourStartUtc", 1
             )  # ascending for charts
         )
+
+    def find_one_for_hour(self, *, ticker: str, hour_start_utc: int) -> dict | None:
+        t = (ticker or "").strip().upper()
+        if not t:
+            return None
+
+        return self._col.find_one(
+            {
+                "_id": _hourly_id(t, int(hour_start_utc)),
+            }
+        )
+
+    def find_next_available_hour_start(
+        self,
+        *,
+        max_hour_start_utc: int,
+        after_hour_start_utc: int | None = None,
+    ) -> int | None:
+        hour_filter: dict[str, int | dict[str, int]] = {
+            "$lte": int(max_hour_start_utc),
+        }
+        if after_hour_start_utc is not None:
+            hour_filter["$gt"] = int(after_hour_start_utc)
+
+        row = self._col.find_one(
+            {"hourStartUtc": hour_filter},
+            sort=[("hourStartUtc", 1)],
+            projection={"hourStartUtc": 1},
+        )
+        if row is None:
+            return None
+
+        hour_start_utc = row.get("hourStartUtc")
+        if hour_start_utc is None:
+            return None
+        return int(hour_start_utc)
+
+    def find_by_ticker_up_to_hour(
+        self,
+        *,
+        ticker: str,
+        hour_start_utc: int,
+        limit_hours: int,
+    ) -> List[dict]:
+        t = (ticker or "").strip().upper()
+        if not t:
+            return []
+
+        limit_hours = max(1, int(limit_hours))
+        rows = list(
+            self._col.find(
+                {
+                    "ticker": t,
+                    "hourStartUtc": {"$lte": int(hour_start_utc)},
+                }
+            )
+            .sort("hourStartUtc", -1)
+            .limit(limit_hours)
+        )
+        rows.reverse()
+        return rows
