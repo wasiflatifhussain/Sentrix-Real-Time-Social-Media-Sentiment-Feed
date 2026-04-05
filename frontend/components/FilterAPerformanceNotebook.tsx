@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 
-import filterARunsRaw from "@/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10.json";
+import filterARunsRaw from "@/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10_corrected.json";
 import { Button } from "@/components/ui/button";
 
 type FilterARow = {
@@ -52,7 +52,7 @@ const PYTHON_KEYWORDS = new Set([
 
 const CODE_SNIPPETS: Record<CellKey, string> = {
   summary: `# Cell [1] - Filter-A summary
-df = pd.read_csv("frontend/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10.csv")
+df = pd.read_csv("frontend/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10_corrected.csv")
 window = df.query("run_started_at_utc >= '2026-01-04' and run_started_at_utc < '2026-01-11'")
 summary = {
   "avg_removal_rate_pct": window["removal_rate_pct"].mean(),
