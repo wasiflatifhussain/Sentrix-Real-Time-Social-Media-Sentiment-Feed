@@ -1,0 +1,1026 @@
+{
+  "summary": {
+    "windowStartUtc": "2026-01-04",
+    "windowDays": 7,
+    "runsObserved": 168,
+    "runsExpected": 168,
+    "coveragePct": 100.0,
+    "avgRunSuccessRatePct": 97.61,
+    "weightedSuccessRatePct": 97.62,
+    "medianLatencySeconds": 160.0,
+    "p95LatencySeconds": 280.0,
+    "lessThan3MinPct": 81.55,
+    "between4And5MinPct": 18.45,
+    "over5MinCount": 0
+  },
+  "charts": [
+    {
+      "run_started_at_utc": "2026-01-04T00:00:00Z",
+      "label": "Jan 04 00:00",
+      "run_success_rate_pct": 93.11,
+      "run_latency_seconds": 261.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T01:00:00Z",
+      "label": "Jan 04 01:00",
+      "run_success_rate_pct": 97.82,
+      "run_latency_seconds": 178.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T02:00:00Z",
+      "label": "Jan 04 02:00",
+      "run_success_rate_pct": 98.8,
+      "run_latency_seconds": 161.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T03:00:00Z",
+      "label": "Jan 04 03:00",
+      "run_success_rate_pct": 96.2,
+      "run_latency_seconds": 139.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T04:00:00Z",
+      "label": "Jan 04 04:00",
+      "run_success_rate_pct": 99.21,
+      "run_latency_seconds": 128.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T05:00:00Z",
+      "label": "Jan 04 05:00",
+      "run_success_rate_pct": 98.67,
+      "run_latency_seconds": 169.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T06:00:00Z",
+      "label": "Jan 04 06:00",
+      "run_success_rate_pct": 97.4,
+      "run_latency_seconds": 175.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T07:00:00Z",
+      "label": "Jan 04 07:00",
+      "run_success_rate_pct": 92.73,
+      "run_latency_seconds": 280.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T08:00:00Z",
+      "label": "Jan 04 08:00",
+      "run_success_rate_pct": 98.2,
+      "run_latency_seconds": 172.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T09:00:00Z",
+      "label": "Jan 04 09:00",
+      "run_success_rate_pct": 98.72,
+      "run_latency_seconds": 167.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T10:00:00Z",
+      "label": "Jan 04 10:00",
+      "run_success_rate_pct": 98.85,
+      "run_latency_seconds": 159.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T11:00:00Z",
+      "label": "Jan 04 11:00",
+      "run_success_rate_pct": 92.28,
+      "run_latency_seconds": 273.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T12:00:00Z",
+      "label": "Jan 04 12:00",
+      "run_success_rate_pct": 97.86,
+      "run_latency_seconds": 156.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T13:00:00Z",
+      "label": "Jan 04 13:00",
+      "run_success_rate_pct": 97.16,
+      "run_latency_seconds": 160.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T14:00:00Z",
+      "label": "Jan 04 14:00",
+      "run_success_rate_pct": 97.29,
+      "run_latency_seconds": 165.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T15:00:00Z",
+      "label": "Jan 04 15:00",
+      "run_success_rate_pct": 99.16,
+      "run_latency_seconds": 175.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T16:00:00Z",
+      "label": "Jan 04 16:00",
+      "run_success_rate_pct": 97.5,
+      "run_latency_seconds": 158.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T17:00:00Z",
+      "label": "Jan 04 17:00",
+      "run_success_rate_pct": 99.23,
+      "run_latency_seconds": 165.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T18:00:00Z",
+      "label": "Jan 04 18:00",
+      "run_success_rate_pct": 92.95,
+      "run_latency_seconds": 295.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T19:00:00Z",
+      "label": "Jan 04 19:00",
+      "run_success_rate_pct": 97.34,
+      "run_latency_seconds": 140.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T20:00:00Z",
+      "label": "Jan 04 20:00",
+      "run_success_rate_pct": 98.04,
+      "run_latency_seconds": 138.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T21:00:00Z",
+      "label": "Jan 04 21:00",
+      "run_success_rate_pct": 98.35,
+      "run_latency_seconds": 135.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T22:00:00Z",
+      "label": "Jan 04 22:00",
+      "run_success_rate_pct": 98.02,
+      "run_latency_seconds": 249.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T23:00:00Z",
+      "label": "Jan 04 23:00",
+      "run_success_rate_pct": 98.27,
+      "run_latency_seconds": 149.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T00:00:00Z",
+      "label": "Jan 05 00:00",
+      "run_success_rate_pct": 97.6,
+      "run_latency_seconds": 160.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T01:00:00Z",
+      "label": "Jan 05 01:00",
+      "run_success_rate_pct": 98.76,
+      "run_latency_seconds": 153.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T02:00:00Z",
+      "label": "Jan 05 02:00",
+      "run_success_rate_pct": 97.81,
+      "run_latency_seconds": 168.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T03:00:00Z",
+      "label": "Jan 05 03:00",
+      "run_success_rate_pct": 98.09,
+      "run_latency_seconds": 156.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T04:00:00Z",
+      "label": "Jan 05 04:00",
+      "run_success_rate_pct": 97.99,
+      "run_latency_seconds": 170.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T05:00:00Z",
+      "label": "Jan 05 05:00",
+      "run_success_rate_pct": 92.56,
+      "run_latency_seconds": 276.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T06:00:00Z",
+      "label": "Jan 05 06:00",
+      "run_success_rate_pct": 98.65,
+      "run_latency_seconds": 170.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T07:00:00Z",
+      "label": "Jan 05 07:00",
+      "run_success_rate_pct": 97.27,
+      "run_latency_seconds": 164.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T08:00:00Z",
+      "label": "Jan 05 08:00",
+      "run_success_rate_pct": 97.35,
+      "run_latency_seconds": 164.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T09:00:00Z",
+      "label": "Jan 05 09:00",
+      "run_success_rate_pct": 94.15,
+      "run_latency_seconds": 271.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T10:00:00Z",
+      "label": "Jan 05 10:00",
+      "run_success_rate_pct": 97.22,
+      "run_latency_seconds": 135.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T11:00:00Z",
+      "label": "Jan 05 11:00",
+      "run_success_rate_pct": 97.97,
+      "run_latency_seconds": 138.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T12:00:00Z",
+      "label": "Jan 05 12:00",
+      "run_success_rate_pct": 98.83,
+      "run_latency_seconds": 150.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T13:00:00Z",
+      "label": "Jan 05 13:00",
+      "run_success_rate_pct": 98.86,
+      "run_latency_seconds": 178.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T14:00:00Z",
+      "label": "Jan 05 14:00",
+      "run_success_rate_pct": 97.44,
+      "run_latency_seconds": 142.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T15:00:00Z",
+      "label": "Jan 05 15:00",
+      "run_success_rate_pct": 97.6,
+      "run_latency_seconds": 163.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T16:00:00Z",
+      "label": "Jan 05 16:00",
+      "run_success_rate_pct": 94.85,
+      "run_latency_seconds": 291.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T17:00:00Z",
+      "label": "Jan 05 17:00",
+      "run_success_rate_pct": 98.71,
+      "run_latency_seconds": 138.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T18:00:00Z",
+      "label": "Jan 05 18:00",
+      "run_success_rate_pct": 98.29,
+      "run_latency_seconds": 136.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T19:00:00Z",
+      "label": "Jan 05 19:00",
+      "run_success_rate_pct": 97.97,
+      "run_latency_seconds": 141.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T20:00:00Z",
+      "label": "Jan 05 20:00",
+      "run_success_rate_pct": 93.27,
+      "run_latency_seconds": 291.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T21:00:00Z",
+      "label": "Jan 05 21:00",
+      "run_success_rate_pct": 98.76,
+      "run_latency_seconds": 165.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T22:00:00Z",
+      "label": "Jan 05 22:00",
+      "run_success_rate_pct": 97.51,
+      "run_latency_seconds": 163.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T23:00:00Z",
+      "label": "Jan 05 23:00",
+      "run_success_rate_pct": 99.23,
+      "run_latency_seconds": 136.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T00:00:00Z",
+      "label": "Jan 06 00:00",
+      "run_success_rate_pct": 97.11,
+      "run_latency_seconds": 177.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T01:00:00Z",
+      "label": "Jan 06 01:00",
+      "run_success_rate_pct": 98.46,
+      "run_latency_seconds": 146.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T02:00:00Z",
+      "label": "Jan 06 02:00",
+      "run_success_rate_pct": 98.9,
+      "run_latency_seconds": 159.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T03:00:00Z",
+      "label": "Jan 06 03:00",
+      "run_success_rate_pct": 94.98,
+      "run_latency_seconds": 265.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T04:00:00Z",
+      "label": "Jan 06 04:00",
+      "run_success_rate_pct": 97.91,
+      "run_latency_seconds": 147.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T05:00:00Z",
+      "label": "Jan 06 05:00",
+      "run_success_rate_pct": 98.97,
+      "run_latency_seconds": 168.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T06:00:00Z",
+      "label": "Jan 06 06:00",
+      "run_success_rate_pct": 98.29,
+      "run_latency_seconds": 160.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T07:00:00Z",
+      "label": "Jan 06 07:00",
+      "run_success_rate_pct": 94.1,
+      "run_latency_seconds": 261.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T08:00:00Z",
+      "label": "Jan 06 08:00",
+      "run_success_rate_pct": 98.95,
+      "run_latency_seconds": 160.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T09:00:00Z",
+      "label": "Jan 06 09:00",
+      "run_success_rate_pct": 98.61,
+      "run_latency_seconds": 135.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T10:00:00Z",
+      "label": "Jan 06 10:00",
+      "run_success_rate_pct": 99.05,
+      "run_latency_seconds": 172.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T11:00:00Z",
+      "label": "Jan 06 11:00",
+      "run_success_rate_pct": 98.54,
+      "run_latency_seconds": 159.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T12:00:00Z",
+      "label": "Jan 06 12:00",
+      "run_success_rate_pct": 96.86,
+      "run_latency_seconds": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T13:00:00Z",
+      "label": "Jan 06 13:00",
+      "run_success_rate_pct": 98.47,
+      "run_latency_seconds": 136.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T14:00:00Z",
+      "label": "Jan 06 14:00",
+      "run_success_rate_pct": 97.69,
+      "run_latency_seconds": 256.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T15:00:00Z",
+      "label": "Jan 06 15:00",
+      "run_success_rate_pct": 97.82,
+      "run_latency_seconds": 135.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T16:00:00Z",
+      "label": "Jan 06 16:00",
+      "run_success_rate_pct": 98.69,
+      "run_latency_seconds": 129.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T17:00:00Z",
+      "label": "Jan 06 17:00",
+      "run_success_rate_pct": 98.05,
+      "run_latency_seconds": 171.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T18:00:00Z",
+      "label": "Jan 06 18:00",
+      "run_success_rate_pct": 99.18,
+      "run_latency_seconds": 258.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T19:00:00Z",
+      "label": "Jan 06 19:00",
+      "run_success_rate_pct": 97.62,
+      "run_latency_seconds": 137.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T20:00:00Z",
+      "label": "Jan 06 20:00",
+      "run_success_rate_pct": 97.31,
+      "run_latency_seconds": 131.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T21:00:00Z",
+      "label": "Jan 06 21:00",
+      "run_success_rate_pct": 97.84,
+      "run_latency_seconds": 131.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T22:00:00Z",
+      "label": "Jan 06 22:00",
+      "run_success_rate_pct": 99.14,
+      "run_latency_seconds": 177.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T23:00:00Z",
+      "label": "Jan 06 23:00",
+      "run_success_rate_pct": 99.25,
+      "run_latency_seconds": 167.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T00:00:00Z",
+      "label": "Jan 07 00:00",
+      "run_success_rate_pct": 97.25,
+      "run_latency_seconds": 167.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T01:00:00Z",
+      "label": "Jan 07 01:00",
+      "run_success_rate_pct": 92.18,
+      "run_latency_seconds": 290.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T02:00:00Z",
+      "label": "Jan 07 02:00",
+      "run_success_rate_pct": 98.27,
+      "run_latency_seconds": 178.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T03:00:00Z",
+      "label": "Jan 07 03:00",
+      "run_success_rate_pct": 98.12,
+      "run_latency_seconds": 153.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T04:00:00Z",
+      "label": "Jan 07 04:00",
+      "run_success_rate_pct": 97.27,
+      "run_latency_seconds": 143.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T05:00:00Z",
+      "label": "Jan 07 05:00",
+      "run_success_rate_pct": 93.29,
+      "run_latency_seconds": 270.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T06:00:00Z",
+      "label": "Jan 07 06:00",
+      "run_success_rate_pct": 97.34,
+      "run_latency_seconds": 173.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T07:00:00Z",
+      "label": "Jan 07 07:00",
+      "run_success_rate_pct": 98.39,
+      "run_latency_seconds": 133.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T08:00:00Z",
+      "label": "Jan 07 08:00",
+      "run_success_rate_pct": 98.86,
+      "run_latency_seconds": 155.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T09:00:00Z",
+      "label": "Jan 07 09:00",
+      "run_success_rate_pct": 99.09,
+      "run_latency_seconds": 139.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T10:00:00Z",
+      "label": "Jan 07 10:00",
+      "run_success_rate_pct": 97.6,
+      "run_latency_seconds": 167.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T11:00:00Z",
+      "label": "Jan 07 11:00",
+      "run_success_rate_pct": 97.89,
+      "run_latency_seconds": 170.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T12:00:00Z",
+      "label": "Jan 07 12:00",
+      "run_success_rate_pct": 93.47,
+      "run_latency_seconds": 281.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T13:00:00Z",
+      "label": "Jan 07 13:00",
+      "run_success_rate_pct": 98.13,
+      "run_latency_seconds": 173.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T14:00:00Z",
+      "label": "Jan 07 14:00",
+      "run_success_rate_pct": 99.19,
+      "run_latency_seconds": 137.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T15:00:00Z",
+      "label": "Jan 07 15:00",
+      "run_success_rate_pct": 99.08,
+      "run_latency_seconds": 143.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T16:00:00Z",
+      "label": "Jan 07 16:00",
+      "run_success_rate_pct": 94.55,
+      "run_latency_seconds": 259.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T17:00:00Z",
+      "label": "Jan 07 17:00",
+      "run_success_rate_pct": 97.01,
+      "run_latency_seconds": 177.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T18:00:00Z",
+      "label": "Jan 07 18:00",
+      "run_success_rate_pct": 98.18,
+      "run_latency_seconds": 133.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T19:00:00Z",
+      "label": "Jan 07 19:00",
+      "run_success_rate_pct": 98.59,
+      "run_latency_seconds": 128.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T20:00:00Z",
+      "label": "Jan 07 20:00",
+      "run_success_rate_pct": 98.71,
+      "run_latency_seconds": 171.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T21:00:00Z",
+      "label": "Jan 07 21:00",
+      "run_success_rate_pct": 98.33,
+      "run_latency_seconds": 134.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T22:00:00Z",
+      "label": "Jan 07 22:00",
+      "run_success_rate_pct": 99.11,
+      "run_latency_seconds": 136.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T23:00:00Z",
+      "label": "Jan 07 23:00",
+      "run_success_rate_pct": 94.03,
+      "run_latency_seconds": 285.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T00:00:00Z",
+      "label": "Jan 08 00:00",
+      "run_success_rate_pct": 98.12,
+      "run_latency_seconds": 142.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T01:00:00Z",
+      "label": "Jan 08 01:00",
+      "run_success_rate_pct": 98.31,
+      "run_latency_seconds": 141.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T02:00:00Z",
+      "label": "Jan 08 02:00",
+      "run_success_rate_pct": 97.9,
+      "run_latency_seconds": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T03:00:00Z",
+      "label": "Jan 08 03:00",
+      "run_success_rate_pct": 95.12,
+      "run_latency_seconds": 277.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T04:00:00Z",
+      "label": "Jan 08 04:00",
+      "run_success_rate_pct": 96.93,
+      "run_latency_seconds": 178.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T05:00:00Z",
+      "label": "Jan 08 05:00",
+      "run_success_rate_pct": 98.31,
+      "run_latency_seconds": 175.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T06:00:00Z",
+      "label": "Jan 08 06:00",
+      "run_success_rate_pct": 97.92,
+      "run_latency_seconds": 155.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T07:00:00Z",
+      "label": "Jan 08 07:00",
+      "run_success_rate_pct": 97.89,
+      "run_latency_seconds": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T08:00:00Z",
+      "label": "Jan 08 08:00",
+      "run_success_rate_pct": 98.71,
+      "run_latency_seconds": 166.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T09:00:00Z",
+      "label": "Jan 08 09:00",
+      "run_success_rate_pct": 98.98,
+      "run_latency_seconds": 152.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T10:00:00Z",
+      "label": "Jan 08 10:00",
+      "run_success_rate_pct": 93.35,
+      "run_latency_seconds": 279.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T11:00:00Z",
+      "label": "Jan 08 11:00",
+      "run_success_rate_pct": 98.37,
+      "run_latency_seconds": 130.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T12:00:00Z",
+      "label": "Jan 08 12:00",
+      "run_success_rate_pct": 98.8,
+      "run_latency_seconds": 158.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T13:00:00Z",
+      "label": "Jan 08 13:00",
+      "run_success_rate_pct": 98.8,
+      "run_latency_seconds": 141.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T14:00:00Z",
+      "label": "Jan 08 14:00",
+      "run_success_rate_pct": 94.54,
+      "run_latency_seconds": 291.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T15:00:00Z",
+      "label": "Jan 08 15:00",
+      "run_success_rate_pct": 98.6,
+      "run_latency_seconds": 140.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T16:00:00Z",
+      "label": "Jan 08 16:00",
+      "run_success_rate_pct": 99.22,
+      "run_latency_seconds": 137.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T17:00:00Z",
+      "label": "Jan 08 17:00",
+      "run_success_rate_pct": 98.7,
+      "run_latency_seconds": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T18:00:00Z",
+      "label": "Jan 08 18:00",
+      "run_success_rate_pct": 98.63,
+      "run_latency_seconds": 150.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T19:00:00Z",
+      "label": "Jan 08 19:00",
+      "run_success_rate_pct": 97.49,
+      "run_latency_seconds": 140.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T20:00:00Z",
+      "label": "Jan 08 20:00",
+      "run_success_rate_pct": 97.16,
+      "run_latency_seconds": 146.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T21:00:00Z",
+      "label": "Jan 08 21:00",
+      "run_success_rate_pct": 98.61,
+      "run_latency_seconds": 258.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T22:00:00Z",
+      "label": "Jan 08 22:00",
+      "run_success_rate_pct": 98.45,
+      "run_latency_seconds": 150.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T23:00:00Z",
+      "label": "Jan 08 23:00",
+      "run_success_rate_pct": 97.26,
+      "run_latency_seconds": 157.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T00:00:00Z",
+      "label": "Jan 09 00:00",
+      "run_success_rate_pct": 98.55,
+      "run_latency_seconds": 146.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T01:00:00Z",
+      "label": "Jan 09 01:00",
+      "run_success_rate_pct": 94.17,
+      "run_latency_seconds": 280.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T02:00:00Z",
+      "label": "Jan 09 02:00",
+      "run_success_rate_pct": 96.7,
+      "run_latency_seconds": 172.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T03:00:00Z",
+      "label": "Jan 09 03:00",
+      "run_success_rate_pct": 98.37,
+      "run_latency_seconds": 153.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T04:00:00Z",
+      "label": "Jan 09 04:00",
+      "run_success_rate_pct": 97.22,
+      "run_latency_seconds": 152.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T05:00:00Z",
+      "label": "Jan 09 05:00",
+      "run_success_rate_pct": 98.13,
+      "run_latency_seconds": 172.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T06:00:00Z",
+      "label": "Jan 09 06:00",
+      "run_success_rate_pct": 97.6,
+      "run_latency_seconds": 176.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T07:00:00Z",
+      "label": "Jan 09 07:00",
+      "run_success_rate_pct": 99.12,
+      "run_latency_seconds": 157.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T08:00:00Z",
+      "label": "Jan 09 08:00",
+      "run_success_rate_pct": 97.2,
+      "run_latency_seconds": 273.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T09:00:00Z",
+      "label": "Jan 09 09:00",
+      "run_success_rate_pct": 98.0,
+      "run_latency_seconds": 167.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T10:00:00Z",
+      "label": "Jan 09 10:00",
+      "run_success_rate_pct": 99.26,
+      "run_latency_seconds": 170.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T11:00:00Z",
+      "label": "Jan 09 11:00",
+      "run_success_rate_pct": 99.14,
+      "run_latency_seconds": 173.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T12:00:00Z",
+      "label": "Jan 09 12:00",
+      "run_success_rate_pct": 94.02,
+      "run_latency_seconds": 261.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T13:00:00Z",
+      "label": "Jan 09 13:00",
+      "run_success_rate_pct": 98.12,
+      "run_latency_seconds": 134.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T14:00:00Z",
+      "label": "Jan 09 14:00",
+      "run_success_rate_pct": 97.37,
+      "run_latency_seconds": 147.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T15:00:00Z",
+      "label": "Jan 09 15:00",
+      "run_success_rate_pct": 98.67,
+      "run_latency_seconds": 174.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T16:00:00Z",
+      "label": "Jan 09 16:00",
+      "run_success_rate_pct": 98.71,
+      "run_latency_seconds": 150.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T17:00:00Z",
+      "label": "Jan 09 17:00",
+      "run_success_rate_pct": 98.91,
+      "run_latency_seconds": 172.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T18:00:00Z",
+      "label": "Jan 09 18:00",
+      "run_success_rate_pct": 98.88,
+      "run_latency_seconds": 176.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T19:00:00Z",
+      "label": "Jan 09 19:00",
+      "run_success_rate_pct": 98.62,
+      "run_latency_seconds": 255.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T20:00:00Z",
+      "label": "Jan 09 20:00",
+      "run_success_rate_pct": 98.63,
+      "run_latency_seconds": 132.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T21:00:00Z",
+      "label": "Jan 09 21:00",
+      "run_success_rate_pct": 97.85,
+      "run_latency_seconds": 138.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T22:00:00Z",
+      "label": "Jan 09 22:00",
+      "run_success_rate_pct": 97.99,
+      "run_latency_seconds": 169.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T23:00:00Z",
+      "label": "Jan 09 23:00",
+      "run_success_rate_pct": 94.03,
+      "run_latency_seconds": 275.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T00:00:00Z",
+      "label": "Jan 10 00:00",
+      "run_success_rate_pct": 98.31,
+      "run_latency_seconds": 169.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T01:00:00Z",
+      "label": "Jan 10 01:00",
+      "run_success_rate_pct": 98.62,
+      "run_latency_seconds": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T02:00:00Z",
+      "label": "Jan 10 02:00",
+      "run_success_rate_pct": 99.07,
+      "run_latency_seconds": 170.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T03:00:00Z",
+      "label": "Jan 10 03:00",
+      "run_success_rate_pct": 98.43,
+      "run_latency_seconds": 129.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T04:00:00Z",
+      "label": "Jan 10 04:00",
+      "run_success_rate_pct": 98.68,
+      "run_latency_seconds": 160.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T05:00:00Z",
+      "label": "Jan 10 05:00",
+      "run_success_rate_pct": 98.64,
+      "run_latency_seconds": 148.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T06:00:00Z",
+      "label": "Jan 10 06:00",
+      "run_success_rate_pct": 92.86,
+      "run_latency_seconds": 283.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T07:00:00Z",
+      "label": "Jan 10 07:00",
+      "run_success_rate_pct": 98.49,
+      "run_latency_seconds": 142.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T08:00:00Z",
+      "label": "Jan 10 08:00",
+      "run_success_rate_pct": 98.96,
+      "run_latency_seconds": 174.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T09:00:00Z",
+      "label": "Jan 10 09:00",
+      "run_success_rate_pct": 99.17,
+      "run_latency_seconds": 163.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T10:00:00Z",
+      "label": "Jan 10 10:00",
+      "run_success_rate_pct": 98.47,
+      "run_latency_seconds": 246.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T11:00:00Z",
+      "label": "Jan 10 11:00",
+      "run_success_rate_pct": 98.42,
+      "run_latency_seconds": 177.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T12:00:00Z",
+      "label": "Jan 10 12:00",
+      "run_success_rate_pct": 97.77,
+      "run_latency_seconds": 134.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T13:00:00Z",
+      "label": "Jan 10 13:00",
+      "run_success_rate_pct": 98.65,
+      "run_latency_seconds": 159.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T14:00:00Z",
+      "label": "Jan 10 14:00",
+      "run_success_rate_pct": 97.41,
+      "run_latency_seconds": 159.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T15:00:00Z",
+      "label": "Jan 10 15:00",
+      "run_success_rate_pct": 98.01,
+      "run_latency_seconds": 140.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T16:00:00Z",
+      "label": "Jan 10 16:00",
+      "run_success_rate_pct": 98.19,
+      "run_latency_seconds": 145.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T17:00:00Z",
+      "label": "Jan 10 17:00",
+      "run_success_rate_pct": 92.11,
+      "run_latency_seconds": 267.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T18:00:00Z",
+      "label": "Jan 10 18:00",
+      "run_success_rate_pct": 98.71,
+      "run_latency_seconds": 162.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T19:00:00Z",
+      "label": "Jan 10 19:00",
+      "run_success_rate_pct": 98.32,
+      "run_latency_seconds": 149.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T20:00:00Z",
+      "label": "Jan 10 20:00",
+      "run_success_rate_pct": 98.22,
+      "run_latency_seconds": 129.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T21:00:00Z",
+      "label": "Jan 10 21:00",
+      "run_success_rate_pct": 98.69,
+      "run_latency_seconds": 251.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T22:00:00Z",
+      "label": "Jan 10 22:00",
+      "run_success_rate_pct": 98.54,
+      "run_latency_seconds": 137.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T23:00:00Z",
+      "label": "Jan 10 23:00",
+      "run_success_rate_pct": 99.16,
+      "run_latency_seconds": 165.0
+    }
+  ]
+}

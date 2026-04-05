@@ -15,88 +15,71 @@ import {
   YAxis,
 } from "recharts";
 
-import aaplRaw from "@/data/evaluation/sentiment_aapl_alignment_2026_last_7d_60m.json";
-import amznRaw from "@/data/evaluation/sentiment_amzn_alignment_2026_last_7d_60m.json";
-import jpmRaw from "@/data/evaluation/sentiment_jpm_alignment_2026_last_7d_60m.json";
+import sentimentViewRaw from "@/data/evaluation/sentiment_frontend_view.json";
 import { Button } from "@/components/ui/button";
 
 type Ticker = "AAPL" | "JPM" | "AMZN";
 type CellKey = "summary" | "trendChart" | "matchChart";
 
-type SentimentAlignmentRow = {
+type SentimentTrendRow = {
   timestamp_utc: string;
-  ticker: string;
-  price_close: number;
-  next_price_close: number;
-  return_1h_pct: number;
-  market_direction: number;
-  sentiment_score: number;
-  sentiment_direction: number;
-  is_match: number;
-};
-
-type NotebookRow = SentimentAlignmentRow & {
   label: string;
+  return_1h_pct: number;
+  sentiment_score: number;
+  is_match: number;
   day: string;
 };
 
-const DATASETS: Record<Ticker, SentimentAlignmentRow[]> = {
-  AAPL: aaplRaw as SentimentAlignmentRow[],
-  JPM: jpmRaw as SentimentAlignmentRow[],
-  AMZN: amznRaw as SentimentAlignmentRow[],
+type SentimentDailyRow = {
+  day: string;
+  matchPct: number;
+  mismatchPct: number;
 };
+
+type SentimentSummary = {
+  rowsTotal: number;
+  rowsEvaluable: number;
+  accuracyPct: number;
+  randomBaselinePct: number;
+  majorityBaselinePct: number;
+  upliftRandomPct: number;
+  upliftMajorityPct: number;
+};
+
+type TickerView = {
+  summary: SentimentSummary;
+  matchBreakdown: {
+    match: number;
+    mismatch: number;
+  };
+  trendRows: SentimentTrendRow[];
+  dailyRows: SentimentDailyRow[];
+};
+
+const DATASETS = sentimentViewRaw as Record<Ticker, TickerView>;
 
 const PYTHON_KEYWORDS = new Set([
   "import",
   "as",
   "display",
-  "read_csv",
-  "to_datetime",
-  "sort_values",
-  "groupby",
-  "mean",
-  "sum",
-  "round",
+  "read_json",
   "set_title",
   "set_ylabel",
   "set_xlabel",
   "legend",
 ]);
 
-function formatHourLabel(iso: string) {
-  const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = d.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
-  const hour = d.toLocaleString("en-US", {
-    hour: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  });
-  return `${month} ${day} ${hour}:00`;
-}
-
-function formatDay(iso: string) {
-  return new Date(iso).toLocaleDateString("en-CA", { timeZone: "UTC" });
-}
-
 function codeSnippets(ticker: Ticker): Record<CellKey, string> {
-  const lower = ticker.toLowerCase();
   return {
     summary: `# Cell [1] - ${ticker} directional alignment summary
 import pandas as pd
 
-df = pd.read_csv("frontend/data/evaluation/sentiment_${lower}_alignment_2026_last_7d_60m.csv")
-df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], utc=True)
-eval_df = df[df["market_direction"].isin([-1, 1])].copy()
-
-summary = {
-  "directional_accuracy_pct": round(eval_df["is_match"].mean() * 100, 2),
-  "random_baseline_pct": 50.0,
-  "majority_baseline_pct": round((eval_df["market_direction"] == eval_df["market_direction"].mode().iloc[0]).mean() * 100, 2),
-}
+view = pd.read_json("frontend/data/evaluation/sentiment_frontend_view.json")
+summary = view["${ticker}"]["summary"]
 display(summary)`,
     trendChart: `# Cell [2] - ${ticker} sentiment vs return trend
-plot_df = eval_df.sort_values("timestamp_utc").copy()
+view = pd.read_json("frontend/data/evaluation/sentiment_frontend_view.json")
+plot_df = view["${ticker}"]["trendRows"]
 
 fig, ax1 = plt.subplots(figsize=(11, 4))
 ax1.plot(plot_df["timestamp_utc"], plot_df["sentiment_score"], color="#10B981", linewidth=2)
@@ -107,15 +90,9 @@ ax2.plot(plot_df["timestamp_utc"], plot_df["return_1h_pct"], color="#2563EB", li
 ax1.set_title("${ticker} Sentiment vs Next-Hour Market Return")
 ax1.set_xlabel("Timestamp (UTC)")`,
     matchChart: `# Cell [3] - ${ticker} match/mismatch profile
-plot_df = eval_df.sort_values("timestamp_utc").copy()
-plot_df["day_utc"] = plot_df["timestamp_utc"].dt.strftime("%Y-%m-%d")
-
-daily = plot_df.groupby("day_utc")["is_match"].agg(["sum", "count"]).reset_index()
-daily["mismatch"] = daily["count"] - daily["sum"]
-daily["match_pct"] = daily["sum"] / daily["count"] * 100
-daily["mismatch_pct"] = daily["mismatch"] / daily["count"] * 100
-
-daily[["day_utc", "match_pct", "mismatch_pct"]]`,
+view = pd.read_json("frontend/data/evaluation/sentiment_frontend_view.json")
+daily = view["${ticker}"]["dailyRows"]
+daily`,
   };
 }
 
@@ -343,78 +320,11 @@ export default function SentimentPerformanceNotebook() {
   });
 
   const snippetMap = useMemo(() => codeSnippets(selectedTicker), [selectedTicker]);
-
-  const rows = useMemo<NotebookRow[]>(
-    () =>
-      DATASETS[selectedTicker].map((r) => ({
-        ...r,
-        market_direction: Number(r.market_direction),
-        sentiment_score: Number(r.sentiment_score),
-        sentiment_direction: Number(r.sentiment_direction),
-        return_1h_pct: Number(r.return_1h_pct),
-        is_match: Number(r.is_match),
-        label: formatHourLabel(r.timestamp_utc),
-        day: formatDay(r.timestamp_utc),
-      })),
-    [selectedTicker]
-  );
-
-  const evalRows = useMemo(
-    () => rows.filter((r) => r.market_direction === -1 || r.market_direction === 1),
-    [rows]
-  );
-
-  const summary = useMemo(() => {
-    const evalCount = evalRows.length;
-    const accuracyPct =
-      evalCount > 0 ? (evalRows.reduce((acc, r) => acc + r.is_match, 0) / evalCount) * 100 : 0;
-
-    const majorityDirection = evalCount
-      ? evalRows.reduce<Record<string, number>>((acc, r) => {
-          acc[r.market_direction] = (acc[r.market_direction] ?? 0) + 1;
-          return acc;
-        }, {})["1"] >=
-        evalRows.reduce<Record<string, number>>((acc, r) => {
-          acc[r.market_direction] = (acc[r.market_direction] ?? 0) + 1;
-          return acc;
-        }, {})["-1"]
-        ? 1
-        : -1
-      : 1;
-
-    const majorityBaselinePct =
-      evalCount > 0
-        ? (evalRows.filter((r) => r.market_direction === majorityDirection).length / evalCount) *
-          100
-        : 0;
-
-    return {
-      rowsTotal: rows.length,
-      rowsEvaluable: evalCount,
-      accuracyPct,
-      randomBaselinePct: 50,
-      majorityBaselinePct,
-      upliftRandomPct: accuracyPct - 50,
-      upliftMajorityPct: accuracyPct - majorityBaselinePct,
-    };
-  }, [rows, evalRows]);
-
-  const dailyRows = useMemo(() => {
-    const byDay = new Map<string, { day: string; match: number; total: number }>();
-    for (const row of evalRows) {
-      const existing = byDay.get(row.day) ?? { day: row.day, match: 0, total: 0 };
-      existing.total += 1;
-      existing.match += row.is_match;
-      byDay.set(row.day, existing);
-    }
-    return Array.from(byDay.values())
-      .map((r) => ({
-        day: r.day,
-        matchPct: (r.match / r.total) * 100,
-        mismatchPct: ((r.total - r.match) / r.total) * 100,
-      }))
-      .sort((a, b) => a.day.localeCompare(b.day));
-  }, [evalRows]);
+  const selectedData = DATASETS[selectedTicker];
+  const summary = selectedData.summary;
+  const evalRows = selectedData.trendRows;
+  const dailyRows = selectedData.dailyRows;
+  const matchBreakdown = selectedData.matchBreakdown;
 
   const runCell = (key: CellKey) => {
     setRunStates((prev) => ({ ...prev, [key]: "running" }));
@@ -563,8 +473,8 @@ export default function SentimentPerformanceNotebook() {
                 data={[
                   {
                     bucket: selectedTicker,
-                    match: evalRows.reduce((acc, r) => acc + r.is_match, 0),
-                    mismatch: evalRows.length - evalRows.reduce((acc, r) => acc + r.is_match, 0),
+                    match: matchBreakdown.match,
+                    mismatch: matchBreakdown.mismatch,
                   },
                 ]}
                 margin={{ top: 10, right: 10, left: 0, bottom: 10 }}

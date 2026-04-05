@@ -1,0 +1,1260 @@
+{
+  "AAPL": {
+    "summary": {
+      "rowsTotal": 50,
+      "rowsEvaluable": 44,
+      "accuracyPct": 63.64,
+      "randomBaselinePct": 50.0,
+      "majorityBaselinePct": 52.27,
+      "upliftRandomPct": 13.64,
+      "upliftMajorityPct": 11.36
+    },
+    "matchBreakdown": {
+      "match": 28,
+      "mismatch": 16
+    },
+    "trendRows": [
+      {
+        "timestamp_utc": "2026-03-25T13:30:00Z",
+        "label": "Mar 25 13:00",
+        "sentiment_score": 0.761,
+        "return_1h_pct": 0.5477000000000001,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T14:30:00Z",
+        "label": "Mar 25 14:00",
+        "sentiment_score": -0.516,
+        "return_1h_pct": -0.1259,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T15:30:00Z",
+        "label": "Mar 25 15:00",
+        "sentiment_score": -0.058,
+        "return_1h_pct": 0.08660000000000001,
+        "is_match": 0,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T16:30:00Z",
+        "label": "Mar 25 16:00",
+        "sentiment_score": -0.916,
+        "return_1h_pct": -0.0728,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T17:30:00Z",
+        "label": "Mar 25 17:00",
+        "sentiment_score": -0.114,
+        "return_1h_pct": -0.5257000000000001,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T19:30:00Z",
+        "label": "Mar 25 19:00",
+        "sentiment_score": 0.905,
+        "return_1h_pct": 1.3224,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-26T13:30:00Z",
+        "label": "Mar 26 13:00",
+        "sentiment_score": 0.527,
+        "return_1h_pct": -0.08990000000000001,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T14:30:00Z",
+        "label": "Mar 26 14:00",
+        "sentiment_score": -0.671,
+        "return_1h_pct": 0.1643,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T15:30:00Z",
+        "label": "Mar 26 15:00",
+        "sentiment_score": -0.304,
+        "return_1h_pct": -0.4334,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T16:30:00Z",
+        "label": "Mar 26 16:00",
+        "sentiment_score": 0.777,
+        "return_1h_pct": -0.45690000000000003,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T17:30:00Z",
+        "label": "Mar 26 17:00",
+        "sentiment_score": -0.897,
+        "return_1h_pct": -0.0611,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T18:30:00Z",
+        "label": "Mar 26 18:00",
+        "sentiment_score": -0.6000000000000001,
+        "return_1h_pct": -0.3114,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T19:30:00Z",
+        "label": "Mar 26 19:00",
+        "sentiment_score": -0.167,
+        "return_1h_pct": 0.6327,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-27T13:30:00Z",
+        "label": "Mar 27 13:00",
+        "sentiment_score": -0.138,
+        "return_1h_pct": -0.7309,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T14:30:00Z",
+        "label": "Mar 27 14:00",
+        "sentiment_score": -0.337,
+        "return_1h_pct": -0.3325,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T15:30:00Z",
+        "label": "Mar 27 15:00",
+        "sentiment_score": -0.422,
+        "return_1h_pct": -0.5441,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T16:30:00Z",
+        "label": "Mar 27 16:00",
+        "sentiment_score": -0.11,
+        "return_1h_pct": -0.4093,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T17:30:00Z",
+        "label": "Mar 27 17:00",
+        "sentiment_score": -0.525,
+        "return_1h_pct": -0.391,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T18:30:00Z",
+        "label": "Mar 27 18:00",
+        "sentiment_score": 0.859,
+        "return_1h_pct": 0.08460000000000001,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T19:30:00Z",
+        "label": "Mar 27 19:00",
+        "sentiment_score": 0.109,
+        "return_1h_pct": -0.3178,
+        "is_match": 0,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-30T13:30:00Z",
+        "label": "Mar 30 13:00",
+        "sentiment_score": -0.081,
+        "return_1h_pct": -0.5246000000000001,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T14:30:00Z",
+        "label": "Mar 30 14:00",
+        "sentiment_score": -0.216,
+        "return_1h_pct": -0.2069,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T15:30:00Z",
+        "label": "Mar 30 15:00",
+        "sentiment_score": 0.319,
+        "return_1h_pct": 0.0935,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T16:30:00Z",
+        "label": "Mar 30 16:00",
+        "sentiment_score": -0.28500000000000003,
+        "return_1h_pct": 0.0935,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T17:30:00Z",
+        "label": "Mar 30 17:00",
+        "sentiment_score": -0.122,
+        "return_1h_pct": -0.2394,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T18:30:00Z",
+        "label": "Mar 30 18:00",
+        "sentiment_score": 0.769,
+        "return_1h_pct": 0.26430000000000003,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T19:30:00Z",
+        "label": "Mar 30 19:00",
+        "sentiment_score": -0.922,
+        "return_1h_pct": 0.9735,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-31T13:30:00Z",
+        "label": "Mar 31 13:00",
+        "sentiment_score": 0.25,
+        "return_1h_pct": -0.2049,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T14:30:00Z",
+        "label": "Mar 31 14:00",
+        "sentiment_score": -0.898,
+        "return_1h_pct": 0.7688,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T15:30:00Z",
+        "label": "Mar 31 15:00",
+        "sentiment_score": 0.854,
+        "return_1h_pct": 1.1524,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T16:30:00Z",
+        "label": "Mar 31 16:00",
+        "sentiment_score": -0.638,
+        "return_1h_pct": -0.0375,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T17:30:00Z",
+        "label": "Mar 31 17:00",
+        "sentiment_score": 0.291,
+        "return_1h_pct": 0.21330000000000002,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T18:30:00Z",
+        "label": "Mar 31 18:00",
+        "sentiment_score": 0.321,
+        "return_1h_pct": 0.0473,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T19:30:00Z",
+        "label": "Mar 31 19:00",
+        "sentiment_score": -0.877,
+        "return_1h_pct": 0.1301,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-04-01T14:30:00Z",
+        "label": "Apr 01 14:00",
+        "sentiment_score": 0.634,
+        "return_1h_pct": 0.1102,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T15:30:00Z",
+        "label": "Apr 01 15:00",
+        "sentiment_score": 0.453,
+        "return_1h_pct": 0.27990000000000004,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T16:30:00Z",
+        "label": "Apr 01 16:00",
+        "sentiment_score": -0.11,
+        "return_1h_pct": -0.3262,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T17:30:00Z",
+        "label": "Apr 01 17:00",
+        "sentiment_score": -0.81,
+        "return_1h_pct": 0.5289,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T19:30:00Z",
+        "label": "Apr 01 19:00",
+        "sentiment_score": 0.059000000000000004,
+        "return_1h_pct": -1.3943,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-02T13:30:00Z",
+        "label": "Apr 02 13:00",
+        "sentiment_score": 0.42,
+        "return_1h_pct": 1.1879,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T14:30:00Z",
+        "label": "Apr 02 14:00",
+        "sentiment_score": -0.6970000000000001,
+        "return_1h_pct": -0.39590000000000003,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T15:30:00Z",
+        "label": "Apr 02 15:00",
+        "sentiment_score": -0.809,
+        "return_1h_pct": 0.48210000000000003,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T16:30:00Z",
+        "label": "Apr 02 16:00",
+        "sentiment_score": -0.297,
+        "return_1h_pct": -0.07440000000000001,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T18:30:00Z",
+        "label": "Apr 02 18:00",
+        "sentiment_score": 0.1,
+        "return_1h_pct": 0.3018,
+        "is_match": 0,
+        "day": "2026-04-02"
+      }
+    ],
+    "dailyRows": [
+      {
+        "day": "2026-03-25",
+        "matchPct": 83.33,
+        "mismatchPct": 16.67
+      },
+      {
+        "day": "2026-03-26",
+        "matchPct": 42.86,
+        "mismatchPct": 57.14
+      },
+      {
+        "day": "2026-03-27",
+        "matchPct": 85.71,
+        "mismatchPct": 14.29
+      },
+      {
+        "day": "2026-03-30",
+        "matchPct": 57.14,
+        "mismatchPct": 42.86
+      },
+      {
+        "day": "2026-03-31",
+        "matchPct": 57.14,
+        "mismatchPct": 42.86
+      },
+      {
+        "day": "2026-04-01",
+        "matchPct": 60.0,
+        "mismatchPct": 40.0
+      },
+      {
+        "day": "2026-04-02",
+        "matchPct": 60.0,
+        "mismatchPct": 40.0
+      }
+    ]
+  },
+  "JPM": {
+    "summary": {
+      "rowsTotal": 50,
+      "rowsEvaluable": 45,
+      "accuracyPct": 62.22,
+      "randomBaselinePct": 50.0,
+      "majorityBaselinePct": 55.56,
+      "upliftRandomPct": 12.22,
+      "upliftMajorityPct": 6.67
+    },
+    "matchBreakdown": {
+      "match": 28,
+      "mismatch": 17
+    },
+    "trendRows": [
+      {
+        "timestamp_utc": "2026-03-25T13:30:00Z",
+        "label": "Mar 25 13:00",
+        "sentiment_score": -0.18,
+        "return_1h_pct": -0.203,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T17:30:00Z",
+        "label": "Mar 25 17:00",
+        "sentiment_score": 0.214,
+        "return_1h_pct": 0.0407,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T18:30:00Z",
+        "label": "Mar 25 18:00",
+        "sentiment_score": -0.251,
+        "return_1h_pct": 0.10840000000000001,
+        "is_match": 0,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T19:30:00Z",
+        "label": "Mar 25 19:00",
+        "sentiment_score": -0.11,
+        "return_1h_pct": -0.5212,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-26T13:30:00Z",
+        "label": "Mar 26 13:00",
+        "sentiment_score": 0.038,
+        "return_1h_pct": -0.40490000000000004,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T14:30:00Z",
+        "label": "Mar 26 14:00",
+        "sentiment_score": -0.937,
+        "return_1h_pct": -0.5199,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T15:30:00Z",
+        "label": "Mar 26 15:00",
+        "sentiment_score": -0.933,
+        "return_1h_pct": -0.049100000000000005,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T16:30:00Z",
+        "label": "Mar 26 16:00",
+        "sentiment_score": -0.048,
+        "return_1h_pct": 0.1254,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T17:30:00Z",
+        "label": "Mar 26 17:00",
+        "sentiment_score": -0.113,
+        "return_1h_pct": 0.1416,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T18:30:00Z",
+        "label": "Mar 26 18:00",
+        "sentiment_score": -0.312,
+        "return_1h_pct": -0.0489,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T19:30:00Z",
+        "label": "Mar 26 19:00",
+        "sentiment_score": 0.9410000000000001,
+        "return_1h_pct": -2.0894,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-27T13:30:00Z",
+        "label": "Mar 27 13:00",
+        "sentiment_score": -0.222,
+        "return_1h_pct": 0.1278,
+        "is_match": 0,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T14:30:00Z",
+        "label": "Mar 27 14:00",
+        "sentiment_score": 0.177,
+        "return_1h_pct": -0.4546,
+        "is_match": 0,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T15:30:00Z",
+        "label": "Mar 27 15:00",
+        "sentiment_score": -0.883,
+        "return_1h_pct": -0.2898,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T16:30:00Z",
+        "label": "Mar 27 16:00",
+        "sentiment_score": -0.464,
+        "return_1h_pct": -0.3435,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T17:30:00Z",
+        "label": "Mar 27 17:00",
+        "sentiment_score": 0.5730000000000001,
+        "return_1h_pct": 0.1874,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T18:30:00Z",
+        "label": "Mar 27 18:00",
+        "sentiment_score": -0.9470000000000001,
+        "return_1h_pct": -0.2364,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T19:30:00Z",
+        "label": "Mar 27 19:00",
+        "sentiment_score": 0.839,
+        "return_1h_pct": 0.7993,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-30T13:30:00Z",
+        "label": "Mar 30 13:00",
+        "sentiment_score": 0.092,
+        "return_1h_pct": 0.5193,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T14:30:00Z",
+        "label": "Mar 30 14:00",
+        "sentiment_score": 0.30000000000000004,
+        "return_1h_pct": -0.1902,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T15:30:00Z",
+        "label": "Mar 30 15:00",
+        "sentiment_score": 0.055,
+        "return_1h_pct": -0.28150000000000003,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T16:30:00Z",
+        "label": "Mar 30 16:00",
+        "sentiment_score": -0.728,
+        "return_1h_pct": -0.2876,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T17:30:00Z",
+        "label": "Mar 30 17:00",
+        "sentiment_score": -0.11,
+        "return_1h_pct": -0.6401,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T18:30:00Z",
+        "label": "Mar 30 18:00",
+        "sentiment_score": 0.745,
+        "return_1h_pct": 0.48140000000000005,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T19:30:00Z",
+        "label": "Mar 30 19:00",
+        "sentiment_score": 0.486,
+        "return_1h_pct": 2.0548,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-31T13:30:00Z",
+        "label": "Mar 31 13:00",
+        "sentiment_score": -0.039,
+        "return_1h_pct": -0.18730000000000002,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T14:30:00Z",
+        "label": "Mar 31 14:00",
+        "sentiment_score": 0.626,
+        "return_1h_pct": 0.43920000000000003,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T15:30:00Z",
+        "label": "Mar 31 15:00",
+        "sentiment_score": 0.36,
+        "return_1h_pct": 1.3085,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T16:30:00Z",
+        "label": "Mar 31 16:00",
+        "sentiment_score": -0.797,
+        "return_1h_pct": -0.049300000000000004,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T17:30:00Z",
+        "label": "Mar 31 17:00",
+        "sentiment_score": -0.077,
+        "return_1h_pct": -0.0629,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T18:30:00Z",
+        "label": "Mar 31 18:00",
+        "sentiment_score": 0.787,
+        "return_1h_pct": 0.09870000000000001,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T19:30:00Z",
+        "label": "Mar 31 19:00",
+        "sentiment_score": 0.856,
+        "return_1h_pct": 0.1241,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-04-01T13:30:00Z",
+        "label": "Apr 01 13:00",
+        "sentiment_score": 0.309,
+        "return_1h_pct": 0.9767,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T14:30:00Z",
+        "label": "Apr 01 14:00",
+        "sentiment_score": 0.188,
+        "return_1h_pct": -0.3906,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T15:30:00Z",
+        "label": "Apr 01 15:00",
+        "sentiment_score": -0.324,
+        "return_1h_pct": -0.0785,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T16:30:00Z",
+        "label": "Apr 01 16:00",
+        "sentiment_score": -0.257,
+        "return_1h_pct": -0.6579,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T17:30:00Z",
+        "label": "Apr 01 17:00",
+        "sentiment_score": -0.809,
+        "return_1h_pct": 0.4081,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T18:30:00Z",
+        "label": "Apr 01 18:00",
+        "sentiment_score": 0.647,
+        "return_1h_pct": 0.0339,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T19:30:00Z",
+        "label": "Apr 01 19:00",
+        "sentiment_score": -0.6960000000000001,
+        "return_1h_pct": -1.3542,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-02T13:30:00Z",
+        "label": "Apr 02 13:00",
+        "sentiment_score": 0.098,
+        "return_1h_pct": 0.8786,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T14:30:00Z",
+        "label": "Apr 02 14:00",
+        "sentiment_score": 0.91,
+        "return_1h_pct": -0.21430000000000002,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T15:30:00Z",
+        "label": "Apr 02 15:00",
+        "sentiment_score": -0.056,
+        "return_1h_pct": 0.5336000000000001,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T16:30:00Z",
+        "label": "Apr 02 16:00",
+        "sentiment_score": -0.749,
+        "return_1h_pct": -0.20520000000000002,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T18:30:00Z",
+        "label": "Apr 02 18:00",
+        "sentiment_score": 0.508,
+        "return_1h_pct": 0.1665,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T19:30:00Z",
+        "label": "Apr 02 19:00",
+        "sentiment_score": -0.75,
+        "return_1h_pct": -0.0441,
+        "is_match": 1,
+        "day": "2026-04-02"
+      }
+    ],
+    "dailyRows": [
+      {
+        "day": "2026-03-25",
+        "matchPct": 75.0,
+        "mismatchPct": 25.0
+      },
+      {
+        "day": "2026-03-26",
+        "matchPct": 42.86,
+        "mismatchPct": 57.14
+      },
+      {
+        "day": "2026-03-27",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-03-30",
+        "matchPct": 57.14,
+        "mismatchPct": 42.86
+      },
+      {
+        "day": "2026-03-31",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-04-01",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-04-02",
+        "matchPct": 50.0,
+        "mismatchPct": 50.0
+      }
+    ]
+  },
+  "AMZN": {
+    "summary": {
+      "rowsTotal": 49,
+      "rowsEvaluable": 48,
+      "accuracyPct": 62.5,
+      "randomBaselinePct": 50.0,
+      "majorityBaselinePct": 56.25,
+      "upliftRandomPct": 12.5,
+      "upliftMajorityPct": 6.25
+    },
+    "matchBreakdown": {
+      "match": 30,
+      "mismatch": 18
+    },
+    "trendRows": [
+      {
+        "timestamp_utc": "2026-03-25T13:30:00Z",
+        "label": "Mar 25 13:00",
+        "sentiment_score": -0.766,
+        "return_1h_pct": -0.3163,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T14:30:00Z",
+        "label": "Mar 25 14:00",
+        "sentiment_score": -0.969,
+        "return_1h_pct": 0.3457,
+        "is_match": 0,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T15:30:00Z",
+        "label": "Mar 25 15:00",
+        "sentiment_score": 0.621,
+        "return_1h_pct": 0.3115,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T16:30:00Z",
+        "label": "Mar 25 16:00",
+        "sentiment_score": -0.225,
+        "return_1h_pct": -0.4234,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T17:30:00Z",
+        "label": "Mar 25 17:00",
+        "sentiment_score": -0.58,
+        "return_1h_pct": -0.085,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T18:30:00Z",
+        "label": "Mar 25 18:00",
+        "sentiment_score": 0.758,
+        "return_1h_pct": 0.1111,
+        "is_match": 1,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-25T19:30:00Z",
+        "label": "Mar 25 19:00",
+        "sentiment_score": -0.646,
+        "return_1h_pct": 0.1393,
+        "is_match": 0,
+        "day": "2026-03-25"
+      },
+      {
+        "timestamp_utc": "2026-03-26T13:30:00Z",
+        "label": "Mar 26 13:00",
+        "sentiment_score": -0.6940000000000001,
+        "return_1h_pct": -0.033,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T14:30:00Z",
+        "label": "Mar 26 14:00",
+        "sentiment_score": -0.319,
+        "return_1h_pct": -0.7078,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T15:30:00Z",
+        "label": "Mar 26 15:00",
+        "sentiment_score": 0.742,
+        "return_1h_pct": -0.5608000000000001,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T16:30:00Z",
+        "label": "Mar 26 16:00",
+        "sentiment_score": -0.137,
+        "return_1h_pct": -0.5066,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T17:30:00Z",
+        "label": "Mar 26 17:00",
+        "sentiment_score": 0.606,
+        "return_1h_pct": 0.0391,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T18:30:00Z",
+        "label": "Mar 26 18:00",
+        "sentiment_score": -0.512,
+        "return_1h_pct": -0.356,
+        "is_match": 1,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-26T19:30:00Z",
+        "label": "Mar 26 19:00",
+        "sentiment_score": 0.577,
+        "return_1h_pct": -3.0357,
+        "is_match": 0,
+        "day": "2026-03-26"
+      },
+      {
+        "timestamp_utc": "2026-03-27T13:30:00Z",
+        "label": "Mar 27 13:00",
+        "sentiment_score": -0.11,
+        "return_1h_pct": -0.06960000000000001,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T14:30:00Z",
+        "label": "Mar 27 14:00",
+        "sentiment_score": -0.706,
+        "return_1h_pct": -0.179,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T15:30:00Z",
+        "label": "Mar 27 15:00",
+        "sentiment_score": 0.11,
+        "return_1h_pct": 0.049800000000000004,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T16:30:00Z",
+        "label": "Mar 27 16:00",
+        "sentiment_score": -0.255,
+        "return_1h_pct": -0.1892,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T17:30:00Z",
+        "label": "Mar 27 17:00",
+        "sentiment_score": 0.41300000000000003,
+        "return_1h_pct": -0.1696,
+        "is_match": 0,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T18:30:00Z",
+        "label": "Mar 27 18:00",
+        "sentiment_score": -0.289,
+        "return_1h_pct": -0.39480000000000004,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-27T19:30:00Z",
+        "label": "Mar 27 19:00",
+        "sentiment_score": 0.547,
+        "return_1h_pct": 1.0285,
+        "is_match": 1,
+        "day": "2026-03-27"
+      },
+      {
+        "timestamp_utc": "2026-03-30T13:30:00Z",
+        "label": "Mar 30 13:00",
+        "sentiment_score": 0.41300000000000003,
+        "return_1h_pct": 0.8293,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T14:30:00Z",
+        "label": "Mar 30 14:00",
+        "sentiment_score": 0.183,
+        "return_1h_pct": -0.199,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T15:30:00Z",
+        "label": "Mar 30 15:00",
+        "sentiment_score": 0.304,
+        "return_1h_pct": -0.457,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T16:30:00Z",
+        "label": "Mar 30 16:00",
+        "sentiment_score": 0.983,
+        "return_1h_pct": -0.38170000000000004,
+        "is_match": 0,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T17:30:00Z",
+        "label": "Mar 30 17:00",
+        "sentiment_score": -0.668,
+        "return_1h_pct": -0.4131,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T18:30:00Z",
+        "label": "Mar 30 18:00",
+        "sentiment_score": 0.36,
+        "return_1h_pct": 0.39480000000000004,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-30T19:30:00Z",
+        "label": "Mar 30 19:00",
+        "sentiment_score": 0.584,
+        "return_1h_pct": 2.6406,
+        "is_match": 1,
+        "day": "2026-03-30"
+      },
+      {
+        "timestamp_utc": "2026-03-31T13:30:00Z",
+        "label": "Mar 31 13:00",
+        "sentiment_score": -0.622,
+        "return_1h_pct": -0.0946,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T14:30:00Z",
+        "label": "Mar 31 14:00",
+        "sentiment_score": 0.28,
+        "return_1h_pct": 0.165,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T15:30:00Z",
+        "label": "Mar 31 15:00",
+        "sentiment_score": 0.555,
+        "return_1h_pct": 1.3594,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T16:30:00Z",
+        "label": "Mar 31 16:00",
+        "sentiment_score": 0.14200000000000002,
+        "return_1h_pct": -0.22710000000000002,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T17:30:00Z",
+        "label": "Mar 31 17:00",
+        "sentiment_score": -0.263,
+        "return_1h_pct": 0.1701,
+        "is_match": 0,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T18:30:00Z",
+        "label": "Mar 31 18:00",
+        "sentiment_score": -0.56,
+        "return_1h_pct": -0.3564,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-03-31T19:30:00Z",
+        "label": "Mar 31 19:00",
+        "sentiment_score": 0.56,
+        "return_1h_pct": 1.181,
+        "is_match": 1,
+        "day": "2026-03-31"
+      },
+      {
+        "timestamp_utc": "2026-04-01T13:30:00Z",
+        "label": "Apr 01 13:00",
+        "sentiment_score": 0.854,
+        "return_1h_pct": 0.6097,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T14:30:00Z",
+        "label": "Apr 01 14:00",
+        "sentiment_score": -0.726,
+        "return_1h_pct": 0.4325,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T15:30:00Z",
+        "label": "Apr 01 15:00",
+        "sentiment_score": 0.194,
+        "return_1h_pct": -0.2146,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T16:30:00Z",
+        "label": "Apr 01 16:00",
+        "sentiment_score": -0.371,
+        "return_1h_pct": -0.9247000000000001,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T17:30:00Z",
+        "label": "Apr 01 17:00",
+        "sentiment_score": -0.727,
+        "return_1h_pct": 0.5795,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T18:30:00Z",
+        "label": "Apr 01 18:00",
+        "sentiment_score": -0.317,
+        "return_1h_pct": -0.5573,
+        "is_match": 1,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-01T19:30:00Z",
+        "label": "Apr 01 19:00",
+        "sentiment_score": 0.28700000000000003,
+        "return_1h_pct": -0.7741,
+        "is_match": 0,
+        "day": "2026-04-01"
+      },
+      {
+        "timestamp_utc": "2026-04-02T13:30:00Z",
+        "label": "Apr 02 13:00",
+        "sentiment_score": -0.897,
+        "return_1h_pct": 0.7131000000000001,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T14:30:00Z",
+        "label": "Apr 02 14:00",
+        "sentiment_score": -0.611,
+        "return_1h_pct": -0.5512,
+        "is_match": 1,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T15:30:00Z",
+        "label": "Apr 02 15:00",
+        "sentiment_score": -0.779,
+        "return_1h_pct": 0.1625,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T16:30:00Z",
+        "label": "Apr 02 16:00",
+        "sentiment_score": 0.47900000000000004,
+        "return_1h_pct": -0.28150000000000003,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T17:30:00Z",
+        "label": "Apr 02 17:00",
+        "sentiment_score": -0.34,
+        "return_1h_pct": 0.0431,
+        "is_match": 0,
+        "day": "2026-04-02"
+      },
+      {
+        "timestamp_utc": "2026-04-02T18:30:00Z",
+        "label": "Apr 02 18:00",
+        "sentiment_score": 0.317,
+        "return_1h_pct": 0.3156,
+        "is_match": 1,
+        "day": "2026-04-02"
+      }
+    ],
+    "dailyRows": [
+      {
+        "day": "2026-03-25",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-03-26",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-03-27",
+        "matchPct": 85.71,
+        "mismatchPct": 14.29
+      },
+      {
+        "day": "2026-03-30",
+        "matchPct": 57.14,
+        "mismatchPct": 42.86
+      },
+      {
+        "day": "2026-03-31",
+        "matchPct": 71.43,
+        "mismatchPct": 28.57
+      },
+      {
+        "day": "2026-04-01",
+        "matchPct": 42.86,
+        "mismatchPct": 57.14
+      },
+      {
+        "day": "2026-04-02",
+        "matchPct": 33.33,
+        "mismatchPct": 66.67
+      }
+    ]
+  }
+}

@@ -115,3 +115,5 @@ env/
 .coverage.*
 *.tmp
 *.bak
+
+/evaluation/

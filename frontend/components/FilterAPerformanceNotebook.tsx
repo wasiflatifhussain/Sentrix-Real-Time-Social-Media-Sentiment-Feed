@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -13,36 +13,42 @@ import {
   YAxis,
 } from "recharts";
 
-import filterARunsRaw from "@/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10_corrected.json";
+import filterAViewRaw from "@/data/evaluation/filter_a_frontend_view.json";
 import { Button } from "@/components/ui/button";
 
-type FilterARow = {
+type FilterAChartRow = {
   run_started_at_utc: string;
-  run_date_utc: string;
-  run_hour_utc: string;
-  ingested_events: number;
-  dropped_invalid: number;
-  dropped_duplicate: number;
-  dropped_spam: number;
-  total_dropped: number;
-  passed_downstream: number;
+  label: string;
   removal_rate_pct: number;
   throughput_events_per_sec: number;
-  manual_sample_size: number;
-  manual_confirmed_invalid: number;
-  manual_false_positive: number;
+};
+
+type FilterASummary = {
+  runsObserved: number;
+  runsExpected: number;
+  coveragePct: number;
+  avgRemovalRatePct: number;
+  weightedRemovalRatePct: number;
+  removalMin: number;
+  removalMax: number;
+  throughputMean: number;
+  throughputP95: number;
+  manualConfirmRatePct: number;
+  manualFalsePositiveTotal: number;
+};
+
+type FilterAView = {
+  summary: FilterASummary;
+  charts: FilterAChartRow[];
 };
 
 type CellKey = "summary" | "removalChart" | "throughputChart";
 
-const filterARuns = filterARunsRaw as FilterARow[];
+const filterAView = filterAViewRaw as FilterAView;
 const PYTHON_KEYWORDS = new Set([
   "display",
   "plot",
-  "read_csv",
-  "query",
-  "sum",
-  "mean",
+  "read_json",
   "sort_values",
   "set_title",
   "set_ylabel",
@@ -52,39 +58,22 @@ const PYTHON_KEYWORDS = new Set([
 
 const CODE_SNIPPETS: Record<CellKey, string> = {
   summary: `# Cell [1] - Filter-A summary
-df = pd.read_csv("frontend/data/evaluation/filter_a_runs_2026-01-04_to_2026-01-10_corrected.csv")
-window = df.query("run_started_at_utc >= '2026-01-04' and run_started_at_utc < '2026-01-11'")
-summary = {
-  "avg_removal_rate_pct": window["removal_rate_pct"].mean(),
-  "weighted_removal_rate_pct": (window["total_dropped"].sum() / window["ingested_events"].sum()) * 100,
-  "manual_false_positive_total": window["manual_false_positive"].sum(),
-}
+precomputed = pd.read_json("frontend/data/evaluation/filter_a_frontend_view.json")
+summary = precomputed["summary"]
 display(summary)`,
   removalChart: `# Cell [2] - Removal-rate trend
-plot_df = window.sort_values("run_started_at_utc")
+plot_df = precomputed["charts"]
 ax.plot(plot_df["run_started_at_utc"], plot_df["removal_rate_pct"])
 ax.axhline(18, linestyle="--")
 ax.axhline(25, linestyle="--")
 ax.set_title("Filter-A Removal Rate (%)")`,
   throughputChart: `# Cell [3] - Throughput trend
-plot_df = window.sort_values("run_started_at_utc")
+plot_df = precomputed["charts"]
 ax.plot(plot_df["run_started_at_utc"], plot_df["throughput_events_per_sec"])
 ax.set_title("Filter-A Throughput (events/sec)")
 ax.set_ylabel("events/sec")
 ax.set_xlabel("Run Start (UTC)")`,
 };
-
-function formatHourLabel(iso: string) {
-  const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = d.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
-  const hour = d.toLocaleString("en-US", {
-    hour: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  });
-  return `${month} ${day} ${hour}:00`;
-}
 
 function NotebookCell({
   index,
@@ -310,58 +299,8 @@ export default function FilterAPerformanceNotebook() {
     throughputChart: "idle",
   });
 
-  const chartRows = useMemo(
-    () =>
-      filterARuns.map((r) => ({
-        ...r,
-        label: formatHourLabel(r.run_started_at_utc),
-      })),
-    []
-  );
-
-  const summary = useMemo(() => {
-    const runsObserved = chartRows.length;
-    const runsExpected = 7 * 24;
-    const coveragePct = (runsObserved / runsExpected) * 100;
-
-    const avgRemovalRatePct =
-      chartRows.reduce((acc, r) => acc + r.removal_rate_pct, 0) / runsObserved;
-    const weightedRemovalRatePct =
-      (chartRows.reduce((acc, r) => acc + r.total_dropped, 0) /
-        chartRows.reduce((acc, r) => acc + r.ingested_events, 0)) *
-      100;
-
-    const removalMin = Math.min(...chartRows.map((r) => r.removal_rate_pct));
-    const removalMax = Math.max(...chartRows.map((r) => r.removal_rate_pct));
-    const throughputMean =
-      chartRows.reduce((acc, r) => acc + r.throughput_events_per_sec, 0) / runsObserved;
-    const throughputP95 = [...chartRows.map((r) => r.throughput_events_per_sec)].sort(
-      (a, b) => a - b
-    )[Math.floor(0.95 * (runsObserved - 1))];
-
-    const manualSampleTotal = chartRows.reduce((acc, r) => acc + r.manual_sample_size, 0);
-    const manualFalsePositiveTotal = chartRows.reduce(
-      (acc, r) => acc + r.manual_false_positive,
-      0
-    );
-    const manualConfirmRatePct =
-      (chartRows.reduce((acc, r) => acc + r.manual_confirmed_invalid, 0) / manualSampleTotal) *
-      100;
-
-    return {
-      runsObserved,
-      runsExpected,
-      coveragePct,
-      avgRemovalRatePct,
-      weightedRemovalRatePct,
-      removalMin,
-      removalMax,
-      throughputMean,
-      throughputP95,
-      manualConfirmRatePct,
-      manualFalsePositiveTotal,
-    };
-  }, [chartRows]);
+  const chartRows = filterAView.charts;
+  const summary = filterAView.summary;
 
   const runCell = (key: CellKey) => {
     setRunStates((prev) => ({ ...prev, [key]: "running" }));

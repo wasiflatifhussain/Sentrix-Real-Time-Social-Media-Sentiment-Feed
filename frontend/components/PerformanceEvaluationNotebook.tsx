@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -13,47 +13,49 @@ import {
   YAxis,
 } from "recharts";
 
-import ingestorRunsRaw from "@/data/evaluation/ingestor_runs_2026-01-04_to_2026-01-10.json";
+import ingestorViewRaw from "@/data/evaluation/ingestor_frontend_view.json";
 import { Button } from "@/components/ui/button";
 
-type IngestorRunRow = {
+type IngestorChartRow = {
   run_started_at_utc: string;
-  run_finished_at_utc: string;
-  run_date_utc: string;
-  run_hour_utc: string;
-  posts_fetched: number;
-  events_published_success: number;
-  publish_failures: number;
+  label: string;
   run_success_rate_pct: number;
   run_latency_seconds: number;
 };
 
+type IngestorSummary = {
+  windowStartUtc: string;
+  windowDays: number;
+  runsObserved: number;
+  runsExpected: number;
+  coveragePct: number;
+  avgRunSuccessRatePct: number;
+  weightedSuccessRatePct: number;
+  medianLatencySeconds: number;
+  p95LatencySeconds: number;
+  lessThan3MinPct: number;
+  between4And5MinPct: number;
+  over5MinCount: number;
+};
+
+type IngestorView = {
+  summary: IngestorSummary;
+  charts: IngestorChartRow[];
+};
+
 type CellKey = "summary" | "successChart" | "latencyChart";
 
-const ingestorRuns = ingestorRunsRaw as IngestorRunRow[];
+const ingestorView = ingestorViewRaw as IngestorView;
 
 const CODE_SNIPPETS: Record<CellKey, string> = {
   summary: `# Cell [1] - KPI summary (manually collected dataset)
 import pandas as pd
 
-df = pd.read_csv("frontend/data/evaluation/ingestor_runs_2026-01-04_to_2026-01-10.csv")
-df["run_started_at_utc"] = pd.to_datetime(df["run_started_at_utc"], utc=True)
-
-window_start = pd.Timestamp("2026-01-04T00:00:00Z")
-window_end = pd.Timestamp("2026-01-11T00:00:00Z")
-window = df[(df["run_started_at_utc"] >= window_start) & (df["run_started_at_utc"] < window_end)]
-
-attempts = window["events_published_success"] + window["publish_failures"]
-summary = {
-  "runs_observed": len(window),
-  "runs_expected_hourly": 168,
-  "coverage_pct": len(window) / 168 * 100,
-  "avg_run_success_rate_pct": window["run_success_rate_pct"].mean(),
-  "weighted_success_rate_pct": (window["events_published_success"].sum() / attempts.sum()) * 100,
-}
+    precomputed = pd.read_json("frontend/data/evaluation/ingestor_frontend_view.json")
+summary = precomputed["summary"]
 display(summary)`,
   successChart: `# Cell [2] - Success-rate trend
-plot_df = window.sort_values("run_started_at_utc").copy()
+plot_df = precomputed["charts"]
 
 fig, ax = plt.subplots(figsize=(11, 4))
 ax.plot(plot_df["run_started_at_utc"], plot_df["run_success_rate_pct"], color="#0FEDBE", linewidth=2)
@@ -63,7 +65,7 @@ ax.set_xlabel("Run Start (UTC)")
 ax.grid(alpha=0.15)
 plt.tight_layout()`,
   latencyChart: `# Cell [3] - Latency trend
-plot_df = window.sort_values("run_started_at_utc").copy()
+plot_df = precomputed["charts"]
 
 fig, ax = plt.subplots(figsize=(11, 4))
 ax.plot(plot_df["run_started_at_utc"], plot_df["run_latency_seconds"], color="#5862FF", linewidth=2)
@@ -79,23 +81,10 @@ plt.tight_layout()`,
 const PYTHON_KEYWORDS = new Set([
   "display",
   "plot",
-  "read_csv",
-  "evaluate_window",
+  "read_json",
   "axhline",
   "set_title",
 ]);
-
-function formatHourLabel(iso: string) {
-  const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = d.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
-  const hour = d.toLocaleString("en-US", {
-    hour: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  });
-  return `${month} ${day} ${hour}:00`;
-}
 
 function NotebookCell({
   index,
@@ -315,58 +304,8 @@ export default function PerformanceEvaluationNotebook() {
     latencyChart: "idle",
   });
 
-  const chartRows = useMemo(
-    () =>
-      ingestorRuns.map((r) => ({
-        ...r,
-        label: formatHourLabel(r.run_started_at_utc),
-        attempts: r.events_published_success + r.publish_failures,
-      })),
-    []
-  );
-
-  const summary = useMemo(() => {
-    const runsObserved = chartRows.length;
-    const runsExpected = 7 * 24;
-    const coveragePct = (runsObserved / runsExpected) * 100;
-
-    const successTotal = chartRows.reduce((acc, r) => acc + r.events_published_success, 0);
-    const attemptsTotal = chartRows.reduce((acc, r) => acc + r.attempts, 0);
-
-    const avgRunSuccessRatePct =
-      chartRows.reduce((acc, r) => acc + r.run_success_rate_pct, 0) / runsObserved;
-    const weightedSuccessRatePct = (successTotal / attemptsTotal) * 100;
-
-    const latencies = chartRows.map((r) => r.run_latency_seconds).sort((a, b) => a - b);
-    const medianLatencySeconds =
-      latencies.length % 2 === 0
-        ? (latencies[latencies.length / 2 - 1] + latencies[latencies.length / 2]) / 2
-        : latencies[Math.floor(latencies.length / 2)];
-    const p95LatencySeconds = latencies[Math.floor(0.95 * (latencies.length - 1))];
-    const lessThan3MinPct =
-      (chartRows.filter((r) => r.run_latency_seconds < 180).length / runsObserved) * 100;
-    const between4And5MinPct =
-      (chartRows.filter((r) => r.run_latency_seconds >= 240 && r.run_latency_seconds <= 300)
-        .length /
-        runsObserved) *
-      100;
-    const over5MinCount = chartRows.filter((r) => r.run_latency_seconds > 300).length;
-
-    return {
-      windowStartUtc: "2026-01-04",
-      windowDays: 7,
-      runsObserved,
-      runsExpected,
-      coveragePct,
-      avgRunSuccessRatePct,
-      weightedSuccessRatePct,
-      medianLatencySeconds,
-      p95LatencySeconds,
-      lessThan3MinPct,
-      between4And5MinPct,
-      over5MinCount,
-    };
-  }, [chartRows]);
+  const chartRows = ingestorView.charts;
+  const summary = ingestorView.summary;
 
   const runCell = (key: CellKey) => {
     setRunStates((prev) => ({ ...prev, [key]: "running" }));
