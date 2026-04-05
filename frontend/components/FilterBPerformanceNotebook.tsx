@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -13,46 +13,45 @@ import {
   YAxis,
 } from "recharts";
 
-import filterBRunsRaw from "@/data/evaluation/filter_b_runs_2026-03-21_to_2026-03-27.json";
+import filterBViewRaw from "@/data/evaluation/filter_b_frontend_view.json";
 import { Button } from "@/components/ui/button";
 
-type FilterBRunRow = {
+type FilterBChartRow = {
   run_started_at_utc: string;
-  run_date_utc: string;
-  run_hour_utc: string;
-  total_received: number;
-  passed_count: number;
-  dropped_count: number;
-  manual_sample_size: number;
-  manual_correct_count: number;
-  manual_incorrect_count: number;
+  label: string;
   decision_correctness_pct: number;
-  true_positive: number;
-  true_negative: number;
-  false_positive: number;
-  false_negative: number;
   false_positive_rate_pct: number;
   false_negative_rate_pct: number;
   throughput_events_per_sec: number;
 };
 
+type FilterBSummary = {
+  runsObserved: number;
+  runsExpected: number;
+  coveragePct: number;
+  avgCorrectnessPct: number;
+  weightedCorrectnessPct: number;
+  fpRatePct: number;
+  fnRatePct: number;
+  throughputMean: number;
+};
+
+type FilterBView = {
+  summary: FilterBSummary;
+  charts: FilterBChartRow[];
+};
+
 type CellKey = "summary" | "correctnessChart" | "errorThroughputChart";
 
-const filterBRuns = filterBRunsRaw as FilterBRunRow[];
+const filterBView = filterBViewRaw as FilterBView;
 
 const CODE_SNIPPETS: Record<CellKey, string> = {
   summary: `# Cell [1] - Filter-B correctness summary
-df = pd.read_csv("frontend/data/evaluation/filter_b_runs_2026-03-21_to_2026-03-27.csv")
-window = df.query("run_started_at_utc >= '2026-03-21' and run_started_at_utc < '2026-03-28'")
-summary = {
-  "avg_decision_correctness_pct": window["decision_correctness_pct"].mean(),
-  "weighted_decision_correctness_pct": (window["manual_correct_count"].sum() / window["manual_sample_size"].sum()) * 100,
-  "false_positive_rate_pct": (window["false_positive"].sum() / window["manual_sample_size"].sum()) * 100,
-  "false_negative_rate_pct": (window["false_negative"].sum() / window["manual_sample_size"].sum()) * 100,
-}
+precomputed = pd.read_json("frontend/data/evaluation/filter_b_frontend_view.json")
+summary = precomputed["summary"]
 display(summary)`,
   correctnessChart: `# Cell [2] - Correctness trend
-plot_df = window.sort_values("run_started_at_utc").copy()
+plot_df = precomputed["charts"]
 
 fig, ax = plt.subplots(figsize=(11, 4))
 ax.plot(plot_df["run_started_at_utc"], plot_df["decision_correctness_pct"], color="#0FEDBE", linewidth=2)
@@ -62,7 +61,7 @@ ax.set_ylabel("Correctness %")
 ax.set_xlabel("Run Start (UTC)")
 ax.grid(alpha=0.15)`,
   errorThroughputChart: `# Cell [3] - Error profile + throughput
-plot_df = window.sort_values("run_started_at_utc").copy()
+plot_df = precomputed["charts"]
 
 fig, ax = plt.subplots(figsize=(11, 4))
 ax.plot(plot_df["run_started_at_utc"], plot_df["false_positive_rate_pct"], label="FP rate")
@@ -77,11 +76,7 @@ ax.set_xlabel("Run Start (UTC)")`,
 const PYTHON_KEYWORDS = new Set([
   "display",
   "plot",
-  "read_csv",
-  "query",
-  "sum",
-  "mean",
-  "sort_values",
+  "read_json",
   "axhline",
   "set_title",
   "set_ylabel",
@@ -89,18 +84,6 @@ const PYTHON_KEYWORDS = new Set([
   "legend",
   "twinx",
 ]);
-
-function formatHourLabel(iso: string) {
-  const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = d.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
-  const hour = d.toLocaleString("en-US", {
-    hour: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  });
-  return `${month} ${day} ${hour}:00`;
-}
 
 function NotebookCell({
   index,
@@ -324,47 +307,8 @@ export default function FilterBPerformanceNotebook() {
     errorThroughputChart: "idle",
   });
 
-  const chartRows = useMemo(
-    () =>
-      filterBRuns.map((r) => ({
-        ...r,
-        label: formatHourLabel(r.run_started_at_utc),
-      })),
-    []
-  );
-
-  const summary = useMemo(() => {
-    const runsObserved = chartRows.length;
-    const runsExpected = 7 * 24;
-    const coveragePct = (runsObserved / runsExpected) * 100;
-    const avgCorrectnessPct =
-      chartRows.reduce((acc, r) => acc + r.decision_correctness_pct, 0) / runsObserved;
-    const weightedCorrectnessPct =
-      (chartRows.reduce((acc, r) => acc + r.manual_correct_count, 0) /
-        chartRows.reduce((acc, r) => acc + r.manual_sample_size, 0)) *
-      100;
-    const fpRatePct =
-      (chartRows.reduce((acc, r) => acc + r.false_positive, 0) /
-        chartRows.reduce((acc, r) => acc + r.manual_sample_size, 0)) *
-      100;
-    const fnRatePct =
-      (chartRows.reduce((acc, r) => acc + r.false_negative, 0) /
-        chartRows.reduce((acc, r) => acc + r.manual_sample_size, 0)) *
-      100;
-    const throughputMean =
-      chartRows.reduce((acc, r) => acc + r.throughput_events_per_sec, 0) / runsObserved;
-
-    return {
-      runsObserved,
-      runsExpected,
-      coveragePct,
-      avgCorrectnessPct,
-      weightedCorrectnessPct,
-      fpRatePct,
-      fnRatePct,
-      throughputMean,
-    };
-  }, [chartRows]);
+  const chartRows = filterBView.charts;
+  const summary = filterBView.summary;
 
   const runCell = (key: CellKey) => {
     setRunStates((prev) => ({ ...prev, [key]: "running" }));
@@ -479,4 +423,3 @@ export default function FilterBPerformanceNotebook() {
     </div>
   );
 }
-

@@ -1,0 +1,1025 @@
+{
+  "summary": {
+    "runsObserved": 168,
+    "runsExpected": 168,
+    "coveragePct": 100.0,
+    "avgRemovalRatePct": 21.74,
+    "weightedRemovalRatePct": 21.77,
+    "removalMin": 18.11,
+    "removalMax": 25.02,
+    "throughputMean": 333.8,
+    "throughputP95": 623.55,
+    "manualConfirmRatePct": 89.21,
+    "manualFalsePositiveTotal": 475
+  },
+  "charts": [
+    {
+      "run_started_at_utc": "2026-01-04T00:00:00Z",
+      "label": "Jan 04 00:00",
+      "removal_rate_pct": 21.42,
+      "throughput_events_per_sec": 224.83
+    },
+    {
+      "run_started_at_utc": "2026-01-04T01:00:00Z",
+      "label": "Jan 04 01:00",
+      "removal_rate_pct": 21.95,
+      "throughput_events_per_sec": 509.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T02:00:00Z",
+      "label": "Jan 04 02:00",
+      "removal_rate_pct": 18.71,
+      "throughput_events_per_sec": 180.67
+    },
+    {
+      "run_started_at_utc": "2026-01-04T03:00:00Z",
+      "label": "Jan 04 03:00",
+      "removal_rate_pct": 18.15,
+      "throughput_events_per_sec": 310.75
+    },
+    {
+      "run_started_at_utc": "2026-01-04T04:00:00Z",
+      "label": "Jan 04 04:00",
+      "removal_rate_pct": 19.0,
+      "throughput_events_per_sec": 396.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T05:00:00Z",
+      "label": "Jan 04 05:00",
+      "removal_rate_pct": 23.22,
+      "throughput_events_per_sec": 262.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T06:00:00Z",
+      "label": "Jan 04 06:00",
+      "removal_rate_pct": 21.14,
+      "throughput_events_per_sec": 161.67
+    },
+    {
+      "run_started_at_utc": "2026-01-04T07:00:00Z",
+      "label": "Jan 04 07:00",
+      "removal_rate_pct": 21.76,
+      "throughput_events_per_sec": 314.25
+    },
+    {
+      "run_started_at_utc": "2026-01-04T08:00:00Z",
+      "label": "Jan 04 08:00",
+      "removal_rate_pct": 19.44,
+      "throughput_events_per_sec": 343.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T09:00:00Z",
+      "label": "Jan 04 09:00",
+      "removal_rate_pct": 20.58,
+      "throughput_events_per_sec": 535.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T10:00:00Z",
+      "label": "Jan 04 10:00",
+      "removal_rate_pct": 24.34,
+      "throughput_events_per_sec": 310.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T11:00:00Z",
+      "label": "Jan 04 11:00",
+      "removal_rate_pct": 23.42,
+      "throughput_events_per_sec": 230.2
+    },
+    {
+      "run_started_at_utc": "2026-01-04T12:00:00Z",
+      "label": "Jan 04 12:00",
+      "removal_rate_pct": 23.36,
+      "throughput_events_per_sec": 379.67
+    },
+    {
+      "run_started_at_utc": "2026-01-04T13:00:00Z",
+      "label": "Jan 04 13:00",
+      "removal_rate_pct": 23.39,
+      "throughput_events_per_sec": 539.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T14:00:00Z",
+      "label": "Jan 04 14:00",
+      "removal_rate_pct": 21.26,
+      "throughput_events_per_sec": 508.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T15:00:00Z",
+      "label": "Jan 04 15:00",
+      "removal_rate_pct": 22.53,
+      "throughput_events_per_sec": 232.67
+    },
+    {
+      "run_started_at_utc": "2026-01-04T16:00:00Z",
+      "label": "Jan 04 16:00",
+      "removal_rate_pct": 24.92,
+      "throughput_events_per_sec": 351.75
+    },
+    {
+      "run_started_at_utc": "2026-01-04T17:00:00Z",
+      "label": "Jan 04 17:00",
+      "removal_rate_pct": 21.1,
+      "throughput_events_per_sec": 354.75
+    },
+    {
+      "run_started_at_utc": "2026-01-04T18:00:00Z",
+      "label": "Jan 04 18:00",
+      "removal_rate_pct": 18.3,
+      "throughput_events_per_sec": 461.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T19:00:00Z",
+      "label": "Jan 04 19:00",
+      "removal_rate_pct": 19.87,
+      "throughput_events_per_sec": 602.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T20:00:00Z",
+      "label": "Jan 04 20:00",
+      "removal_rate_pct": 21.34,
+      "throughput_events_per_sec": 220.17
+    },
+    {
+      "run_started_at_utc": "2026-01-04T21:00:00Z",
+      "label": "Jan 04 21:00",
+      "removal_rate_pct": 24.91,
+      "throughput_events_per_sec": 244.0
+    },
+    {
+      "run_started_at_utc": "2026-01-04T22:00:00Z",
+      "label": "Jan 04 22:00",
+      "removal_rate_pct": 24.88,
+      "throughput_events_per_sec": 481.5
+    },
+    {
+      "run_started_at_utc": "2026-01-04T23:00:00Z",
+      "label": "Jan 04 23:00",
+      "removal_rate_pct": 22.07,
+      "throughput_events_per_sec": 438.33
+    },
+    {
+      "run_started_at_utc": "2026-01-05T00:00:00Z",
+      "label": "Jan 05 00:00",
+      "removal_rate_pct": 24.32,
+      "throughput_events_per_sec": 377.67
+    },
+    {
+      "run_started_at_utc": "2026-01-05T01:00:00Z",
+      "label": "Jan 05 01:00",
+      "removal_rate_pct": 24.32,
+      "throughput_events_per_sec": 280.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T02:00:00Z",
+      "label": "Jan 05 02:00",
+      "removal_rate_pct": 18.35,
+      "throughput_events_per_sec": 189.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T03:00:00Z",
+      "label": "Jan 05 03:00",
+      "removal_rate_pct": 24.97,
+      "throughput_events_per_sec": 180.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T04:00:00Z",
+      "label": "Jan 05 04:00",
+      "removal_rate_pct": 19.57,
+      "throughput_events_per_sec": 240.25
+    },
+    {
+      "run_started_at_utc": "2026-01-05T05:00:00Z",
+      "label": "Jan 05 05:00",
+      "removal_rate_pct": 24.78,
+      "throughput_events_per_sec": 702.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T06:00:00Z",
+      "label": "Jan 05 06:00",
+      "removal_rate_pct": 20.86,
+      "throughput_events_per_sec": 720.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T07:00:00Z",
+      "label": "Jan 05 07:00",
+      "removal_rate_pct": 18.82,
+      "throughput_events_per_sec": 252.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T08:00:00Z",
+      "label": "Jan 05 08:00",
+      "removal_rate_pct": 23.35,
+      "throughput_events_per_sec": 433.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T09:00:00Z",
+      "label": "Jan 05 09:00",
+      "removal_rate_pct": 19.89,
+      "throughput_events_per_sec": 261.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T10:00:00Z",
+      "label": "Jan 05 10:00",
+      "removal_rate_pct": 24.54,
+      "throughput_events_per_sec": 361.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T11:00:00Z",
+      "label": "Jan 05 11:00",
+      "removal_rate_pct": 21.55,
+      "throughput_events_per_sec": 573.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T12:00:00Z",
+      "label": "Jan 05 12:00",
+      "removal_rate_pct": 18.92,
+      "throughput_events_per_sec": 243.75
+    },
+    {
+      "run_started_at_utc": "2026-01-05T13:00:00Z",
+      "label": "Jan 05 13:00",
+      "removal_rate_pct": 19.04,
+      "throughput_events_per_sec": 558.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T14:00:00Z",
+      "label": "Jan 05 14:00",
+      "removal_rate_pct": 22.9,
+      "throughput_events_per_sec": 216.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T15:00:00Z",
+      "label": "Jan 05 15:00",
+      "removal_rate_pct": 19.65,
+      "throughput_events_per_sec": 190.33
+    },
+    {
+      "run_started_at_utc": "2026-01-05T16:00:00Z",
+      "label": "Jan 05 16:00",
+      "removal_rate_pct": 24.54,
+      "throughput_events_per_sec": 158.5
+    },
+    {
+      "run_started_at_utc": "2026-01-05T17:00:00Z",
+      "label": "Jan 05 17:00",
+      "removal_rate_pct": 21.19,
+      "throughput_events_per_sec": 449.67
+    },
+    {
+      "run_started_at_utc": "2026-01-05T18:00:00Z",
+      "label": "Jan 05 18:00",
+      "removal_rate_pct": 22.12,
+      "throughput_events_per_sec": 242.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T19:00:00Z",
+      "label": "Jan 05 19:00",
+      "removal_rate_pct": 18.13,
+      "throughput_events_per_sec": 240.0
+    },
+    {
+      "run_started_at_utc": "2026-01-05T20:00:00Z",
+      "label": "Jan 05 20:00",
+      "removal_rate_pct": 19.76,
+      "throughput_events_per_sec": 258.4
+    },
+    {
+      "run_started_at_utc": "2026-01-05T21:00:00Z",
+      "label": "Jan 05 21:00",
+      "removal_rate_pct": 22.03,
+      "throughput_events_per_sec": 330.25
+    },
+    {
+      "run_started_at_utc": "2026-01-05T22:00:00Z",
+      "label": "Jan 05 22:00",
+      "removal_rate_pct": 21.49,
+      "throughput_events_per_sec": 194.2
+    },
+    {
+      "run_started_at_utc": "2026-01-05T23:00:00Z",
+      "label": "Jan 05 23:00",
+      "removal_rate_pct": 19.77,
+      "throughput_events_per_sec": 213.33
+    },
+    {
+      "run_started_at_utc": "2026-01-06T00:00:00Z",
+      "label": "Jan 06 00:00",
+      "removal_rate_pct": 24.03,
+      "throughput_events_per_sec": 606.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T01:00:00Z",
+      "label": "Jan 06 01:00",
+      "removal_rate_pct": 22.88,
+      "throughput_events_per_sec": 587.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T02:00:00Z",
+      "label": "Jan 06 02:00",
+      "removal_rate_pct": 22.76,
+      "throughput_events_per_sec": 291.5
+    },
+    {
+      "run_started_at_utc": "2026-01-06T03:00:00Z",
+      "label": "Jan 06 03:00",
+      "removal_rate_pct": 20.74,
+      "throughput_events_per_sec": 447.67
+    },
+    {
+      "run_started_at_utc": "2026-01-06T04:00:00Z",
+      "label": "Jan 06 04:00",
+      "removal_rate_pct": 22.71,
+      "throughput_events_per_sec": 157.33
+    },
+    {
+      "run_started_at_utc": "2026-01-06T05:00:00Z",
+      "label": "Jan 06 05:00",
+      "removal_rate_pct": 18.39,
+      "throughput_events_per_sec": 277.75
+    },
+    {
+      "run_started_at_utc": "2026-01-06T06:00:00Z",
+      "label": "Jan 06 06:00",
+      "removal_rate_pct": 22.83,
+      "throughput_events_per_sec": 417.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T07:00:00Z",
+      "label": "Jan 06 07:00",
+      "removal_rate_pct": 19.17,
+      "throughput_events_per_sec": 181.83
+    },
+    {
+      "run_started_at_utc": "2026-01-06T08:00:00Z",
+      "label": "Jan 06 08:00",
+      "removal_rate_pct": 24.66,
+      "throughput_events_per_sec": 357.33
+    },
+    {
+      "run_started_at_utc": "2026-01-06T09:00:00Z",
+      "label": "Jan 06 09:00",
+      "removal_rate_pct": 24.98,
+      "throughput_events_per_sec": 567.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T10:00:00Z",
+      "label": "Jan 06 10:00",
+      "removal_rate_pct": 19.22,
+      "throughput_events_per_sec": 345.67
+    },
+    {
+      "run_started_at_utc": "2026-01-06T11:00:00Z",
+      "label": "Jan 06 11:00",
+      "removal_rate_pct": 21.44,
+      "throughput_events_per_sec": 187.4
+    },
+    {
+      "run_started_at_utc": "2026-01-06T12:00:00Z",
+      "label": "Jan 06 12:00",
+      "removal_rate_pct": 19.81,
+      "throughput_events_per_sec": 228.75
+    },
+    {
+      "run_started_at_utc": "2026-01-06T13:00:00Z",
+      "label": "Jan 06 13:00",
+      "removal_rate_pct": 23.72,
+      "throughput_events_per_sec": 225.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T14:00:00Z",
+      "label": "Jan 06 14:00",
+      "removal_rate_pct": 20.34,
+      "throughput_events_per_sec": 175.33
+    },
+    {
+      "run_started_at_utc": "2026-01-06T15:00:00Z",
+      "label": "Jan 06 15:00",
+      "removal_rate_pct": 24.59,
+      "throughput_events_per_sec": 183.2
+    },
+    {
+      "run_started_at_utc": "2026-01-06T16:00:00Z",
+      "label": "Jan 06 16:00",
+      "removal_rate_pct": 21.62,
+      "throughput_events_per_sec": 644.5
+    },
+    {
+      "run_started_at_utc": "2026-01-06T17:00:00Z",
+      "label": "Jan 06 17:00",
+      "removal_rate_pct": 23.69,
+      "throughput_events_per_sec": 482.0
+    },
+    {
+      "run_started_at_utc": "2026-01-06T18:00:00Z",
+      "label": "Jan 06 18:00",
+      "removal_rate_pct": 19.42,
+      "throughput_events_per_sec": 424.67
+    },
+    {
+      "run_started_at_utc": "2026-01-06T19:00:00Z",
+      "label": "Jan 06 19:00",
+      "removal_rate_pct": 19.19,
+      "throughput_events_per_sec": 152.17
+    },
+    {
+      "run_started_at_utc": "2026-01-06T20:00:00Z",
+      "label": "Jan 06 20:00",
+      "removal_rate_pct": 23.07,
+      "throughput_events_per_sec": 349.5
+    },
+    {
+      "run_started_at_utc": "2026-01-06T21:00:00Z",
+      "label": "Jan 06 21:00",
+      "removal_rate_pct": 19.86,
+      "throughput_events_per_sec": 156.33
+    },
+    {
+      "run_started_at_utc": "2026-01-06T22:00:00Z",
+      "label": "Jan 06 22:00",
+      "removal_rate_pct": 20.4,
+      "throughput_events_per_sec": 211.6
+    },
+    {
+      "run_started_at_utc": "2026-01-06T23:00:00Z",
+      "label": "Jan 06 23:00",
+      "removal_rate_pct": 22.49,
+      "throughput_events_per_sec": 227.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T00:00:00Z",
+      "label": "Jan 07 00:00",
+      "removal_rate_pct": 18.83,
+      "throughput_events_per_sec": 203.17
+    },
+    {
+      "run_started_at_utc": "2026-01-07T01:00:00Z",
+      "label": "Jan 07 01:00",
+      "removal_rate_pct": 23.26,
+      "throughput_events_per_sec": 151.17
+    },
+    {
+      "run_started_at_utc": "2026-01-07T02:00:00Z",
+      "label": "Jan 07 02:00",
+      "removal_rate_pct": 18.98,
+      "throughput_events_per_sec": 335.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T03:00:00Z",
+      "label": "Jan 07 03:00",
+      "removal_rate_pct": 22.88,
+      "throughput_events_per_sec": 379.33
+    },
+    {
+      "run_started_at_utc": "2026-01-07T04:00:00Z",
+      "label": "Jan 07 04:00",
+      "removal_rate_pct": 18.75,
+      "throughput_events_per_sec": 158.33
+    },
+    {
+      "run_started_at_utc": "2026-01-07T05:00:00Z",
+      "label": "Jan 07 05:00",
+      "removal_rate_pct": 22.82,
+      "throughput_events_per_sec": 355.25
+    },
+    {
+      "run_started_at_utc": "2026-01-07T06:00:00Z",
+      "label": "Jan 07 06:00",
+      "removal_rate_pct": 21.66,
+      "throughput_events_per_sec": 288.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T07:00:00Z",
+      "label": "Jan 07 07:00",
+      "removal_rate_pct": 23.06,
+      "throughput_events_per_sec": 334.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T08:00:00Z",
+      "label": "Jan 07 08:00",
+      "removal_rate_pct": 24.95,
+      "throughput_events_per_sec": 233.6
+    },
+    {
+      "run_started_at_utc": "2026-01-07T09:00:00Z",
+      "label": "Jan 07 09:00",
+      "removal_rate_pct": 24.74,
+      "throughput_events_per_sec": 633.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T10:00:00Z",
+      "label": "Jan 07 10:00",
+      "removal_rate_pct": 23.65,
+      "throughput_events_per_sec": 341.33
+    },
+    {
+      "run_started_at_utc": "2026-01-07T11:00:00Z",
+      "label": "Jan 07 11:00",
+      "removal_rate_pct": 20.51,
+      "throughput_events_per_sec": 150.33
+    },
+    {
+      "run_started_at_utc": "2026-01-07T12:00:00Z",
+      "label": "Jan 07 12:00",
+      "removal_rate_pct": 23.25,
+      "throughput_events_per_sec": 214.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T13:00:00Z",
+      "label": "Jan 07 13:00",
+      "removal_rate_pct": 24.27,
+      "throughput_events_per_sec": 230.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T14:00:00Z",
+      "label": "Jan 07 14:00",
+      "removal_rate_pct": 21.17,
+      "throughput_events_per_sec": 338.25
+    },
+    {
+      "run_started_at_utc": "2026-01-07T15:00:00Z",
+      "label": "Jan 07 15:00",
+      "removal_rate_pct": 22.16,
+      "throughput_events_per_sec": 589.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T16:00:00Z",
+      "label": "Jan 07 16:00",
+      "removal_rate_pct": 20.66,
+      "throughput_events_per_sec": 232.5
+    },
+    {
+      "run_started_at_utc": "2026-01-07T17:00:00Z",
+      "label": "Jan 07 17:00",
+      "removal_rate_pct": 18.57,
+      "throughput_events_per_sec": 288.2
+    },
+    {
+      "run_started_at_utc": "2026-01-07T18:00:00Z",
+      "label": "Jan 07 18:00",
+      "removal_rate_pct": 22.87,
+      "throughput_events_per_sec": 477.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T19:00:00Z",
+      "label": "Jan 07 19:00",
+      "removal_rate_pct": 24.22,
+      "throughput_events_per_sec": 212.17
+    },
+    {
+      "run_started_at_utc": "2026-01-07T20:00:00Z",
+      "label": "Jan 07 20:00",
+      "removal_rate_pct": 21.91,
+      "throughput_events_per_sec": 359.25
+    },
+    {
+      "run_started_at_utc": "2026-01-07T21:00:00Z",
+      "label": "Jan 07 21:00",
+      "removal_rate_pct": 22.94,
+      "throughput_events_per_sec": 239.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T22:00:00Z",
+      "label": "Jan 07 22:00",
+      "removal_rate_pct": 25.02,
+      "throughput_events_per_sec": 464.0
+    },
+    {
+      "run_started_at_utc": "2026-01-07T23:00:00Z",
+      "label": "Jan 07 23:00",
+      "removal_rate_pct": 23.12,
+      "throughput_events_per_sec": 218.33
+    },
+    {
+      "run_started_at_utc": "2026-01-08T00:00:00Z",
+      "label": "Jan 08 00:00",
+      "removal_rate_pct": 23.4,
+      "throughput_events_per_sec": 214.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T01:00:00Z",
+      "label": "Jan 08 01:00",
+      "removal_rate_pct": 21.2,
+      "throughput_events_per_sec": 356.5
+    },
+    {
+      "run_started_at_utc": "2026-01-08T02:00:00Z",
+      "label": "Jan 08 02:00",
+      "removal_rate_pct": 24.14,
+      "throughput_events_per_sec": 297.75
+    },
+    {
+      "run_started_at_utc": "2026-01-08T03:00:00Z",
+      "label": "Jan 08 03:00",
+      "removal_rate_pct": 19.55,
+      "throughput_events_per_sec": 193.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T04:00:00Z",
+      "label": "Jan 08 04:00",
+      "removal_rate_pct": 23.56,
+      "throughput_events_per_sec": 273.8
+    },
+    {
+      "run_started_at_utc": "2026-01-08T05:00:00Z",
+      "label": "Jan 08 05:00",
+      "removal_rate_pct": 24.12,
+      "throughput_events_per_sec": 284.8
+    },
+    {
+      "run_started_at_utc": "2026-01-08T06:00:00Z",
+      "label": "Jan 08 06:00",
+      "removal_rate_pct": 22.37,
+      "throughput_events_per_sec": 213.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T07:00:00Z",
+      "label": "Jan 08 07:00",
+      "removal_rate_pct": 21.6,
+      "throughput_events_per_sec": 212.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T08:00:00Z",
+      "label": "Jan 08 08:00",
+      "removal_rate_pct": 21.98,
+      "throughput_events_per_sec": 165.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T09:00:00Z",
+      "label": "Jan 08 09:00",
+      "removal_rate_pct": 18.72,
+      "throughput_events_per_sec": 188.5
+    },
+    {
+      "run_started_at_utc": "2026-01-08T10:00:00Z",
+      "label": "Jan 08 10:00",
+      "removal_rate_pct": 18.59,
+      "throughput_events_per_sec": 268.75
+    },
+    {
+      "run_started_at_utc": "2026-01-08T11:00:00Z",
+      "label": "Jan 08 11:00",
+      "removal_rate_pct": 20.23,
+      "throughput_events_per_sec": 170.5
+    },
+    {
+      "run_started_at_utc": "2026-01-08T12:00:00Z",
+      "label": "Jan 08 12:00",
+      "removal_rate_pct": 22.98,
+      "throughput_events_per_sec": 261.6
+    },
+    {
+      "run_started_at_utc": "2026-01-08T13:00:00Z",
+      "label": "Jan 08 13:00",
+      "removal_rate_pct": 20.88,
+      "throughput_events_per_sec": 182.6
+    },
+    {
+      "run_started_at_utc": "2026-01-08T14:00:00Z",
+      "label": "Jan 08 14:00",
+      "removal_rate_pct": 21.85,
+      "throughput_events_per_sec": 707.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T15:00:00Z",
+      "label": "Jan 08 15:00",
+      "removal_rate_pct": 20.83,
+      "throughput_events_per_sec": 247.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T16:00:00Z",
+      "label": "Jan 08 16:00",
+      "removal_rate_pct": 23.51,
+      "throughput_events_per_sec": 271.2
+    },
+    {
+      "run_started_at_utc": "2026-01-08T17:00:00Z",
+      "label": "Jan 08 17:00",
+      "removal_rate_pct": 22.33,
+      "throughput_events_per_sec": 393.67
+    },
+    {
+      "run_started_at_utc": "2026-01-08T18:00:00Z",
+      "label": "Jan 08 18:00",
+      "removal_rate_pct": 23.1,
+      "throughput_events_per_sec": 589.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T19:00:00Z",
+      "label": "Jan 08 19:00",
+      "removal_rate_pct": 19.03,
+      "throughput_events_per_sec": 293.5
+    },
+    {
+      "run_started_at_utc": "2026-01-08T20:00:00Z",
+      "label": "Jan 08 20:00",
+      "removal_rate_pct": 24.32,
+      "throughput_events_per_sec": 495.5
+    },
+    {
+      "run_started_at_utc": "2026-01-08T21:00:00Z",
+      "label": "Jan 08 21:00",
+      "removal_rate_pct": 21.81,
+      "throughput_events_per_sec": 233.0
+    },
+    {
+      "run_started_at_utc": "2026-01-08T22:00:00Z",
+      "label": "Jan 08 22:00",
+      "removal_rate_pct": 19.5,
+      "throughput_events_per_sec": 352.67
+    },
+    {
+      "run_started_at_utc": "2026-01-08T23:00:00Z",
+      "label": "Jan 08 23:00",
+      "removal_rate_pct": 20.28,
+      "throughput_events_per_sec": 379.33
+    },
+    {
+      "run_started_at_utc": "2026-01-09T00:00:00Z",
+      "label": "Jan 09 00:00",
+      "removal_rate_pct": 18.62,
+      "throughput_events_per_sec": 337.25
+    },
+    {
+      "run_started_at_utc": "2026-01-09T01:00:00Z",
+      "label": "Jan 09 01:00",
+      "removal_rate_pct": 20.95,
+      "throughput_events_per_sec": 313.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T02:00:00Z",
+      "label": "Jan 09 02:00",
+      "removal_rate_pct": 22.84,
+      "throughput_events_per_sec": 323.5
+    },
+    {
+      "run_started_at_utc": "2026-01-09T03:00:00Z",
+      "label": "Jan 09 03:00",
+      "removal_rate_pct": 20.06,
+      "throughput_events_per_sec": 225.83
+    },
+    {
+      "run_started_at_utc": "2026-01-09T04:00:00Z",
+      "label": "Jan 09 04:00",
+      "removal_rate_pct": 21.59,
+      "throughput_events_per_sec": 368.33
+    },
+    {
+      "run_started_at_utc": "2026-01-09T05:00:00Z",
+      "label": "Jan 09 05:00",
+      "removal_rate_pct": 24.8,
+      "throughput_events_per_sec": 541.5
+    },
+    {
+      "run_started_at_utc": "2026-01-09T06:00:00Z",
+      "label": "Jan 09 06:00",
+      "removal_rate_pct": 23.06,
+      "throughput_events_per_sec": 158.83
+    },
+    {
+      "run_started_at_utc": "2026-01-09T07:00:00Z",
+      "label": "Jan 09 07:00",
+      "removal_rate_pct": 19.36,
+      "throughput_events_per_sec": 700.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T08:00:00Z",
+      "label": "Jan 09 08:00",
+      "removal_rate_pct": 20.71,
+      "throughput_events_per_sec": 362.25
+    },
+    {
+      "run_started_at_utc": "2026-01-09T09:00:00Z",
+      "label": "Jan 09 09:00",
+      "removal_rate_pct": 18.4,
+      "throughput_events_per_sec": 464.33
+    },
+    {
+      "run_started_at_utc": "2026-01-09T10:00:00Z",
+      "label": "Jan 09 10:00",
+      "removal_rate_pct": 18.88,
+      "throughput_events_per_sec": 358.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T11:00:00Z",
+      "label": "Jan 09 11:00",
+      "removal_rate_pct": 19.63,
+      "throughput_events_per_sec": 199.8
+    },
+    {
+      "run_started_at_utc": "2026-01-09T12:00:00Z",
+      "label": "Jan 09 12:00",
+      "removal_rate_pct": 21.1,
+      "throughput_events_per_sec": 697.5
+    },
+    {
+      "run_started_at_utc": "2026-01-09T13:00:00Z",
+      "label": "Jan 09 13:00",
+      "removal_rate_pct": 25.02,
+      "throughput_events_per_sec": 162.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T14:00:00Z",
+      "label": "Jan 09 14:00",
+      "removal_rate_pct": 20.61,
+      "throughput_events_per_sec": 487.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T15:00:00Z",
+      "label": "Jan 09 15:00",
+      "removal_rate_pct": 23.49,
+      "throughput_events_per_sec": 234.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T16:00:00Z",
+      "label": "Jan 09 16:00",
+      "removal_rate_pct": 24.65,
+      "throughput_events_per_sec": 351.25
+    },
+    {
+      "run_started_at_utc": "2026-01-09T17:00:00Z",
+      "label": "Jan 09 17:00",
+      "removal_rate_pct": 21.26,
+      "throughput_events_per_sec": 437.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T18:00:00Z",
+      "label": "Jan 09 18:00",
+      "removal_rate_pct": 21.05,
+      "throughput_events_per_sec": 254.25
+    },
+    {
+      "run_started_at_utc": "2026-01-09T19:00:00Z",
+      "label": "Jan 09 19:00",
+      "removal_rate_pct": 23.1,
+      "throughput_events_per_sec": 471.33
+    },
+    {
+      "run_started_at_utc": "2026-01-09T20:00:00Z",
+      "label": "Jan 09 20:00",
+      "removal_rate_pct": 19.0,
+      "throughput_events_per_sec": 270.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T21:00:00Z",
+      "label": "Jan 09 21:00",
+      "removal_rate_pct": 21.1,
+      "throughput_events_per_sec": 331.25
+    },
+    {
+      "run_started_at_utc": "2026-01-09T22:00:00Z",
+      "label": "Jan 09 22:00",
+      "removal_rate_pct": 21.76,
+      "throughput_events_per_sec": 343.0
+    },
+    {
+      "run_started_at_utc": "2026-01-09T23:00:00Z",
+      "label": "Jan 09 23:00",
+      "removal_rate_pct": 22.75,
+      "throughput_events_per_sec": 267.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T00:00:00Z",
+      "label": "Jan 10 00:00",
+      "removal_rate_pct": 24.02,
+      "throughput_events_per_sec": 479.67
+    },
+    {
+      "run_started_at_utc": "2026-01-10T01:00:00Z",
+      "label": "Jan 10 01:00",
+      "removal_rate_pct": 19.79,
+      "throughput_events_per_sec": 253.2
+    },
+    {
+      "run_started_at_utc": "2026-01-10T02:00:00Z",
+      "label": "Jan 10 02:00",
+      "removal_rate_pct": 18.69,
+      "throughput_events_per_sec": 232.33
+    },
+    {
+      "run_started_at_utc": "2026-01-10T03:00:00Z",
+      "label": "Jan 10 03:00",
+      "removal_rate_pct": 22.9,
+      "throughput_events_per_sec": 343.25
+    },
+    {
+      "run_started_at_utc": "2026-01-10T04:00:00Z",
+      "label": "Jan 10 04:00",
+      "removal_rate_pct": 23.6,
+      "throughput_events_per_sec": 190.67
+    },
+    {
+      "run_started_at_utc": "2026-01-10T05:00:00Z",
+      "label": "Jan 10 05:00",
+      "removal_rate_pct": 19.45,
+      "throughput_events_per_sec": 677.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T06:00:00Z",
+      "label": "Jan 10 06:00",
+      "removal_rate_pct": 23.47,
+      "throughput_events_per_sec": 266.2
+    },
+    {
+      "run_started_at_utc": "2026-01-10T07:00:00Z",
+      "label": "Jan 10 07:00",
+      "removal_rate_pct": 18.62,
+      "throughput_events_per_sec": 541.5
+    },
+    {
+      "run_started_at_utc": "2026-01-10T08:00:00Z",
+      "label": "Jan 10 08:00",
+      "removal_rate_pct": 23.41,
+      "throughput_events_per_sec": 300.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T09:00:00Z",
+      "label": "Jan 10 09:00",
+      "removal_rate_pct": 21.15,
+      "throughput_events_per_sec": 325.25
+    },
+    {
+      "run_started_at_utc": "2026-01-10T10:00:00Z",
+      "label": "Jan 10 10:00",
+      "removal_rate_pct": 20.55,
+      "throughput_events_per_sec": 317.33
+    },
+    {
+      "run_started_at_utc": "2026-01-10T11:00:00Z",
+      "label": "Jan 10 11:00",
+      "removal_rate_pct": 21.3,
+      "throughput_events_per_sec": 214.17
+    },
+    {
+      "run_started_at_utc": "2026-01-10T12:00:00Z",
+      "label": "Jan 10 12:00",
+      "removal_rate_pct": 24.0,
+      "throughput_events_per_sec": 665.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T13:00:00Z",
+      "label": "Jan 10 13:00",
+      "removal_rate_pct": 23.0,
+      "throughput_events_per_sec": 351.25
+    },
+    {
+      "run_started_at_utc": "2026-01-10T14:00:00Z",
+      "label": "Jan 10 14:00",
+      "removal_rate_pct": 21.93,
+      "throughput_events_per_sec": 163.83
+    },
+    {
+      "run_started_at_utc": "2026-01-10T15:00:00Z",
+      "label": "Jan 10 15:00",
+      "removal_rate_pct": 21.44,
+      "throughput_events_per_sec": 536.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T16:00:00Z",
+      "label": "Jan 10 16:00",
+      "removal_rate_pct": 23.82,
+      "throughput_events_per_sec": 171.33
+    },
+    {
+      "run_started_at_utc": "2026-01-10T17:00:00Z",
+      "label": "Jan 10 17:00",
+      "removal_rate_pct": 20.53,
+      "throughput_events_per_sec": 324.5
+    },
+    {
+      "run_started_at_utc": "2026-01-10T18:00:00Z",
+      "label": "Jan 10 18:00",
+      "removal_rate_pct": 24.83,
+      "throughput_events_per_sec": 365.67
+    },
+    {
+      "run_started_at_utc": "2026-01-10T19:00:00Z",
+      "label": "Jan 10 19:00",
+      "removal_rate_pct": 21.23,
+      "throughput_events_per_sec": 221.17
+    },
+    {
+      "run_started_at_utc": "2026-01-10T20:00:00Z",
+      "label": "Jan 10 20:00",
+      "removal_rate_pct": 18.11,
+      "throughput_events_per_sec": 307.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T21:00:00Z",
+      "label": "Jan 10 21:00",
+      "removal_rate_pct": 24.63,
+      "throughput_events_per_sec": 472.67
+    },
+    {
+      "run_started_at_utc": "2026-01-10T22:00:00Z",
+      "label": "Jan 10 22:00",
+      "removal_rate_pct": 23.59,
+      "throughput_events_per_sec": 158.0
+    },
+    {
+      "run_started_at_utc": "2026-01-10T23:00:00Z",
+      "label": "Jan 10 23:00",
+      "removal_rate_pct": 22.74,
+      "throughput_events_per_sec": 529.0
+    }
+  ]
+}
