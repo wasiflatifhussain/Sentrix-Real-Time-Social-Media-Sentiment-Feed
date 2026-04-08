@@ -1,0 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+confluent-kafka==2.12.2
+python-dotenv==1.2.1
+fastapi==0.127.0
+uvicorn==0.40.0
+redis==5.2.1
+sentence-transformers==5.3.0
+
+# Force CPU-only torch to avoid CUDA dependency explosion in container builds.
+torch==2.6.0+cpu

@@ -1,326 +1,302 @@
 # Sentrix Ingestor Service
 
-The **Sentrix Ingestor Service** is responsible for ingesting social media data (starting with Reddit), normalizing it
-into
-a unified event schema, and publishing events to Kafka for downstream processing (filtering, sentiment analysis,
-storage,
-analytics, etc.).
+The Sentrix Ingestor Service fetches social data (currently Reddit), normalizes it into a unified event schema, and publishes events to Kafka for downstream services.
 
-The service currently supports **scheduled ingestion runs** and can also be **manually triggered via a debug endpoint**
-for development and validation.
+## Common Setup
 
----
+### 1) Prerequisites
 
-## Responsibilities
+- Java 21
+- Maven wrapper (`./mvnw` is included)
+- Kafka topic ready (local Kafka or Confluent Cloud)
 
-The ingestor service is responsible for:
-
-* Fetching raw social media data (Reddit)
-* Normalizing platform-specific payloads into a unified event schema
-* Deduplicating content across queries and subreddits
-* Enforcing basic rate limits
-* Publishing normalized events to Kafka for downstream consumers
-
----
-
-## Project Structure
-
-The folder structure below reflects the **current codebase**, with placeholders for future Twitter and Telegram
-adapters.
-
-```
-ingestor-service/
-├── pom.xml
-├── README.md
-│
-├── src/main/java/com/sentrix/ingestor_service/
-│   ├── IngestorServiceApplication.java
-│   │
-│   ├── controller/
-│   │   └── RedditDebugController.java
-│   │
-│   ├── config/
-│   │   ├── RedditConfig.java
-│   │   ├── TickerConfig.java
-│   │   └── TickerConfigLoader.java
-│   │
-│   ├── adapter/
-│   │   ├── reddit/
-│   │   │   ├── RedditAdapter.java
-│   │   │   ├── client/
-│   │   │   │   ├── RedditAuthClient.java
-│   │   │   │   └── RedditApiClient.java
-│   │   │   ├── mapper/
-│   │   │   │   ├── RedditNormalizer.java
-│   │   │   │   ├── RedditCommentFlattener.java
-│   │   │   │   └── RedditEventMapper.java
-│   │   │   └── model/
-│   │   │       ├── RedditPost.java
-│   │   │       └── RedditComment.java
-│   │   │
-│   │   ├── twitter/        (planned)
-│   │   └── telegram/       (planned)
-│   │
-│   ├── model/event/
-│   │   ├── KafkaEvent.java
-│   │   ├── KafkaPostEvent.java
-│   │   ├── KafkaCommentEvent.java
-│   │   ├── CaptureMeta.java
-│   │   ├── EngagementMetrics.java
-│   │   ├── PlatformRef.java
-│   │   ├── ThreadRef.java
-│   │   ├── SourceType.java
-│   │   └── EntityType.java
-│   │
-│   ├── service/
-│   │   ├── KafkaEventPublisher.java
-│   │   ├── DeduplicationService.java
-│   │   ├── RateLimiter.java
-│   │   └── RateLimiterRegistry.java
-│   │
-│   ├── orchestrator/
-│   │   └── RedditIngestionScheduler.java
-│   │
-│   └── util/
-│       └── (shared utilities)
-│
-└── src/main/resources/
-    ├── application.yml
-    └── tickers.json
-```
-
----
-
-## Reddit Ingestion Flow
-
-### Triggering Ingestion
-
-Reddit ingestion can be triggered in two ways:
-
-1. **Scheduled ingestion (default)**
-   A scheduler periodically runs Reddit ingestion automatically.
-
-2. **Manual debug trigger (development only)**
-
-```
-POST /debug/reddit/run
-```
-
-The debug endpoint is intended **only for development and testing**.
-
----
-
-### Data Sources
-
-* **tickers.json**
-
-    * Defines tracked tickers and associated search queries
-
-* **Subreddits**
-
-    * `stocks`
-    * `investing`
-    * `wallstreetbets`
-    * `options`
-
----
-
-### Ingestion Steps
-
-For each ticker:
-
-1. Load ticker configuration from `tickers.json`
-
-2. For each subreddit and query:
-
-    * Perform subreddit-restricted search (`restrict_sr=1`)
-    * Normalize raw Reddit JSON into `RedditPost`
-
-3. For each post:
-
-    * Deduplicate globally using Reddit fullname (`t3_xxx`)
-    * Map post to `KafkaPostEvent`
-    * Publish to Kafka
-    * Fetch comments for the post
-    * Flatten the comment tree
-    * Map comments to `KafkaCommentEvent`
-    * Publish to Kafka
-
----
-
-### Deduplication
-
-Posts are deduplicated **globally across all subreddits and queries** using Reddit’s `fullname`.
-
-This prevents duplicates caused by:
-
-* Overlapping search queries
-* Cross-posted content
-* Repeated ingestion runs
-
----
-
-### Rate Limiting
-
-A lightweight in-process rate limiter is used to:
-
-* Keep API usage within safe bounds
-* Avoid Reddit throttling
-* Smooth bursty ingestion runs
-
----
-
-## Kafka
-
-### Topic
-
-All ingested events are published to a single Kafka topic:
-
-```
-sentrix.ingestor.events
-```
-
----
-
-### Retention Policy
-
-* `cleanup.policy=delete`
-* `retention.ms=604800000` (7 days)
-
-Kafka automatically deletes events older than approximately 7 days (segment-based cleanup).
-
-> **Note:**
-> The current ingestion window fetches content from the **last 7 days**.
-> This may be reduced to a **shorter window (e.g. 1 hour)** in future iterations to support near–real-time pipelines and
-> reduce ingestion load.
-
----
-
-### Creating the Topic (Local Development)
+Set Java 21 in terminal:
 
 ```bash
-/opt/homebrew/opt/kafka/bin/kafka-topics \
---create \
---topic sentrix.ingestor.events \
---bootstrap-server localhost:9092 \
---partitions 3 \
---replication-factor 1 \
---config cleanup.policy=delete \
---config retention.ms=604800000
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
 ```
 
----
+### 2) Environment File Templates
 
-### Verifying Topic Configuration
+Available env files:
+- local runtime: `backend/ingestor-service/.env.local`
+- Railway runtime: `backend/ingestor-service/.env.railway`
+- examples:
+  - `backend/ingestor-service/.env.local.example`
+  - `backend/ingestor-service/.env.railway.example`
+  - `backend/ingestor-service/.env.example` (local default template)
+
+## Local Setup
+
+### 1) Environment Variables
+
+Set Java 21 in the current terminal session first:
 
 ```bash
-/opt/homebrew/opt/kafka/bin/kafka-configs \
---bootstrap-server localhost:9092 \
---entity-type topics \
---entity-name sentrix.ingestor.events \
---describe
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
 ```
 
-Expected values:
-
-* `cleanup.policy=delete`
-* `retention.ms=604800000`
-
----
-
-### Consuming Events (Debug)
+Use local env values:
 
 ```bash
-/opt/homebrew/opt/kafka/bin/kafka-console-consumer \
---bootstrap-server localhost:9092 \
---topic sentrix.ingestor.events \
---from-beginning
+cd backend/ingestor-service
+cp .env.local.example .env.local
 ```
 
----
+Required Reddit variables:
+- `CLIENT_ID`
+- `CLIENT_SECRET`
+- `REDDIT_USERNAME`
+- `REDDIT_PASSWORD`
 
-## Configuration (`application.yml`)
+For local Kafka:
+- `KAFKA_BOOTSTRAP_SERVERS=localhost:9092`
+- `KAFKA_SECURITY_PROTOCOL=PLAINTEXT`
+- leave SASL vars empty
 
-```yaml
-spring:
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      acks: all
-      retries: 10
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      properties:
-        enable.idempotence: true
-        delivery.timeout.ms: 120000
-        request.timeout.ms: 30000
+Runtime variable:
+- `PORT` (default `8080`)
 
-reddit:
-  client-id: ${CLIENT_ID}
-  client-secret: ${CLIENT_SECRET}
-  username: ${REDDIT_USERNAME}
-  password: ${REDDIT_PASSWORD}
-  user-agent: sentrix-ingestor/0.1 by ${REDDIT_USERNAME}
-  token-url: https://www.reddit.com/api/v1/access_token
-  base-oauth-url: https://oauth.reddit.com
+### 2) Kafka Topic
 
-app:
-  kafka:
-    topic: sentrix.ingestor.events
+Topic used by this service:
 
-logging:
-  level:
-    com.sentrix.ingestor_service.messaging.producer.KafkaEventPublisher: INFO
-    com.sentrix.ingestor_service.adapter.reddit: INFO
+- `sentrix.ingestor.events`
+
+Recommended topic policy:
+
+- `cleanup.policy=delete`
+- `retention.ms=604800000` (7 days)
+
+### 3) Run Locally
+
+```bash
+cd backend/ingestor-service
+set -a; source .env.local; set +a
+./mvnw spring-boot:run
 ```
 
----
+Note: Spring Boot does not auto-load `.env` files by default. `source .env.local` is required unless your IDE run config injects env vars.
 
-## Environment Variables
-
-Before running locally, export:
-
-* `CLIENT_ID`
-* `CLIENT_SECRET`
-* `REDDIT_USERNAME`
-* `REDDIT_PASSWORD`
-
----
-
-## Running Locally
-
-1. Start Kafka and Zookeeper
-2. Create the Kafka topic
-3. Export environment variables
-4. Run the application
-5. (Optional) Trigger ingestion manually:
+### 4) Trigger a Manual Ingestion Run
 
 ```bash
 curl -X POST http://localhost:8080/debug/reddit/run
 ```
 
-6. Consume from Kafka to verify published events
+## Railway Setup
 
----
+### 1) Environment Variables
+
+Use `backend/ingestor-service/.env.railway` values in Railway Variables.
+
+For Railway + Confluent Cloud:
+
+```env
+KAFKA_BOOTSTRAP_SERVERS=<pkc-xxxxx...:9092>
+KAFKA_TOPIC=sentrix.ingestor.events
+KAFKA_SECURITY_PROTOCOL=SASL_SSL
+KAFKA_SASL_MECHANISM=PLAIN
+KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="<API_KEY>" password="<API_SECRET>";
+```
+
+If logs show `localhost:9092`, Railway vars are missing or not applied and service is using defaults.
+
+### 2) Railway Deployment (Monorepo)
+
+Use one Railway service for this microservice, with this monorepo path:
+
+- Root directory: `backend/ingestor-service`
+- Build command: `./mvnw -DskipTests package`
+- Start command: `java -jar target/*.jar`
+
+Set the same Reddit vars as local, but Kafka vars from `.env.railway`.
+
+Use HTTPS and POST for manual trigger:
+
+```bash
+curl -X POST https://<your-railway-domain>/debug/reddit/run
+```
+
+## Configuration Reference
+
+Current app config file:
+
+- `src/main/resources/application.yml`
+
+Key runtime bindings:
+
+- `spring.kafka.bootstrap-servers -> KAFKA_BOOTSTRAP_SERVERS`
+- `spring.kafka.producer.properties.security.protocol -> KAFKA_SECURITY_PROTOCOL`
+- `spring.kafka.producer.properties.sasl.mechanism -> KAFKA_SASL_MECHANISM`
+- `spring.kafka.producer.properties.sasl.jaas.config -> KAFKA_SASL_JAAS_CONFIG`
+- `app.kafka.topic -> KAFKA_TOPIC`
+- `server.port -> PORT`
+
+## Architecture and Design Justifications
+
+### Unified Event Schema Contract
+
+All source-specific payloads are mapped into a shared `KafkaEvent` contract before publishing.
+
+Core fields include:
+
+- identity and traceability: `eventVersion`, `eventId`, `dedupKey`
+- timing: `createdAtUtc`, `ingestedAtUtc`
+- routing context: `source`, `entityType`, `ticker`, `community`
+- content: `title`, `text`, `contentUrl`, `author`
+- platform/thread metadata: `platform`, `thread`
+- analytics context: `metrics`, `capture`, `lang`
+
+Why this schema is strong:
+
+- downstream services consume one stable shape instead of per-platform JSON
+- adding new sources does not break consumer contracts
+- `eventVersion` gives room for safe schema evolution
+- `capture` keeps query/fetch provenance for audit and evaluation
+- `platform` and `thread` preserve enough source detail for later enrichment
+
+### Adapter-Based Source Abstraction
+
+Ingestion is built around the `SocialSourceAdapter` interface:
+
+- `source()`
+- `runIngestion()`
+
+Current Reddit implementation plugs into this interface, and future Twitter/Telegram adapters can implement the same contract.
+
+Why this abstraction matters:
+
+- open/closed design: new platforms added with minimal orchestrator changes
+- each source keeps platform-specific API logic isolated in its adapter/client/mapper layer
+- shared orchestration, publishing, and observability stay consistent across all sources
+
+### Mapping Layer Separation
+
+`RedditEventMapper` converts normalized Reddit models into `KafkaPostEvent` / `KafkaCommentEvent`.
+
+Why this separation is useful:
+
+- isolates transformation logic from API fetching logic
+- keeps schema guarantees in one place
+- easier to unit test mapping correctness independently
+
+### Orchestration and Concurrency Model
+
+`IngestionOrchestrator` discovers all adapters and runs them via a dedicated executor.
+It also prevents overlapping runs using an atomic `running` guard and applies adapter-level timeouts.
+
+Why this design was chosen:
+
+- supports multi-source parallelism
+- prevents accidental overlap when runs are long
+- keeps scheduling policy separate from source logic
+
+### Deduplication Strategy
+
+Deduplication uses stable Reddit fullname IDs through `DeduplicationService` (`ConcurrentHashMap`-backed set).
+
+Why:
+
+- cheap, deterministic duplicate removal across overlapping queries/subreddits
+- protects downstream stages from duplicated sentiment signal inflation
+
+### Rate Limiting via Registry
+
+`RateLimiterRegistry` holds per-source limiters (e.g., Reddit/Twitter/Telegram limits) and adapters acquire permits before calls.
+
+Why this is effective:
+
+- one central place to manage per-source throttling policy
+- avoids scattering sleep/retry timing logic across code
+- protects ingestion from API throttling/burst failures
+
+Note: limits are currently set in code in the registry constructor and can be externalized to config later without changing adapter usage.
+
+## Operational Rules and Justifications
+
+### Ingestion Triggers
+
+- Scheduled ingestion runs every hour (UTC).
+- Manual endpoint (`POST /debug/reddit/run`) exists for development validation.
+
+Why:
+
+- Scheduler keeps automated ingestion cadence.
+- Manual trigger speeds up test/debug cycles.
+
+### Data Scope
+
+- Source: Reddit (currently)
+- Subreddits: `stocks`, `investing`, `wallstreetbets`, `options`
+- Tickers/queries loaded from `tickers.json`
+
+Why:
+
+- Controlled scope improves signal quality and keeps ingestion costs bounded.
+
+### Deduplication Rule
+
+- Post dedup uses Reddit fullname globally across queries/subreddits/runs.
+
+Why:
+
+- Prevents duplicate event inflation from overlapping queries and repeated scans.
+
+### Publishing Rule
+
+- All normalized events go to one topic: `sentrix.ingestor.events`.
+
+Why:
+
+- Keeps downstream contract simple for Filter A and other consumers.
+
+### Retention Rule
+
+- 7-day topic retention (`retention.ms=604800000`).
+
+Why:
+
+- Preserves enough replay/debug window without unbounded storage growth.
+
+## Project Structure
+
+```text
+ingestor-service/
+├── pom.xml
+├── README.md
+├── .env.example
+├── src/main/java/com/sentrix/ingestor_service/
+│   ├── adapter/reddit/
+│   ├── config/
+│   ├── controller/
+│   ├── messaging/
+│   ├── orchestrator/
+│   └── service/
+└── src/main/resources/
+    ├── application.yml
+    └── tickers.json
+```
 
 ## Current Status
 
-**Implemented**
+Implemented:
 
-* Reddit ingestion
-* Scheduled orchestration
-* Unified event schema
-* Global deduplication
-* Kafka publishing
-* Rate limiting
-* Debug ingestion endpoint
+- Reddit ingestion
+- Scheduled orchestration
+- Manual debug trigger endpoint
+- Unified event mapping
+- Global deduplication
+- Kafka publishing
+- Basic rate limiting
 
-**Pending / Future Work**
+Pending:
 
-* Twitter adapter
-* Telegram adapter
-* Improved retry and backoff handling
-* Expanded test coverage (unit + integration)
-* Metrics and ingestion observability
-* Configurable ingestion time window
-
+- Twitter adapter
+- Telegram adapter
+- Expanded tests and observability
+- More configurable ingestion policies

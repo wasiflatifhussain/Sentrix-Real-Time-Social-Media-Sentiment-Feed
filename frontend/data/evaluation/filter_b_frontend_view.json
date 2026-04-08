@@ -1,0 +1,1358 @@
+{
+  "summary": {
+    "runsObserved": 168,
+    "runsExpected": 168,
+    "coveragePct": 100.0,
+    "avgCorrectnessPct": 81.91,
+    "weightedCorrectnessPct": 81.93,
+    "fpRatePct": 9.36,
+    "fnRatePct": 8.72,
+    "throughputMean": 305.11
+  },
+  "charts": [
+    {
+      "run_started_at_utc": "2026-03-21T00:00:00Z",
+      "label": "Mar 21 00:00",
+      "decision_correctness_pct": 78.26,
+      "false_positive_rate_pct": 10.87,
+      "false_negative_rate_pct": 10.87,
+      "throughput_events_per_sec": 252.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T01:00:00Z",
+      "label": "Mar 21 01:00",
+      "decision_correctness_pct": 81.97,
+      "false_positive_rate_pct": 14.75,
+      "false_negative_rate_pct": 3.28,
+      "throughput_events_per_sec": 148.14
+    },
+    {
+      "run_started_at_utc": "2026-03-21T02:00:00Z",
+      "label": "Mar 21 02:00",
+      "decision_correctness_pct": 83.72,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 16.28,
+      "throughput_events_per_sec": 182.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T03:00:00Z",
+      "label": "Mar 21 03:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 3.33,
+      "false_negative_rate_pct": 13.33,
+      "throughput_events_per_sec": 329.33
+    },
+    {
+      "run_started_at_utc": "2026-03-21T04:00:00Z",
+      "label": "Mar 21 04:00",
+      "decision_correctness_pct": 84.78,
+      "false_positive_rate_pct": 15.22,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 437.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T05:00:00Z",
+      "label": "Mar 21 05:00",
+      "decision_correctness_pct": 82.98,
+      "false_positive_rate_pct": 14.89,
+      "false_negative_rate_pct": 2.13,
+      "throughput_events_per_sec": 341.67
+    },
+    {
+      "run_started_at_utc": "2026-03-21T06:00:00Z",
+      "label": "Mar 21 06:00",
+      "decision_correctness_pct": 78.12,
+      "false_positive_rate_pct": 9.38,
+      "false_negative_rate_pct": 12.5,
+      "throughput_events_per_sec": 222.83
+    },
+    {
+      "run_started_at_utc": "2026-03-21T07:00:00Z",
+      "label": "Mar 21 07:00",
+      "decision_correctness_pct": 78.0,
+      "false_positive_rate_pct": 18.0,
+      "false_negative_rate_pct": 4.0,
+      "throughput_events_per_sec": 573.5
+    },
+    {
+      "run_started_at_utc": "2026-03-21T08:00:00Z",
+      "label": "Mar 21 08:00",
+      "decision_correctness_pct": 85.25,
+      "false_positive_rate_pct": 13.11,
+      "false_negative_rate_pct": 1.6400000000000001,
+      "throughput_events_per_sec": 463.5
+    },
+    {
+      "run_started_at_utc": "2026-03-21T09:00:00Z",
+      "label": "Mar 21 09:00",
+      "decision_correctness_pct": 86.36,
+      "false_positive_rate_pct": 2.27,
+      "false_negative_rate_pct": 11.36,
+      "throughput_events_per_sec": 415.33
+    },
+    {
+      "run_started_at_utc": "2026-03-21T10:00:00Z",
+      "label": "Mar 21 10:00",
+      "decision_correctness_pct": 84.0,
+      "false_positive_rate_pct": 6.0,
+      "false_negative_rate_pct": 10.0,
+      "throughput_events_per_sec": 160.29
+    },
+    {
+      "run_started_at_utc": "2026-03-21T11:00:00Z",
+      "label": "Mar 21 11:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 20.0,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 189.83
+    },
+    {
+      "run_started_at_utc": "2026-03-21T12:00:00Z",
+      "label": "Mar 21 12:00",
+      "decision_correctness_pct": 83.02,
+      "false_positive_rate_pct": 7.55,
+      "false_negative_rate_pct": 9.43,
+      "throughput_events_per_sec": 300.33
+    },
+    {
+      "run_started_at_utc": "2026-03-21T13:00:00Z",
+      "label": "Mar 21 13:00",
+      "decision_correctness_pct": 78.26,
+      "false_positive_rate_pct": 8.7,
+      "false_negative_rate_pct": 13.04,
+      "throughput_events_per_sec": 548.5
+    },
+    {
+      "run_started_at_utc": "2026-03-21T14:00:00Z",
+      "label": "Mar 21 14:00",
+      "decision_correctness_pct": 82.69,
+      "false_positive_rate_pct": 11.54,
+      "false_negative_rate_pct": 5.77,
+      "throughput_events_per_sec": 423.67
+    },
+    {
+      "run_started_at_utc": "2026-03-21T15:00:00Z",
+      "label": "Mar 21 15:00",
+      "decision_correctness_pct": 82.76,
+      "false_positive_rate_pct": 6.9,
+      "false_negative_rate_pct": 10.34,
+      "throughput_events_per_sec": 475.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T16:00:00Z",
+      "label": "Mar 21 16:00",
+      "decision_correctness_pct": 78.85,
+      "false_positive_rate_pct": 13.46,
+      "false_negative_rate_pct": 7.69,
+      "throughput_events_per_sec": 170.57
+    },
+    {
+      "run_started_at_utc": "2026-03-21T17:00:00Z",
+      "label": "Mar 21 17:00",
+      "decision_correctness_pct": 78.26,
+      "false_positive_rate_pct": 10.87,
+      "false_negative_rate_pct": 10.87,
+      "throughput_events_per_sec": 445.33
+    },
+    {
+      "run_started_at_utc": "2026-03-21T18:00:00Z",
+      "label": "Mar 21 18:00",
+      "decision_correctness_pct": 86.44,
+      "false_positive_rate_pct": 1.69,
+      "false_negative_rate_pct": 11.86,
+      "throughput_events_per_sec": 148.71
+    },
+    {
+      "run_started_at_utc": "2026-03-21T19:00:00Z",
+      "label": "Mar 21 19:00",
+      "decision_correctness_pct": 84.21,
+      "false_positive_rate_pct": 14.04,
+      "false_negative_rate_pct": 1.75,
+      "throughput_events_per_sec": 486.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T20:00:00Z",
+      "label": "Mar 21 20:00",
+      "decision_correctness_pct": 81.63,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 18.37,
+      "throughput_events_per_sec": 325.5
+    },
+    {
+      "run_started_at_utc": "2026-03-21T21:00:00Z",
+      "label": "Mar 21 21:00",
+      "decision_correctness_pct": 82.22,
+      "false_positive_rate_pct": 15.56,
+      "false_negative_rate_pct": 2.22,
+      "throughput_events_per_sec": 180.0
+    },
+    {
+      "run_started_at_utc": "2026-03-21T22:00:00Z",
+      "label": "Mar 21 22:00",
+      "decision_correctness_pct": 83.02,
+      "false_positive_rate_pct": 5.66,
+      "false_negative_rate_pct": 11.32,
+      "throughput_events_per_sec": 236.4
+    },
+    {
+      "run_started_at_utc": "2026-03-21T23:00:00Z",
+      "label": "Mar 21 23:00",
+      "decision_correctness_pct": 84.62,
+      "false_positive_rate_pct": 13.46,
+      "false_negative_rate_pct": 1.92,
+      "throughput_events_per_sec": 174.8
+    },
+    {
+      "run_started_at_utc": "2026-03-22T00:00:00Z",
+      "label": "Mar 22 00:00",
+      "decision_correctness_pct": 81.58,
+      "false_positive_rate_pct": 5.26,
+      "false_negative_rate_pct": 13.16,
+      "throughput_events_per_sec": 123.86
+    },
+    {
+      "run_started_at_utc": "2026-03-22T01:00:00Z",
+      "label": "Mar 22 01:00",
+      "decision_correctness_pct": 87.23,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 12.77,
+      "throughput_events_per_sec": 338.67
+    },
+    {
+      "run_started_at_utc": "2026-03-22T02:00:00Z",
+      "label": "Mar 22 02:00",
+      "decision_correctness_pct": 81.08,
+      "false_positive_rate_pct": 18.92,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 547.5
+    },
+    {
+      "run_started_at_utc": "2026-03-22T03:00:00Z",
+      "label": "Mar 22 03:00",
+      "decision_correctness_pct": 83.78,
+      "false_positive_rate_pct": 10.81,
+      "false_negative_rate_pct": 5.41,
+      "throughput_events_per_sec": 648.0
+    },
+    {
+      "run_started_at_utc": "2026-03-22T04:00:00Z",
+      "label": "Mar 22 04:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 3.33,
+      "false_negative_rate_pct": 16.67,
+      "throughput_events_per_sec": 454.5
+    },
+    {
+      "run_started_at_utc": "2026-03-22T05:00:00Z",
+      "label": "Mar 22 05:00",
+      "decision_correctness_pct": 79.41,
+      "false_positive_rate_pct": 11.76,
+      "false_negative_rate_pct": 8.82,
+      "throughput_events_per_sec": 541.5
+    },
+    {
+      "run_started_at_utc": "2026-03-22T06:00:00Z",
+      "label": "Mar 22 06:00",
+      "decision_correctness_pct": 77.78,
+      "false_positive_rate_pct": 9.26,
+      "false_negative_rate_pct": 12.96,
+      "throughput_events_per_sec": 232.67
+    },
+    {
+      "run_started_at_utc": "2026-03-22T07:00:00Z",
+      "label": "Mar 22 07:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 7.14,
+      "false_negative_rate_pct": 9.52,
+      "throughput_events_per_sec": 277.75
+    },
+    {
+      "run_started_at_utc": "2026-03-22T08:00:00Z",
+      "label": "Mar 22 08:00",
+      "decision_correctness_pct": 79.03,
+      "false_positive_rate_pct": 19.35,
+      "false_negative_rate_pct": 1.61,
+      "throughput_events_per_sec": 234.8
+    },
+    {
+      "run_started_at_utc": "2026-03-22T09:00:00Z",
+      "label": "Mar 22 09:00",
+      "decision_correctness_pct": 83.78,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 16.22,
+      "throughput_events_per_sec": 652.0
+    },
+    {
+      "run_started_at_utc": "2026-03-22T10:00:00Z",
+      "label": "Mar 22 10:00",
+      "decision_correctness_pct": 78.26,
+      "false_positive_rate_pct": 21.74,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 685.0
+    },
+    {
+      "run_started_at_utc": "2026-03-22T11:00:00Z",
+      "label": "Mar 22 11:00",
+      "decision_correctness_pct": 79.66,
+      "false_positive_rate_pct": 15.25,
+      "false_negative_rate_pct": 5.08,
+      "throughput_events_per_sec": 178.71
+    },
+    {
+      "run_started_at_utc": "2026-03-22T12:00:00Z",
+      "label": "Mar 22 12:00",
+      "decision_correctness_pct": 78.05,
+      "false_positive_rate_pct": 17.07,
+      "false_negative_rate_pct": 4.88,
+      "throughput_events_per_sec": 223.83
+    },
+    {
+      "run_started_at_utc": "2026-03-22T13:00:00Z",
+      "label": "Mar 22 13:00",
+      "decision_correctness_pct": 77.42,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 22.58,
+      "throughput_events_per_sec": 157.43
+    },
+    {
+      "run_started_at_utc": "2026-03-22T14:00:00Z",
+      "label": "Mar 22 14:00",
+      "decision_correctness_pct": 80.39,
+      "false_positive_rate_pct": 7.84,
+      "false_negative_rate_pct": 11.76,
+      "throughput_events_per_sec": 248.25
+    },
+    {
+      "run_started_at_utc": "2026-03-22T15:00:00Z",
+      "label": "Mar 22 15:00",
+      "decision_correctness_pct": 78.57,
+      "false_positive_rate_pct": 11.9,
+      "false_negative_rate_pct": 9.52,
+      "throughput_events_per_sec": 303.67
+    },
+    {
+      "run_started_at_utc": "2026-03-22T16:00:00Z",
+      "label": "Mar 22 16:00",
+      "decision_correctness_pct": 85.0,
+      "false_positive_rate_pct": 6.67,
+      "false_negative_rate_pct": 8.33,
+      "throughput_events_per_sec": 146.67
+    },
+    {
+      "run_started_at_utc": "2026-03-22T17:00:00Z",
+      "label": "Mar 22 17:00",
+      "decision_correctness_pct": 81.58,
+      "false_positive_rate_pct": 2.63,
+      "false_negative_rate_pct": 15.79,
+      "throughput_events_per_sec": 480.0
+    },
+    {
+      "run_started_at_utc": "2026-03-22T18:00:00Z",
+      "label": "Mar 22 18:00",
+      "decision_correctness_pct": 84.21,
+      "false_positive_rate_pct": 13.16,
+      "false_negative_rate_pct": 2.63,
+      "throughput_events_per_sec": 522.5
+    },
+    {
+      "run_started_at_utc": "2026-03-22T19:00:00Z",
+      "label": "Mar 22 19:00",
+      "decision_correctness_pct": 81.25,
+      "false_positive_rate_pct": 12.5,
+      "false_negative_rate_pct": 6.25,
+      "throughput_events_per_sec": 370.67
+    },
+    {
+      "run_started_at_utc": "2026-03-22T20:00:00Z",
+      "label": "Mar 22 20:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 13.79,
+      "false_negative_rate_pct": 6.9,
+      "throughput_events_per_sec": 255.5
+    },
+    {
+      "run_started_at_utc": "2026-03-22T21:00:00Z",
+      "label": "Mar 22 21:00",
+      "decision_correctness_pct": 86.05,
+      "false_positive_rate_pct": 9.3,
+      "false_negative_rate_pct": 4.65,
+      "throughput_events_per_sec": 396.33
+    },
+    {
+      "run_started_at_utc": "2026-03-22T22:00:00Z",
+      "label": "Mar 22 22:00",
+      "decision_correctness_pct": 83.93,
+      "false_positive_rate_pct": 12.5,
+      "false_negative_rate_pct": 3.57,
+      "throughput_events_per_sec": 270.0
+    },
+    {
+      "run_started_at_utc": "2026-03-22T23:00:00Z",
+      "label": "Mar 22 23:00",
+      "decision_correctness_pct": 86.54,
+      "false_positive_rate_pct": 9.62,
+      "false_negative_rate_pct": 3.85,
+      "throughput_events_per_sec": 272.4
+    },
+    {
+      "run_started_at_utc": "2026-03-23T00:00:00Z",
+      "label": "Mar 23 00:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 10.34,
+      "false_negative_rate_pct": 10.34,
+      "throughput_events_per_sec": 201.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T01:00:00Z",
+      "label": "Mar 23 01:00",
+      "decision_correctness_pct": 85.11,
+      "false_positive_rate_pct": 12.77,
+      "false_negative_rate_pct": 2.13,
+      "throughput_events_per_sec": 194.29
+    },
+    {
+      "run_started_at_utc": "2026-03-23T02:00:00Z",
+      "label": "Mar 23 02:00",
+      "decision_correctness_pct": 85.48,
+      "false_positive_rate_pct": 14.52,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 395.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T03:00:00Z",
+      "label": "Mar 23 03:00",
+      "decision_correctness_pct": 78.57,
+      "false_positive_rate_pct": 10.71,
+      "false_negative_rate_pct": 10.71,
+      "throughput_events_per_sec": 137.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T04:00:00Z",
+      "label": "Mar 23 04:00",
+      "decision_correctness_pct": 80.7,
+      "false_positive_rate_pct": 3.5100000000000002,
+      "false_negative_rate_pct": 15.79,
+      "throughput_events_per_sec": 517.5
+    },
+    {
+      "run_started_at_utc": "2026-03-23T05:00:00Z",
+      "label": "Mar 23 05:00",
+      "decision_correctness_pct": 81.36,
+      "false_positive_rate_pct": 11.86,
+      "false_negative_rate_pct": 6.78,
+      "throughput_events_per_sec": 359.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T06:00:00Z",
+      "label": "Mar 23 06:00",
+      "decision_correctness_pct": 82.14,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 17.86,
+      "throughput_events_per_sec": 193.6
+    },
+    {
+      "run_started_at_utc": "2026-03-23T07:00:00Z",
+      "label": "Mar 23 07:00",
+      "decision_correctness_pct": 84.75,
+      "false_positive_rate_pct": 15.25,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 314.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T08:00:00Z",
+      "label": "Mar 23 08:00",
+      "decision_correctness_pct": 78.95,
+      "false_positive_rate_pct": 15.79,
+      "false_negative_rate_pct": 5.26,
+      "throughput_events_per_sec": 426.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T09:00:00Z",
+      "label": "Mar 23 09:00",
+      "decision_correctness_pct": 82.69,
+      "false_positive_rate_pct": 3.85,
+      "false_negative_rate_pct": 13.46,
+      "throughput_events_per_sec": 535.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T10:00:00Z",
+      "label": "Mar 23 10:00",
+      "decision_correctness_pct": 78.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 22.0,
+      "throughput_events_per_sec": 179.43
+    },
+    {
+      "run_started_at_utc": "2026-03-23T11:00:00Z",
+      "label": "Mar 23 11:00",
+      "decision_correctness_pct": 80.36,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 5.36,
+      "throughput_events_per_sec": 319.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T12:00:00Z",
+      "label": "Mar 23 12:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 15.0,
+      "false_negative_rate_pct": 1.67,
+      "throughput_events_per_sec": 215.6
+    },
+    {
+      "run_started_at_utc": "2026-03-23T13:00:00Z",
+      "label": "Mar 23 13:00",
+      "decision_correctness_pct": 81.25,
+      "false_positive_rate_pct": 4.17,
+      "false_negative_rate_pct": 14.58,
+      "throughput_events_per_sec": 419.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T14:00:00Z",
+      "label": "Mar 23 14:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 4.44,
+      "false_negative_rate_pct": 15.56,
+      "throughput_events_per_sec": 139.14
+    },
+    {
+      "run_started_at_utc": "2026-03-23T15:00:00Z",
+      "label": "Mar 23 15:00",
+      "decision_correctness_pct": 85.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 15.0,
+      "throughput_events_per_sec": 169.57
+    },
+    {
+      "run_started_at_utc": "2026-03-23T16:00:00Z",
+      "label": "Mar 23 16:00",
+      "decision_correctness_pct": 82.05,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 17.95,
+      "throughput_events_per_sec": 525.5
+    },
+    {
+      "run_started_at_utc": "2026-03-23T17:00:00Z",
+      "label": "Mar 23 17:00",
+      "decision_correctness_pct": 83.87,
+      "false_positive_rate_pct": 16.13,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 155.17
+    },
+    {
+      "run_started_at_utc": "2026-03-23T18:00:00Z",
+      "label": "Mar 23 18:00",
+      "decision_correctness_pct": 87.5,
+      "false_positive_rate_pct": 9.38,
+      "false_negative_rate_pct": 3.12,
+      "throughput_events_per_sec": 177.5
+    },
+    {
+      "run_started_at_utc": "2026-03-23T19:00:00Z",
+      "label": "Mar 23 19:00",
+      "decision_correctness_pct": 77.78,
+      "false_positive_rate_pct": 16.67,
+      "false_negative_rate_pct": 5.56,
+      "throughput_events_per_sec": 284.5
+    },
+    {
+      "run_started_at_utc": "2026-03-23T20:00:00Z",
+      "label": "Mar 23 20:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 7.5,
+      "false_negative_rate_pct": 12.5,
+      "throughput_events_per_sec": 285.33
+    },
+    {
+      "run_started_at_utc": "2026-03-23T21:00:00Z",
+      "label": "Mar 23 21:00",
+      "decision_correctness_pct": 84.44,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 15.56,
+      "throughput_events_per_sec": 188.33
+    },
+    {
+      "run_started_at_utc": "2026-03-23T22:00:00Z",
+      "label": "Mar 23 22:00",
+      "decision_correctness_pct": 78.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 22.0,
+      "throughput_events_per_sec": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-03-23T23:00:00Z",
+      "label": "Mar 23 23:00",
+      "decision_correctness_pct": 80.43,
+      "false_positive_rate_pct": 4.35,
+      "false_negative_rate_pct": 15.22,
+      "throughput_events_per_sec": 628.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T00:00:00Z",
+      "label": "Mar 24 00:00",
+      "decision_correctness_pct": 80.7,
+      "false_positive_rate_pct": 5.26,
+      "false_negative_rate_pct": 14.04,
+      "throughput_events_per_sec": 459.33
+    },
+    {
+      "run_started_at_utc": "2026-03-24T01:00:00Z",
+      "label": "Mar 24 01:00",
+      "decision_correctness_pct": 79.59,
+      "false_positive_rate_pct": 2.04,
+      "false_negative_rate_pct": 18.37,
+      "throughput_events_per_sec": 277.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T02:00:00Z",
+      "label": "Mar 24 02:00",
+      "decision_correctness_pct": 78.26,
+      "false_positive_rate_pct": 19.57,
+      "false_negative_rate_pct": 2.17,
+      "throughput_events_per_sec": 228.8
+    },
+    {
+      "run_started_at_utc": "2026-03-24T03:00:00Z",
+      "label": "Mar 24 03:00",
+      "decision_correctness_pct": 83.93,
+      "false_positive_rate_pct": 8.93,
+      "false_negative_rate_pct": 7.14,
+      "throughput_events_per_sec": 394.33
+    },
+    {
+      "run_started_at_utc": "2026-03-24T04:00:00Z",
+      "label": "Mar 24 04:00",
+      "decision_correctness_pct": 81.63,
+      "false_positive_rate_pct": 18.37,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 700.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T05:00:00Z",
+      "label": "Mar 24 05:00",
+      "decision_correctness_pct": 84.85,
+      "false_positive_rate_pct": 3.03,
+      "false_negative_rate_pct": 12.12,
+      "throughput_events_per_sec": 224.33
+    },
+    {
+      "run_started_at_utc": "2026-03-24T06:00:00Z",
+      "label": "Mar 24 06:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 3.33,
+      "false_negative_rate_pct": 13.33,
+      "throughput_events_per_sec": 667.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T07:00:00Z",
+      "label": "Mar 24 07:00",
+      "decision_correctness_pct": 85.19,
+      "false_positive_rate_pct": 11.11,
+      "false_negative_rate_pct": 3.7,
+      "throughput_events_per_sec": 273.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T08:00:00Z",
+      "label": "Mar 24 08:00",
+      "decision_correctness_pct": 78.95,
+      "false_positive_rate_pct": 21.05,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 335.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T09:00:00Z",
+      "label": "Mar 24 09:00",
+      "decision_correctness_pct": 78.43,
+      "false_positive_rate_pct": 1.96,
+      "false_negative_rate_pct": 19.61,
+      "throughput_events_per_sec": 455.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T10:00:00Z",
+      "label": "Mar 24 10:00",
+      "decision_correctness_pct": 78.95,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 21.05,
+      "throughput_events_per_sec": 464.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T11:00:00Z",
+      "label": "Mar 24 11:00",
+      "decision_correctness_pct": 77.42,
+      "false_positive_rate_pct": 19.35,
+      "false_negative_rate_pct": 3.23,
+      "throughput_events_per_sec": 206.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T12:00:00Z",
+      "label": "Mar 24 12:00",
+      "decision_correctness_pct": 83.78,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 16.22,
+      "throughput_events_per_sec": 547.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T13:00:00Z",
+      "label": "Mar 24 13:00",
+      "decision_correctness_pct": 85.45,
+      "false_positive_rate_pct": 3.64,
+      "false_negative_rate_pct": 10.91,
+      "throughput_events_per_sec": 284.25
+    },
+    {
+      "run_started_at_utc": "2026-03-24T14:00:00Z",
+      "label": "Mar 24 14:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 8.33,
+      "false_negative_rate_pct": 11.67,
+      "throughput_events_per_sec": 216.4
+    },
+    {
+      "run_started_at_utc": "2026-03-24T15:00:00Z",
+      "label": "Mar 24 15:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 20.0,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 279.25
+    },
+    {
+      "run_started_at_utc": "2026-03-24T16:00:00Z",
+      "label": "Mar 24 16:00",
+      "decision_correctness_pct": 87.23,
+      "false_positive_rate_pct": 12.77,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 626.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T17:00:00Z",
+      "label": "Mar 24 17:00",
+      "decision_correctness_pct": 78.95,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 21.05,
+      "throughput_events_per_sec": 446.33
+    },
+    {
+      "run_started_at_utc": "2026-03-24T18:00:00Z",
+      "label": "Mar 24 18:00",
+      "decision_correctness_pct": 82.5,
+      "false_positive_rate_pct": 5.0,
+      "false_negative_rate_pct": 12.5,
+      "throughput_events_per_sec": 221.4
+    },
+    {
+      "run_started_at_utc": "2026-03-24T19:00:00Z",
+      "label": "Mar 24 19:00",
+      "decision_correctness_pct": 86.67,
+      "false_positive_rate_pct": 3.33,
+      "false_negative_rate_pct": 10.0,
+      "throughput_events_per_sec": 184.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T20:00:00Z",
+      "label": "Mar 24 20:00",
+      "decision_correctness_pct": 80.7,
+      "false_positive_rate_pct": 3.5100000000000002,
+      "false_negative_rate_pct": 15.79,
+      "throughput_events_per_sec": 231.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T21:00:00Z",
+      "label": "Mar 24 21:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 5.45,
+      "false_negative_rate_pct": 14.55,
+      "throughput_events_per_sec": 152.5
+    },
+    {
+      "run_started_at_utc": "2026-03-24T22:00:00Z",
+      "label": "Mar 24 22:00",
+      "decision_correctness_pct": 82.76,
+      "false_positive_rate_pct": 15.52,
+      "false_negative_rate_pct": 1.72,
+      "throughput_events_per_sec": 227.0
+    },
+    {
+      "run_started_at_utc": "2026-03-24T23:00:00Z",
+      "label": "Mar 24 23:00",
+      "decision_correctness_pct": 81.08,
+      "false_positive_rate_pct": 13.51,
+      "false_negative_rate_pct": 5.41,
+      "throughput_events_per_sec": 285.67
+    },
+    {
+      "run_started_at_utc": "2026-03-25T00:00:00Z",
+      "label": "Mar 25 00:00",
+      "decision_correctness_pct": 85.42,
+      "false_positive_rate_pct": 10.42,
+      "false_negative_rate_pct": 4.17,
+      "throughput_events_per_sec": 229.83
+    },
+    {
+      "run_started_at_utc": "2026-03-25T01:00:00Z",
+      "label": "Mar 25 01:00",
+      "decision_correctness_pct": 83.72,
+      "false_positive_rate_pct": 13.95,
+      "false_negative_rate_pct": 2.33,
+      "throughput_events_per_sec": 196.14
+    },
+    {
+      "run_started_at_utc": "2026-03-25T02:00:00Z",
+      "label": "Mar 25 02:00",
+      "decision_correctness_pct": 83.87,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 16.13,
+      "throughput_events_per_sec": 171.33
+    },
+    {
+      "run_started_at_utc": "2026-03-25T03:00:00Z",
+      "label": "Mar 25 03:00",
+      "decision_correctness_pct": 82.46,
+      "false_positive_rate_pct": 12.28,
+      "false_negative_rate_pct": 5.26,
+      "throughput_events_per_sec": 278.0
+    },
+    {
+      "run_started_at_utc": "2026-03-25T04:00:00Z",
+      "label": "Mar 25 04:00",
+      "decision_correctness_pct": 84.62,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 15.38,
+      "throughput_events_per_sec": 249.2
+    },
+    {
+      "run_started_at_utc": "2026-03-25T05:00:00Z",
+      "label": "Mar 25 05:00",
+      "decision_correctness_pct": 85.0,
+      "false_positive_rate_pct": 7.5,
+      "false_negative_rate_pct": 7.5,
+      "throughput_events_per_sec": 183.83
+    },
+    {
+      "run_started_at_utc": "2026-03-25T06:00:00Z",
+      "label": "Mar 25 06:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 2.38,
+      "throughput_events_per_sec": 314.0
+    },
+    {
+      "run_started_at_utc": "2026-03-25T07:00:00Z",
+      "label": "Mar 25 07:00",
+      "decision_correctness_pct": 80.56,
+      "false_positive_rate_pct": 5.56,
+      "false_negative_rate_pct": 13.89,
+      "throughput_events_per_sec": 529.5
+    },
+    {
+      "run_started_at_utc": "2026-03-25T08:00:00Z",
+      "label": "Mar 25 08:00",
+      "decision_correctness_pct": 77.36,
+      "false_positive_rate_pct": 3.77,
+      "false_negative_rate_pct": 18.87,
+      "throughput_events_per_sec": 273.75
+    },
+    {
+      "run_started_at_utc": "2026-03-25T09:00:00Z",
+      "label": "Mar 25 09:00",
+      "decision_correctness_pct": 81.82,
+      "false_positive_rate_pct": 9.09,
+      "false_negative_rate_pct": 9.09,
+      "throughput_events_per_sec": 192.83
+    },
+    {
+      "run_started_at_utc": "2026-03-25T10:00:00Z",
+      "label": "Mar 25 10:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 20.69,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 138.86
+    },
+    {
+      "run_started_at_utc": "2026-03-25T11:00:00Z",
+      "label": "Mar 25 11:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 9.09,
+      "false_negative_rate_pct": 10.91,
+      "throughput_events_per_sec": 625.5
+    },
+    {
+      "run_started_at_utc": "2026-03-25T12:00:00Z",
+      "label": "Mar 25 12:00",
+      "decision_correctness_pct": 84.91,
+      "false_positive_rate_pct": 3.77,
+      "false_negative_rate_pct": 11.32,
+      "throughput_events_per_sec": 159.83
+    },
+    {
+      "run_started_at_utc": "2026-03-25T13:00:00Z",
+      "label": "Mar 25 13:00",
+      "decision_correctness_pct": 79.41,
+      "false_positive_rate_pct": 17.65,
+      "false_negative_rate_pct": 2.94,
+      "throughput_events_per_sec": 440.33
+    },
+    {
+      "run_started_at_utc": "2026-03-25T14:00:00Z",
+      "label": "Mar 25 14:00",
+      "decision_correctness_pct": 80.56,
+      "false_positive_rate_pct": 11.11,
+      "false_negative_rate_pct": 8.33,
+      "throughput_events_per_sec": 436.33
+    },
+    {
+      "run_started_at_utc": "2026-03-25T15:00:00Z",
+      "label": "Mar 25 15:00",
+      "decision_correctness_pct": 81.97,
+      "false_positive_rate_pct": 18.03,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 174.33
+    },
+    {
+      "run_started_at_utc": "2026-03-25T16:00:00Z",
+      "label": "Mar 25 16:00",
+      "decision_correctness_pct": 85.71,
+      "false_positive_rate_pct": 7.14,
+      "false_negative_rate_pct": 7.14,
+      "throughput_events_per_sec": 168.57
+    },
+    {
+      "run_started_at_utc": "2026-03-25T17:00:00Z",
+      "label": "Mar 25 17:00",
+      "decision_correctness_pct": 85.0,
+      "false_positive_rate_pct": 2.5,
+      "false_negative_rate_pct": 12.5,
+      "throughput_events_per_sec": 425.0
+    },
+    {
+      "run_started_at_utc": "2026-03-25T18:00:00Z",
+      "label": "Mar 25 18:00",
+      "decision_correctness_pct": 80.85,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 19.15,
+      "throughput_events_per_sec": 615.0
+    },
+    {
+      "run_started_at_utc": "2026-03-25T19:00:00Z",
+      "label": "Mar 25 19:00",
+      "decision_correctness_pct": 78.38,
+      "false_positive_rate_pct": 10.81,
+      "false_negative_rate_pct": 10.81,
+      "throughput_events_per_sec": 300.33
+    },
+    {
+      "run_started_at_utc": "2026-03-25T20:00:00Z",
+      "label": "Mar 25 20:00",
+      "decision_correctness_pct": 84.21,
+      "false_positive_rate_pct": 15.79,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 247.6
+    },
+    {
+      "run_started_at_utc": "2026-03-25T21:00:00Z",
+      "label": "Mar 25 21:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 3.45,
+      "false_negative_rate_pct": 17.24,
+      "throughput_events_per_sec": 182.57
+    },
+    {
+      "run_started_at_utc": "2026-03-25T22:00:00Z",
+      "label": "Mar 25 22:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 5.71,
+      "throughput_events_per_sec": 283.25
+    },
+    {
+      "run_started_at_utc": "2026-03-25T23:00:00Z",
+      "label": "Mar 25 23:00",
+      "decision_correctness_pct": 85.71,
+      "false_positive_rate_pct": 10.2,
+      "false_negative_rate_pct": 4.08,
+      "throughput_events_per_sec": 229.4
+    },
+    {
+      "run_started_at_utc": "2026-03-26T00:00:00Z",
+      "label": "Mar 26 00:00",
+      "decision_correctness_pct": 82.93,
+      "false_positive_rate_pct": 7.32,
+      "false_negative_rate_pct": 9.76,
+      "throughput_events_per_sec": 127.86
+    },
+    {
+      "run_started_at_utc": "2026-03-26T01:00:00Z",
+      "label": "Mar 26 01:00",
+      "decision_correctness_pct": 83.33,
+      "false_positive_rate_pct": 6.67,
+      "false_negative_rate_pct": 10.0,
+      "throughput_events_per_sec": 539.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T02:00:00Z",
+      "label": "Mar 26 02:00",
+      "decision_correctness_pct": 82.46,
+      "false_positive_rate_pct": 5.26,
+      "false_negative_rate_pct": 12.28,
+      "throughput_events_per_sec": 460.5
+    },
+    {
+      "run_started_at_utc": "2026-03-26T03:00:00Z",
+      "label": "Mar 26 03:00",
+      "decision_correctness_pct": 78.12,
+      "false_positive_rate_pct": 15.62,
+      "false_negative_rate_pct": 6.25,
+      "throughput_events_per_sec": 208.8
+    },
+    {
+      "run_started_at_utc": "2026-03-26T04:00:00Z",
+      "label": "Mar 26 04:00",
+      "decision_correctness_pct": 81.25,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 18.75,
+      "throughput_events_per_sec": 156.86
+    },
+    {
+      "run_started_at_utc": "2026-03-26T05:00:00Z",
+      "label": "Mar 26 05:00",
+      "decision_correctness_pct": 84.62,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 15.38,
+      "throughput_events_per_sec": 252.6
+    },
+    {
+      "run_started_at_utc": "2026-03-26T06:00:00Z",
+      "label": "Mar 26 06:00",
+      "decision_correctness_pct": 86.49,
+      "false_positive_rate_pct": 2.7,
+      "false_negative_rate_pct": 10.81,
+      "throughput_events_per_sec": 544.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T07:00:00Z",
+      "label": "Mar 26 07:00",
+      "decision_correctness_pct": 82.5,
+      "false_positive_rate_pct": 17.5,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 216.6
+    },
+    {
+      "run_started_at_utc": "2026-03-26T08:00:00Z",
+      "label": "Mar 26 08:00",
+      "decision_correctness_pct": 82.35,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 17.65,
+      "throughput_events_per_sec": 203.67
+    },
+    {
+      "run_started_at_utc": "2026-03-26T09:00:00Z",
+      "label": "Mar 26 09:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 6.67,
+      "false_negative_rate_pct": 13.33,
+      "throughput_events_per_sec": 265.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T10:00:00Z",
+      "label": "Mar 26 10:00",
+      "decision_correctness_pct": 81.08,
+      "false_positive_rate_pct": 18.92,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 567.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T11:00:00Z",
+      "label": "Mar 26 11:00",
+      "decision_correctness_pct": 86.44,
+      "false_positive_rate_pct": 5.08,
+      "false_negative_rate_pct": 8.47,
+      "throughput_events_per_sec": 269.25
+    },
+    {
+      "run_started_at_utc": "2026-03-26T12:00:00Z",
+      "label": "Mar 26 12:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 1.72,
+      "false_negative_rate_pct": 18.97,
+      "throughput_events_per_sec": 190.17
+    },
+    {
+      "run_started_at_utc": "2026-03-26T13:00:00Z",
+      "label": "Mar 26 13:00",
+      "decision_correctness_pct": 82.93,
+      "false_positive_rate_pct": 12.2,
+      "false_negative_rate_pct": 4.88,
+      "throughput_events_per_sec": 211.17
+    },
+    {
+      "run_started_at_utc": "2026-03-26T14:00:00Z",
+      "label": "Mar 26 14:00",
+      "decision_correctness_pct": 84.62,
+      "false_positive_rate_pct": 15.38,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 326.67
+    },
+    {
+      "run_started_at_utc": "2026-03-26T15:00:00Z",
+      "label": "Mar 26 15:00",
+      "decision_correctness_pct": 77.78,
+      "false_positive_rate_pct": 16.67,
+      "false_negative_rate_pct": 5.56,
+      "throughput_events_per_sec": 331.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T16:00:00Z",
+      "label": "Mar 26 16:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 9.09,
+      "false_negative_rate_pct": 10.91,
+      "throughput_events_per_sec": 225.25
+    },
+    {
+      "run_started_at_utc": "2026-03-26T17:00:00Z",
+      "label": "Mar 26 17:00",
+      "decision_correctness_pct": 84.48,
+      "false_positive_rate_pct": 10.34,
+      "false_negative_rate_pct": 5.17,
+      "throughput_events_per_sec": 173.43
+    },
+    {
+      "run_started_at_utc": "2026-03-26T18:00:00Z",
+      "label": "Mar 26 18:00",
+      "decision_correctness_pct": 82.46,
+      "false_positive_rate_pct": 5.26,
+      "false_negative_rate_pct": 12.28,
+      "throughput_events_per_sec": 313.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T19:00:00Z",
+      "label": "Mar 26 19:00",
+      "decision_correctness_pct": 79.31,
+      "false_positive_rate_pct": 8.62,
+      "false_negative_rate_pct": 12.07,
+      "throughput_events_per_sec": 177.5
+    },
+    {
+      "run_started_at_utc": "2026-03-26T20:00:00Z",
+      "label": "Mar 26 20:00",
+      "decision_correctness_pct": 84.21,
+      "false_positive_rate_pct": 1.75,
+      "false_negative_rate_pct": 14.04,
+      "throughput_events_per_sec": 230.5
+    },
+    {
+      "run_started_at_utc": "2026-03-26T21:00:00Z",
+      "label": "Mar 26 21:00",
+      "decision_correctness_pct": 78.38,
+      "false_positive_rate_pct": 21.62,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 127.0
+    },
+    {
+      "run_started_at_utc": "2026-03-26T22:00:00Z",
+      "label": "Mar 26 22:00",
+      "decision_correctness_pct": 81.67,
+      "false_positive_rate_pct": 18.33,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 186.29
+    },
+    {
+      "run_started_at_utc": "2026-03-26T23:00:00Z",
+      "label": "Mar 26 23:00",
+      "decision_correctness_pct": 78.79,
+      "false_positive_rate_pct": 18.18,
+      "false_negative_rate_pct": 3.03,
+      "throughput_events_per_sec": 566.0
+    },
+    {
+      "run_started_at_utc": "2026-03-27T00:00:00Z",
+      "label": "Mar 27 00:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 13.33,
+      "false_negative_rate_pct": 6.67,
+      "throughput_events_per_sec": 175.0
+    },
+    {
+      "run_started_at_utc": "2026-03-27T01:00:00Z",
+      "label": "Mar 27 01:00",
+      "decision_correctness_pct": 81.48,
+      "false_positive_rate_pct": 9.26,
+      "false_negative_rate_pct": 9.26,
+      "throughput_events_per_sec": 274.25
+    },
+    {
+      "run_started_at_utc": "2026-03-27T02:00:00Z",
+      "label": "Mar 27 02:00",
+      "decision_correctness_pct": 80.56,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 19.44,
+      "throughput_events_per_sec": 154.0
+    },
+    {
+      "run_started_at_utc": "2026-03-27T03:00:00Z",
+      "label": "Mar 27 03:00",
+      "decision_correctness_pct": 79.59,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 6.12,
+      "throughput_events_per_sec": 285.0
+    },
+    {
+      "run_started_at_utc": "2026-03-27T04:00:00Z",
+      "label": "Mar 27 04:00",
+      "decision_correctness_pct": 82.14,
+      "false_positive_rate_pct": 10.71,
+      "false_negative_rate_pct": 7.14,
+      "throughput_events_per_sec": 288.33
+    },
+    {
+      "run_started_at_utc": "2026-03-27T05:00:00Z",
+      "label": "Mar 27 05:00",
+      "decision_correctness_pct": 85.48,
+      "false_positive_rate_pct": 14.52,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 276.75
+    },
+    {
+      "run_started_at_utc": "2026-03-27T06:00:00Z",
+      "label": "Mar 27 06:00",
+      "decision_correctness_pct": 78.33,
+      "false_positive_rate_pct": 3.33,
+      "false_negative_rate_pct": 18.33,
+      "throughput_events_per_sec": 310.5
+    },
+    {
+      "run_started_at_utc": "2026-03-27T07:00:00Z",
+      "label": "Mar 27 07:00",
+      "decision_correctness_pct": 86.54,
+      "false_positive_rate_pct": 9.62,
+      "false_negative_rate_pct": 3.85,
+      "throughput_events_per_sec": 198.17
+    },
+    {
+      "run_started_at_utc": "2026-03-27T08:00:00Z",
+      "label": "Mar 27 08:00",
+      "decision_correctness_pct": 79.66,
+      "false_positive_rate_pct": 1.69,
+      "false_negative_rate_pct": 18.64,
+      "throughput_events_per_sec": 207.67
+    },
+    {
+      "run_started_at_utc": "2026-03-27T09:00:00Z",
+      "label": "Mar 27 09:00",
+      "decision_correctness_pct": 85.11,
+      "false_positive_rate_pct": 12.77,
+      "false_negative_rate_pct": 2.13,
+      "throughput_events_per_sec": 182.14
+    },
+    {
+      "run_started_at_utc": "2026-03-27T10:00:00Z",
+      "label": "Mar 27 10:00",
+      "decision_correctness_pct": 80.36,
+      "false_positive_rate_pct": 7.14,
+      "false_negative_rate_pct": 12.5,
+      "throughput_events_per_sec": 199.83
+    },
+    {
+      "run_started_at_utc": "2026-03-27T11:00:00Z",
+      "label": "Mar 27 11:00",
+      "decision_correctness_pct": 84.85,
+      "false_positive_rate_pct": 9.09,
+      "false_negative_rate_pct": 6.06,
+      "throughput_events_per_sec": 393.33
+    },
+    {
+      "run_started_at_utc": "2026-03-27T12:00:00Z",
+      "label": "Mar 27 12:00",
+      "decision_correctness_pct": 78.57,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 7.14,
+      "throughput_events_per_sec": 124.71
+    },
+    {
+      "run_started_at_utc": "2026-03-27T13:00:00Z",
+      "label": "Mar 27 13:00",
+      "decision_correctness_pct": 80.0,
+      "false_positive_rate_pct": 5.0,
+      "false_negative_rate_pct": 15.0,
+      "throughput_events_per_sec": 637.5
+    },
+    {
+      "run_started_at_utc": "2026-03-27T14:00:00Z",
+      "label": "Mar 27 14:00",
+      "decision_correctness_pct": 82.98,
+      "false_positive_rate_pct": 12.77,
+      "false_negative_rate_pct": 4.26,
+      "throughput_events_per_sec": 176.57
+    },
+    {
+      "run_started_at_utc": "2026-03-27T15:00:00Z",
+      "label": "Mar 27 15:00",
+      "decision_correctness_pct": 87.1,
+      "false_positive_rate_pct": 3.23,
+      "false_negative_rate_pct": 9.68,
+      "throughput_events_per_sec": 181.6
+    },
+    {
+      "run_started_at_utc": "2026-03-27T16:00:00Z",
+      "label": "Mar 27 16:00",
+      "decision_correctness_pct": 78.12,
+      "false_positive_rate_pct": 12.5,
+      "false_negative_rate_pct": 9.38,
+      "throughput_events_per_sec": 190.29
+    },
+    {
+      "run_started_at_utc": "2026-03-27T17:00:00Z",
+      "label": "Mar 27 17:00",
+      "decision_correctness_pct": 79.55,
+      "false_positive_rate_pct": 13.64,
+      "false_negative_rate_pct": 6.82,
+      "throughput_events_per_sec": 189.67
+    },
+    {
+      "run_started_at_utc": "2026-03-27T18:00:00Z",
+      "label": "Mar 27 18:00",
+      "decision_correctness_pct": 84.62,
+      "false_positive_rate_pct": 12.82,
+      "false_negative_rate_pct": 2.56,
+      "throughput_events_per_sec": 214.75
+    },
+    {
+      "run_started_at_utc": "2026-03-27T19:00:00Z",
+      "label": "Mar 27 19:00",
+      "decision_correctness_pct": 85.37,
+      "false_positive_rate_pct": 14.63,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 211.83
+    },
+    {
+      "run_started_at_utc": "2026-03-27T20:00:00Z",
+      "label": "Mar 27 20:00",
+      "decision_correctness_pct": 85.71,
+      "false_positive_rate_pct": 14.29,
+      "false_negative_rate_pct": 0.0,
+      "throughput_events_per_sec": 184.43
+    },
+    {
+      "run_started_at_utc": "2026-03-27T21:00:00Z",
+      "label": "Mar 27 21:00",
+      "decision_correctness_pct": 80.43,
+      "false_positive_rate_pct": 15.22,
+      "false_negative_rate_pct": 4.35,
+      "throughput_events_per_sec": 146.14
+    },
+    {
+      "run_started_at_utc": "2026-03-27T22:00:00Z",
+      "label": "Mar 27 22:00",
+      "decision_correctness_pct": 82.35,
+      "false_positive_rate_pct": 15.69,
+      "false_negative_rate_pct": 1.96,
+      "throughput_events_per_sec": 155.71
+    },
+    {
+      "run_started_at_utc": "2026-03-27T23:00:00Z",
+      "label": "Mar 27 23:00",
+      "decision_correctness_pct": 81.82,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 18.18,
+      "throughput_events_per_sec": 293.0
+    }
+  ]
+}

@@ -1,72 +1,111 @@
-## <a name="table">Table of Contents</a>
+# Sentrix Frontend
 
-1. [Introduction](#introduction)
-2. [Tech Stack](#tech-stack)
-3. [Features](#features)
-4. [Quick Start](#quick-start)
+Next.js frontend for Sentrix. It combines:
+- TradingView market/stock widgets for market context.
+- Sentrix API data for sentiment monitor + sentiment analytics.
+- Finnhub-backed stock/news search.
 
-## <a name="introduction">Introduction</a>
+## Setup
 
-AI-powered modern stock market app built with Next.js, TradingView and FinnHub!
+### Local setup
 
-## <a name="tech-stack">Tech Stack</a>
-
-- **[Finnhub](https://finnhub.io/)** is a real-time financial data API that provides stock, forex, and cryptocurrency market data. It offers developers access to fundamental data, economic indicators, and news, making it useful for building trading apps, dashboards, and financial analysis tools.
-
-- **[Next.js](https://nextjs.org/docs)** is a powerful React framework for building full-stack web applications. It provides server-side rendering, static site generation, and API routes, allowing developers to create optimized and scalable apps quickly.
-
-- **[Shadcn](https://ui.shadcn.com/docs)** is an open-source library of fully customizable, accessible React components. It helps teams rapidly build consistent, visually appealing UIs while allowing full control over design and layout.
-
-- **[TailwindCSS](https://tailwindcss.com/)** is a utility-first CSS framework that allows developers to build custom, responsive designs quickly without leaving their HTML. It provides pre-defined classes for layout, typography, colors, and more.
-
-- **[TypeScript](https://www.typescriptlang.org/)** is a statically typed superset of JavaScript that improves code quality, tooling, and error detection. It is ideal for building large-scale applications and enhances maintainability.
-
-## <a name="quick-start">Quick Start</a>
-
-Follow these steps to set up the project locally on your machine.
-
-**Prerequisites**
-
-Make sure you have the following installed on your machine:
-
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/en)
-- [npm](https://www.npmjs.com/) (Node Package Manager)
-
-**CD-ing into the folder**
-
+1. Install prerequisites:
+   - Node.js 20+
+   - npm
+2. Go to frontend folder:
 ```bash
 cd frontend
 ```
-
-**Installation**
-
-Install the project dependencies using npm:
-
+3. Install dependencies:
 ```bash
 npm install
 ```
-
-**Set Up Environment Variables**
-
-Create a new file named `.env` in the root of frontend folder and add the following content:
-
+4. Create local env from example:
+```bash
+cp .env.example .env
+```
+5. Set required values in `.env`:
 ```env
 NODE_ENV='development'
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
-# FINNHUB
-NEXT_PUBLIC_FINNHUB_API_KEY=
-FINNHUB_BASE_URL=https://finnhub.io/api/v1
-
+FINNHUB_API_KEY='<YOUR_FINNHUB_API_KEY>'
+FINNHUB_BASE_URL='https://finnhub.io/api/v1'
+NEXT_PUBLIC_SENTRIX_API_BASE_URL='http://localhost:8000/api/v1'
 ```
-
-Replace the placeholder values with your real credentials. You can get these by signing up at: [**Finnhub**](https://finnhub.io).
-
-**Running the Project**
-
+6. Run:
 ```bash
 npm run dev
 ```
+7. Open `http://localhost:3000`.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+### Railway setup
+
+1. Deploy `frontend/` as the Railway service root.
+2. Set Railway variables using `.env.railway.example` as template:
+```env
+NODE_ENV='production'
+FINNHUB_API_KEY='<YOUR_FINNHUB_API_KEY>'
+FINNHUB_BASE_URL='https://finnhub.io/api/v1'
+NEXT_PUBLIC_SENTRIX_API_BASE_URL='https://sentiment-api-production-c71c.up.railway.app/api/v1'
+```
+3. Use:
+   - Build command: `npm run build`
+   - Start command: `npm run start`
+4. Ensure `NEXT_PUBLIC_SENTRIX_API_BASE_URL` is `https://...` in Railway to avoid browser mixed-content blocks.
+
+## Tech Stack
+
+- Next.js 15 + React 19 + TypeScript
+- Tailwind CSS + shadcn/ui
+- TradingView embedded widgets
+- Recharts (sentiment time-series chart)
+- Finnhub API (stock search + market news)
+
+## What Is Implemented
+
+### Dashboard
+
+- TradingView widgets on home page:
+  - Market Overview
+  - Timeline / Top Stories
+  - S&P500 Heatmap
+- Custom Sentiment Monitor widget:
+  - Pulls tickers from Sentrix API
+  - Fetches latest signal snapshot per watchlist ticker
+  - Polls on fixed 5-minute boundary schedule
+  - Shows score, label (Bullish/Neutral/Bearish), and top keywords
+
+### Stock details
+
+- Per-symbol page embeds TradingView widgets:
+  - Symbol info
+  - Advanced candlestick chart
+  - Baseline chart
+  - Technical analysis
+  - Company profile
+  - Company financials
+
+### Sentiment analytics
+
+- `/analytics` page fetches hourly sentiment series from Sentrix API.
+- Supports 12H / 1D / 2D / 7D ranges.
+- Uses Recharts line chart with:
+  - bullish/neutral/bearish background zones
+  - average sentiment line
+  - post-volume in tooltip
+
+### Search and news
+
+- Server-side Finnhub integration:
+  - ticker search
+  - market/company news aggregation
+- Header preloads popular symbols and supports command-style stock search.
+
+## Sentrix API Usage
+
+Frontend calls these endpoints via `NEXT_PUBLIC_SENTRIX_API_BASE_URL`:
+
+- `GET /tickers?limit=...`
+- `POST /signals/latest`
+- `GET /tickers/{ticker}/sentiment?hours=...`
+
+The frontend is read-only for sentiment data; writing/aggregation is done by backend services.

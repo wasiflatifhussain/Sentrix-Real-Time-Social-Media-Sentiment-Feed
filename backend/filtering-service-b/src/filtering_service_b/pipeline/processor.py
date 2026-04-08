@@ -1,0 +1,483 @@
+from __future__ import annotations
+
+import copy
+import logging
+import time
+from dataclasses import dataclass, field
+from typing import Any, Mapping
+
+from filtering_service_b.manipulation.repetition_scorer import (
+    BurstAmplificationScore,
+    CrossUserRepetitionScore,
+    CrossUserRepetitionScorer,
+    SameAccountRepetitionScore,
+)
+from filtering_service_b.novelty.novelty_scorer import NoveltyScore, NoveltyScorer
+from filtering_service_b.manipulation.simhash import simhash64_unsigned_str
+from filtering_service_b.messaging.schemas import CleanedEvent
+from filtering_service_b.relevance.relevance_scorer import TickerRelevanceScorer
+
+log = logging.getLogger(__name__)
+
+_REASON_PRIORITY = [
+    "EXTREME_LOW_TICKER_RELEVANCE",
+    "UNKNOWN_TICKER_PROFILE",
+    "SAME_ACCOUNT_REPETITION",
+    "CROSS_USER_REPETITION",
+    "DENSE_SIMILARITY_CLUSTER",
+    "BURST_AMPLIFIED_REPETITION",
+    "LOW_TICKER_RELEVANCE",
+    "LOW_NOVELTY",
+]
+
+
+@dataclass(frozen=True)
+class FilterDecision:
+    decision: str
+    credibility_score: float
+    decision_reasons: list[str]
+    signals: dict[str, object] = field(default_factory=dict)
+
+
+class FilterBSemanticProcessor:
+    """
+    Semantic filtering processor:
+    - Reads Filter A cleaned envelope
+    - Produces Filter B filtered/rejected envelope
+    - Applies relevance and Stage 2 manipulation penalties
+    """
+
+    def __init__(
+        self,
+        relevance_scorer: TickerRelevanceScorer,
+        cross_user_scorer: CrossUserRepetitionScorer | None = None,
+        novelty_scorer: NoveltyScorer | None = None,
+        final_keep_threshold: float = 0.0,
+    ) -> None:
+        self._relevance_scorer = relevance_scorer
+        self._cross_user_scorer = cross_user_scorer
+        self._novelty_scorer = novelty_scorer
+        self._final_keep_threshold = final_keep_threshold
+
+    def process(
+        self, event: CleanedEvent, state_context: Mapping[str, Any] | None = None
+    ) -> FilterDecision:
+        _ = state_context
+        event_text = _build_event_text(event)
+        relevance = self._relevance_scorer.score(
+            event_text=event_text, ticker=event.ticker
+        )
+        stage2_signals = _build_stage2_foundation_signals(event)
+        repetition = _score_cross_user_repetition(
+            cross_user_scorer=self._cross_user_scorer,
+            event=event,
+            stage2_signals=stage2_signals,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
+        same_account = _score_same_account_repetition(
+            cross_user_scorer=self._cross_user_scorer,
+            stage2_signals=stage2_signals,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
+        burst = _score_burst_amplifier(
+            cross_user_scorer=self._cross_user_scorer,
+            state_context=state_context,
+            repetition=repetition,
+            same_account=same_account,
+            relevance_decision=relevance.decision,
+        )
+        novelty = _score_novelty(
+            novelty_scorer=self._novelty_scorer,
+            event_text=event_text,
+            state_context=state_context,
+            relevance_decision=relevance.decision,
+        )
+        raw_score = _compute_raw_score(
+            relevance_delta=relevance.score_delta,
+            repetition_delta=repetition.score_delta,
+            same_account_delta=same_account.score_delta,
+            burst_delta=burst.score_delta,
+            novelty_delta=novelty.score_delta,
+        )
+        score = _clamp_score(raw_score)
+
+        merged_signals = _build_stage2_default_signals()
+        merged_signals.update(relevance.signals)
+        merged_signals.update(stage2_signals)
+        merged_signals.update(repetition.signals)
+        merged_signals.update(same_account.signals)
+        merged_signals.update(burst.signals)
+        merged_signals.update(novelty.signals)
+
+        reasons = _top_reasons(
+            relevance_reasons=relevance.reason_codes,
+            repetition_reasons=repetition.reason_codes,
+            same_account_reasons=same_account.reason_codes,
+            burst_reasons=burst.reason_codes,
+            novelty_reasons=novelty.reason_codes,
+            limit=2,
+        )
+
+        decision_value, decision_mode = self._resolve_final_decision(
+            relevance_decision=relevance.decision,
+            same_account_force_reject=same_account.force_reject,
+            score=score,
+        )
+        if decision_value == "REJECT":
+            score = 0.0
+
+        merged_signals.update(
+            {
+                "finalThresholdUsed": self._final_keep_threshold,
+                "finalScoreBeforeDecision": _clamp_score(raw_score),
+                "finalDecisionMode": decision_mode,
+            }
+        )
+
+        return FilterDecision(
+            decision=decision_value,
+            credibility_score=score,
+            decision_reasons=reasons,
+            signals=merged_signals,
+        )
+
+    def _resolve_final_decision(
+        self,
+        relevance_decision: str,
+        same_account_force_reject: bool,
+        score: float,
+    ) -> tuple[str, str]:
+        if same_account_force_reject:
+            return "REJECT", "override_same_account_extreme"
+        if relevance_decision == "REJECT":
+            return "REJECT", "override_relevance_reject"
+        if score >= self._final_keep_threshold:
+            return "KEEP", "threshold_keep"
+        return "REJECT", "threshold_reject"
+
+    @staticmethod
+    def build_output_envelope(
+        original_payload: dict,
+        decision: FilterDecision,
+        filter_reason: str | None = None,
+        state_signals: dict | None = None,
+    ) -> dict:
+        now_utc = int(time.time())
+        out = copy.deepcopy(original_payload)
+
+        reason = filter_reason
+        if reason is None and decision.decision_reasons:
+            reason = decision.decision_reasons[0]
+
+        signals = {
+            "credibilityScore": float(decision.credibility_score),
+            "stage": "phase1_ticker_relevance",
+        }
+        signals.update(decision.signals)
+        if state_signals:
+            signals.update(state_signals)
+
+        out["filterMeta"] = {
+            "filterStage": "semantic_gate_B",
+            "decision": decision.decision,
+            "filterReason": reason,
+            "decisionReasons": decision.decision_reasons,
+            "credibilityScore": float(decision.credibility_score),
+            "processedAtUtc": now_utc,
+            "tags": None,
+            "signals": signals,
+        }
+
+        return out
+
+
+class FilterBPhase1Processor(FilterBSemanticProcessor):
+    """
+    Backward-compatible alias for the historical processor name.
+    Keep this to avoid breaking imports while code migrates to
+    FilterBSemanticProcessor.
+    """
+
+    pass
+
+
+def _build_event_text(event: CleanedEvent) -> str:
+    text = event.text_normalized.strip()
+    if event.title and event.title.strip():
+        title = event.title.strip()
+        if text.lower().startswith(title.lower()):
+            return text
+        return f"{title} {text}"
+    return text
+
+
+def _clamp_score(score: float) -> float:
+    if score < 0.0:
+        return 0.0
+    if score > 1.0:
+        return 1.0
+    return float(score)
+
+
+def _compute_raw_score(
+    relevance_delta: float,
+    repetition_delta: float,
+    same_account_delta: float,
+    burst_delta: float,
+    novelty_delta: float,
+) -> float:
+    return (
+        1.0
+        + relevance_delta
+        + repetition_delta
+        + same_account_delta
+        + burst_delta
+        + novelty_delta
+    )
+
+
+def _build_stage2_foundation_signals(event: CleanedEvent) -> dict[str, object]:
+    try:
+        return {
+            "stage2SimHashReady": True,
+            "stage2SimHash": simhash64_unsigned_str(event.text_normalized),
+        }
+    except Exception:
+        log.exception("Failed generating stage2 SimHash eventId=%s", event.event_id)
+        return {"stage2SimHashReady": False}
+
+
+def _build_stage2_default_signals() -> dict[str, object]:
+    return {
+        "stage2SimHashReady": False,
+        "stage2SimHash": None,
+        "stage2CrossUserEvaluated": False,
+        "stage2CrossUserEnabled": False,
+        "stage2CrossUserTriggered": False,
+        "stage2CrossUserMatchCount": 0,
+        "stage2CrossUserUniqueAuthorCount": 0,
+        "stage2CrossUserMinHamming": None,
+        "stage2CrossUserPenaltyApplied": 0.0,
+        "stage2CrossUserReason": None,
+        "stage2ClusterEvaluated": False,
+        "stage2ClusterEnabled": False,
+        "stage2ClusterTriggered": False,
+        "stage2ClusterMatchCount": 0,
+        "stage2ClusterUniqueAuthorCount": 0,
+        "stage2ClusterTimeSpanSeconds": None,
+        "stage2ClusterAvgHamming": None,
+        "stage2ClusterPenaltyApplied": 0.0,
+        "stage2ClusterReason": None,
+        "stage2SameAccountEvaluated": False,
+        "stage2SameAccountEnabled": False,
+        "stage2SameAccountTriggered": False,
+        "stage2SameAccountMatchCount": 0,
+        "stage2SameAccountMinHamming": None,
+        "stage2SameAccountAvgHamming": None,
+        "stage2SameAccountTimeSpanSeconds": None,
+        "stage2SameAccountPenaltyApplied": 0.0,
+        "stage2SameAccountForceReject": False,
+        "stage2SameAccountReason": None,
+        "stage2BurstEvaluated": False,
+        "stage2BurstEnabled": False,
+        "stage2BurstRatio": 0.0,
+        "stage2BurstAmplified": False,
+        "stage2BurstThreshold": None,
+        "stage2BurstSlope": None,
+        "stage2BurstMultiplier": 1.0,
+        "stage2BurstMaxMultiplier": None,
+        "stage2BurstExtraPenaltyApplied": 0.0,
+        "stage2BurstReason": None,
+        "stage3NoveltyEvaluated": False,
+        "stage3NoveltyEnabled": False,
+        "stage3NoveltyReferenceCount": 0,
+        "stage3NoveltyMaxSimilarity": None,
+        "stage3NoveltyBand": "not_evaluated",
+        "stage3NoveltyPenaltyApplied": 0.0,
+        "stage3NoveltyBoostApplied": 0.0,
+        "stage3NoveltyReason": None,
+    }
+
+
+def _top_reasons(
+    relevance_reasons: list[str],
+    repetition_reasons: list[str],
+    same_account_reasons: list[str],
+    burst_reasons: list[str],
+    novelty_reasons: list[str],
+    limit: int,
+) -> list[str]:
+    all_candidates: list[str] = []
+    for reason in (
+        list(relevance_reasons)
+        + list(same_account_reasons)
+        + list(repetition_reasons)
+        + list(burst_reasons)
+        + list(novelty_reasons)
+    ):
+        if reason and reason not in all_candidates:
+            all_candidates.append(reason)
+
+    if len(all_candidates) <= limit:
+        return all_candidates
+
+    prioritized: list[str] = []
+    for preferred in _REASON_PRIORITY:
+        if preferred in all_candidates and preferred not in prioritized:
+            prioritized.append(preferred)
+    for reason in all_candidates:
+        if reason not in prioritized:
+            prioritized.append(reason)
+
+    return prioritized[:limit]
+
+
+def _score_cross_user_repetition(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    event: CleanedEvent,
+    stage2_signals: dict[str, object],
+    state_context: Mapping[str, Any] | None,
+    relevance_decision: str,
+) -> CrossUserRepetitionScore:
+    if cross_user_scorer is None:
+        return CrossUserRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2CrossUserEvaluated": False, "stage2CrossUserEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return CrossUserRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2CrossUserEvaluated": False,
+                "stage2CrossUserEnabled": True,
+                "stage2CrossUserReason": "skipped_relevance_reject",
+            },
+        )
+
+    current_simhash = _safe_int(stage2_signals.get("stage2SimHash"))
+    ticker_similarity_history = (state_context or {}).get("tickerSimilarity", [])
+    if not isinstance(ticker_similarity_history, list):
+        ticker_similarity_history = []
+
+    return cross_user_scorer.score(
+        current_simhash=current_simhash,
+        current_author=event.author,
+        ticker_similarity_history=ticker_similarity_history,
+    )
+
+
+def _score_same_account_repetition(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    stage2_signals: dict[str, object],
+    state_context: Mapping[str, Any] | None,
+    relevance_decision: str,
+) -> SameAccountRepetitionScore:
+    if cross_user_scorer is None:
+        return SameAccountRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2SameAccountEvaluated": False, "stage2SameAccountEnabled": False},
+            force_reject=False,
+        )
+
+    if relevance_decision != "KEEP":
+        return SameAccountRepetitionScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2SameAccountEvaluated": False,
+                "stage2SameAccountEnabled": True,
+                "stage2SameAccountReason": "skipped_relevance_reject",
+            },
+            force_reject=False,
+        )
+
+    current_simhash = _safe_int(stage2_signals.get("stage2SimHash"))
+    author_ticker_history = (state_context or {}).get("authorTickerHistory", [])
+    if not isinstance(author_ticker_history, list):
+        author_ticker_history = []
+
+    return cross_user_scorer.score_same_account(
+        current_simhash=current_simhash,
+        author_ticker_history=author_ticker_history,
+    )
+
+
+def _score_burst_amplifier(
+    cross_user_scorer: CrossUserRepetitionScorer | None,
+    state_context: Mapping[str, Any] | None,
+    repetition: CrossUserRepetitionScore,
+    same_account: SameAccountRepetitionScore,
+    relevance_decision: str,
+) -> BurstAmplificationScore:
+    if cross_user_scorer is None:
+        return BurstAmplificationScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage2BurstEvaluated": False, "stage2BurstEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return BurstAmplificationScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage2BurstEvaluated": False,
+                "stage2BurstEnabled": True,
+                "stage2BurstReason": "skipped_relevance_reject",
+            },
+        )
+
+    burst_ratio = ((state_context or {}).get("burst") or {}).get("burstRatio")
+    return cross_user_scorer.score_burst_amplifier(
+        burst_ratio=burst_ratio,
+        repetition_score=repetition,
+        same_account_score=same_account,
+    )
+
+
+def _score_novelty(
+    novelty_scorer: NoveltyScorer | None,
+    event_text: str,
+    state_context: Mapping[str, Any] | None,
+    relevance_decision: str,
+) -> NoveltyScore:
+    if novelty_scorer is None:
+        return NoveltyScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={"stage3NoveltyEvaluated": False, "stage3NoveltyEnabled": False},
+        )
+
+    if relevance_decision != "KEEP":
+        return NoveltyScore(
+            score_delta=0.0,
+            reason_codes=[],
+            signals={
+                "stage3NoveltyEvaluated": False,
+                "stage3NoveltyEnabled": True,
+                "stage3NoveltyReason": "skipped_relevance_reject",
+            },
+        )
+
+    accepted_novelty = (state_context or {}).get("acceptedNovelty", [])
+    if not isinstance(accepted_novelty, list):
+        accepted_novelty = []
+    return novelty_scorer.score(
+        event_text=event_text,
+        accepted_references=accepted_novelty,
+    )
+
+
+def _safe_int(value: object) -> int | None:
+    try:
+        if value is None:
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None

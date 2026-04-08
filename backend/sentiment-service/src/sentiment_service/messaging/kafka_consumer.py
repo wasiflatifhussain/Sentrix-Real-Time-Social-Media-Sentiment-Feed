@@ -4,7 +4,7 @@ from typing import Callable
 
 from confluent_kafka import Consumer, KafkaException, Message
 
-from sentiment_service.config.settings import KafkaSettings
+from sentiment_service.config.settings import KafkaSettings, build_kafka_client_config
 
 log = logging.getLogger(__name__)
 
@@ -12,14 +12,11 @@ log = logging.getLogger(__name__)
 class KafkaConsumerRunner:
     def __init__(self, settings: KafkaSettings):
         self._settings = settings
-        self._consumer = Consumer(
-            {
-                "bootstrap.servers": settings.bootstrap_servers,
-                "group.id": settings.group_id,
-                "auto.offset.reset": settings.auto_offset_reset,
-                "enable.auto.commit": settings.enable_auto_commit,
-            }
-        )
+        config = build_kafka_client_config(settings)
+        config["group.id"] = settings.group_id
+        config["auto.offset.reset"] = settings.auto_offset_reset
+        config["enable.auto.commit"] = settings.enable_auto_commit
+        self._consumer = Consumer(config)
 
     def start(self, on_message: Callable[[Message], None]) -> None:
         topic = self._settings.input_topic

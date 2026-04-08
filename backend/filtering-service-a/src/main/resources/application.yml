@@ -1,6 +1,12 @@
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      # Local default is PLAINTEXT
+      # For Confluent Cloud / managed Kafka, set SASL_SSL + credentials env vars
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
     producer:
       acks: all
       retries: 10
@@ -21,50 +27,57 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
 
 app:
   kafka:
     topic:
-      raw: sentrix.ingestor.events
-      cleaned: sentrix.filter-service-a.cleaned
-      dropped: sentrix.filter-service-a.dropped
+      raw: ${APP_KAFKA_TOPIC_RAW:sentrix.ingestor.events}
+      cleaned: ${APP_KAFKA_TOPIC_CLEANED:sentrix.filter-service-a.cleaned}
+      dropped: ${APP_KAFKA_TOPIC_DROPPED:sentrix.filter-service-a.dropped}
     consumer:
-      group-id: filter-service-a
+      group-id: ${APP_KAFKA_CONSUMER_GROUP_ID:filter-service-a}
   text:
-    max-len: 8000
+    max-len: ${APP_TEXT_MAX_LEN:8000}
   validation:
-    min-text-len: 10
-    max-event-age-days: 7
-    drop-on-truncate: false  # if true, events exceeding max-text-len are dropped; if false, they are truncated
+    min-text-len: ${APP_VALIDATION_MIN_TEXT_LEN:10}
+    max-event-age-days: ${APP_VALIDATION_MAX_EVENT_AGE_DAYS:7}
+    # if true, events exceeding max-text-len are dropped; if false, they are truncated
+    drop-on-truncate: ${APP_VALIDATION_DROP_ON_TRUNCATE:false}
   dedup:
-    enabled: true
-    ttl-seconds: 604800  # 7 days
-    bucket-seconds: 3600  # 1 hour
+    enabled: ${APP_DEDUP_ENABLED:true}
+    ttl-seconds: ${APP_DEDUP_TTL_SECONDS:604800}  # 7 days
+    bucket-seconds: ${APP_DEDUP_BUCKET_SECONDS:3600}  # 1 hour
   event-feature-checks:
-    enabled: true
+    enabled: ${APP_EVENT_FEATURE_CHECKS_ENABLED:true}
     url-spam:
-      hard-drop-count: 6
-      short-text-drop-count: 3
-      short-text-max-words: 8
+      hard-drop-count: ${APP_EVENT_FEATURE_CHECKS_URL_SPAM_HARD_DROP_COUNT:6}
+      short-text-drop-count: ${APP_EVENT_FEATURE_CHECKS_URL_SPAM_SHORT_TEXT_DROP_COUNT:3}
+      short-text-max-words: ${APP_EVENT_FEATURE_CHECKS_URL_SPAM_SHORT_TEXT_MAX_WORDS:8}
     emoji:
-      hard-drop-count: 20
-      short-text-drop-count: 10
-      short-text-max-words: 6
+      hard-drop-count: ${APP_EVENT_FEATURE_CHECKS_EMOJI_HARD_DROP_COUNT:20}
+      short-text-drop-count: ${APP_EVENT_FEATURE_CHECKS_EMOJI_SHORT_TEXT_DROP_COUNT:10}
+      short-text-max-words: ${APP_EVENT_FEATURE_CHECKS_EMOJI_SHORT_TEXT_MAX_WORDS:6}
     repeat-char:
-      hard-run-len: 12
+      hard-run-len: ${APP_EVENT_FEATURE_CHECKS_REPEAT_CHAR_HARD_RUN_LEN:12}
     cashtag:
-      hard-drop-count: 12
-      short-text-drop-count: 6
-      short-text-max-words: 12
+      hard-drop-count: ${APP_EVENT_FEATURE_CHECKS_CASHTAG_HARD_DROP_COUNT:12}
+      short-text-drop-count: ${APP_EVENT_FEATURE_CHECKS_CASHTAG_SHORT_TEXT_DROP_COUNT:6}
+      short-text-max-words: ${APP_EVENT_FEATURE_CHECKS_CASHTAG_SHORT_TEXT_MAX_WORDS:12}
   neardup:
-    enabled: true
-    min-words: 30  # simHash unreliable on short texts
-    max-hamming: 5  # maximum number of differing bits between two 64-bit fingerprints (3-5 indicate high similarity) [used to compare 2 posts]
-    min-matches: 3   # number of near-dup events in recent history to trigger a tag (compare each post against redis set of recent posts) [ttl limits how big this set can grow]
-    bucket-seconds: 900  # 15 min (trade-off between accuracy and memory usage)
-    ttl-seconds: 3600  # 60 min (recent history window for counting matches)
-    check-prev-bucket: true   # helps at bucket boundaries
+    enabled: ${APP_NEARDUP_ENABLED:true}
+    min-words: ${APP_NEARDUP_MIN_WORDS:30}  # simHash unreliable on short texts
+    # maximum number of differing bits between two 64-bit fingerprints (3-5 indicate high similarity)
+    max-hamming: ${APP_NEARDUP_MAX_HAMMING:5}
+    # number of near-dup events in recent history to trigger a tag
+    min-matches: ${APP_NEARDUP_MIN_MATCHES:3}
+    bucket-seconds: ${APP_NEARDUP_BUCKET_SECONDS:900}  # 15 min
+    ttl-seconds: ${APP_NEARDUP_TTL_SECONDS:3600}  # 60 min
+    check-prev-bucket: ${APP_NEARDUP_CHECK_PREV_BUCKET:true}  # helps at bucket boundaries
 
 
 server:
-  port: 8081
+  port: ${PORT:8081}

@@ -13,11 +13,19 @@ import { Loader2, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type Props = {
+  renderAs?: "button" | "text";
+  label?: string;
+  initialStocks: StockWithWatchlistStatus[];
+  compact?: boolean;
+};
+
 export default function SearchCommand({
   renderAs = "button",
   label = "Add stock",
   initialStocks,
-}: SearchCommandProps) {
+  compact = false,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,10 +77,14 @@ export default function SearchCommand({
       {renderAs === "text" ? (
         <div
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-lg cursor-pointer hover:border-gray-400 transition-colors w-full max-w-md"
+          className={`flex items-center bg-gray-800/50 border border-gray-600 rounded-lg cursor-pointer hover:border-gray-400 transition-colors w-full ${
+            compact ? "gap-1.5 px-2.5 py-2" : "gap-2 px-4 py-2 max-w-md"
+          }`}
         >
           <Search className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-400 text-sm">Search a stock...</span>
+          <span className={`text-gray-400 ${compact ? "text-xs truncate" : "text-sm"}`}>
+            Search...
+          </span>
         </div>
       ) : (
         <Button onClick={() => setOpen(true)} className="search-btn">
@@ -108,7 +120,7 @@ export default function SearchCommand({
                 {isSearchMode ? "Search results" : "Popular stocks"}
                 {` `}({displayStocks?.length || 0})
               </div>
-              {displayStocks?.map((stock, i) => (
+              {displayStocks?.map((stock) => (
                 <li key={stock.symbol} className="search-item">
                   <Link
                     href={`/stocks/${stock.symbol}`}

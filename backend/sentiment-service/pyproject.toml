@@ -52,3 +52,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 fixable = ["ALL"]
+
+[tool.poetry]
+packages = [{ include = "sentiment_service", from = "src" }]

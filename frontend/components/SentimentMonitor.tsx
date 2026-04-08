@@ -55,12 +55,12 @@ const SentimentMonitor = ({
         style={{ height }}
       >
         <div className="h-full w-full flex flex-col bg-gray-800/0">
-          <div className="px-4 py-3 border-b border-gray-600 text-xs uppercase tracking-wider text-gray-400 grid grid-cols-13 gap-3">
-            <div className="col-span-5">Stock</div>
+          <div className="hidden lg:grid px-4 py-3 border-b border-gray-600 text-xs uppercase tracking-wider text-gray-400 grid-cols-12 gap-2">
+            <div className="col-span-3">Stock</div>
             <div className="col-span-2">Sentiment</div>
             <div className="col-span-2">Score</div>
-            <div className="col-span-3">Keywords</div>
-            <div className="col-span-1 text-right">Actions</div>
+            <div className="col-span-4 text-left">Keywords</div>
+            <div className="col-span-1 text-right lg:pr-2">Actions</div>
           </div>
 
           <div className="flex-1 overflow-y-auto scrollbar-hide-default">
@@ -72,27 +72,30 @@ const SentimentMonitor = ({
               data.map((row) => (
                 <div
                   key={row.symbol}
-                  className="px-4 py-3 border-b border-white/5 grid grid-cols-13 gap-3 items-center hover:bg-white/5 transition"
+                  className="relative px-4 py-3 border-b border-white/5 hover:bg-white/5 transition flex flex-col gap-2 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center"
                 >
-                  <div className="col-span-5 flex items-center gap-3 min-w-0">
-                    <div className="text-gray-200 font-semibold">
+                  <div className="lg:col-span-3 flex items-center gap-3 min-w-0 pr-16 lg:pr-0">
+                    <div className="text-gray-200 font-semibold shrink-0">
                       {row.symbol}
                     </div>
-                    <div className="text-gray-400 truncate">
+                    <div className="text-gray-400 truncate min-w-0">
                       {row.name ?? row.symbol}
                     </div>
                   </div>
 
-                  <div
-                    className={cn(
-                      "col-span-2 font-medium",
-                      sentimentStyles(row.sentiment)
-                    )}
-                  >
-                    {row.sentiment}
+                  <div className="flex items-center gap-2 lg:block lg:col-span-2">
+                    <span className="text-[11px] uppercase tracking-wide text-gray-500 lg:hidden">
+                      Sentiment
+                    </span>
+                    <div className={cn("font-medium", sentimentStyles(row.sentiment))}>
+                      {row.sentiment}
+                    </div>
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="flex items-center gap-2 lg:block lg:col-span-2">
+                    <span className="text-[11px] uppercase tracking-wide text-gray-500 lg:hidden">
+                      Score
+                    </span>
                     <span
                       className={cn(
                         "inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold tabular-nums",
@@ -111,28 +114,33 @@ const SentimentMonitor = ({
                     </span>
                   </div>
 
-                  <div className="col-span-3 flex flex-wrap gap-2">
-                    {(row.keywords?.length ?? 0) === 0 ? (
-                      <span className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-400">
-                        —
-                      </span>
-                    ) : (
-                      row.keywords!.slice(0, 3).map((k) => (
-                        <span
-                          key={k}
-                          className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300"
-                        >
-                          {k}
+                  <div className="lg:col-span-4 lg:h-full lg:flex lg:items-center">
+                    <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-2 lg:hidden">
+                      Keywords
+                    </div>
+                    <div className="flex flex-wrap gap-2 lg:w-full lg:flex-col lg:justify-center lg:items-start lg:gap-1">
+                      {(row.keywords?.length ?? 0) === 0 ? (
+                        <span className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-400">
+                          —
                         </span>
-                      ))
-                    )}
+                      ) : (
+                        row.keywords!.slice(0, 3).map((k) => (
+                          <span
+                            key={k}
+                            className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 break-all"
+                          >
+                            {k}
+                          </span>
+                        ))
+                      )}
+                    </div>
                   </div>
 
-                  <div className="col-span-1 flex justify-end">
+                  <div className="absolute top-3 right-4 lg:static lg:col-span-1 lg:pr-2 flex justify-end">
                     {onRemove ? (
                       <button
                         onClick={() => onRemove(row.symbol)}
-                      className="text-xs px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+                        className="text-xs px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
                         title="Remove from watchlist"
                       >
                         Remove
