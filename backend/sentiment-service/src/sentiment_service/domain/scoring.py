@@ -71,8 +71,8 @@ class StubSentimentScorer:
     @staticmethod
     def calculate_data(event: CleanedEvent) -> None:
         p_pos: float = float(event.response.get("positive", 0.0))
-        p_neg: float = float(event.response.get("neutral", 0.0))
-        p_neu: float = float(event.response.get("negative", 0.0))
+        p_neg: float = float(event.response.get("negative", 0.0))
+        p_neu: float = float(event.response.get("neutral", 0.0))
 
         event.absolute_score = StubSentimentScorer.calculate_score(p_pos, p_neg)
         event.conf = StubSentimentScorer.calculate_conf(p_pos, p_neg, p_neu)

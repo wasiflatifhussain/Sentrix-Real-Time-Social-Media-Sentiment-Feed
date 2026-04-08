@@ -10,9 +10,9 @@ from typing import Any
 from dotenv import load_dotenv
 
 from sentiment_service.config.settings import load_kafka_settings, load_mongo_settings
-from sentiment_service.domain.scoring import StubSentimentScorer
 from sentiment_service.messaging.kafka_consumer import KafkaConsumerRunner
 from sentiment_service.messaging.schemas import parse_cleaned_event
+from sentiment_service.keywords import build_keyword_extractor_from_env
 from sentiment_service.objects.objects import HourlyLevelScore, TickerLevelScore
 from sentiment_service.observability.logging import configure_logging
 from sentiment_service.storage.hourly_repo import HourlyRepo
@@ -41,7 +41,9 @@ TICKER_LEVEL_WINDOW_HOURS = 168
 
 '''
 class SentimentServiceApp:
-    DEFAULT_VOLATILITY_PATH = "sentiment_service/config/volatility.json"
+    DEFAULT_VOLATILITY_PATH = (
+        Path(__file__).resolve().parent.parent / "config" / "volatility.json"
+    )
 
     def __init__(self) -> None:
         load_dotenv()
@@ -70,7 +72,7 @@ class SentimentServiceApp:
         )
         self.signal_repo.ensure_indexes()
 
-        self.scorer = StubSentimentScorer(max_keywords=10)
+        self.keyword_extractor = build_keyword_extractor_from_env()
 
         self.normalized_volatility: dict[str, float] = self._load_normalized_volatility()
 
@@ -422,11 +424,10 @@ class SentimentServiceApp:
 
         domain_event.created_at_utc = event_ts_utc
         bucket = bucket_epoch_seconds_to_hour(event_ts_utc)
-        scored = self.scorer.score(domain_event)  # Calculate the ai result into avgScore, absolute_score
-
         now_utc = int(time.time())
         metrics = self._extract_event_metrics(payload) if isinstance(payload, dict) else {}
-        event_score = float(scored.score)
+        event_score = float(domain_event.absolute_score)
+        keywords = self.keyword_extractor.extract(domain_event.text_normalized or "")
         hourly_level = self._get_or_create_hourly_level(
             ticker=domain_event.ticker,
             hour_start_utc=bucket.hour_start_utc,
@@ -447,7 +448,7 @@ class SentimentServiceApp:
         self._persist_hourly_aggregate(
             ticker=domain_event.ticker,
             source=domain_event.source,
-            keywords=list(scored.keywords),
+            keywords=keywords,
             hour_start_utc=bucket.hour_start_utc,
             hour_end_utc=bucket.hour_end_utc,
             updated_at_utc=now_utc,

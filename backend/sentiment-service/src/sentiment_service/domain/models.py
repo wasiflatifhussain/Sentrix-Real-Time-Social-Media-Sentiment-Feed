@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, List, Optional
 
 
 @dataclass
@@ -16,6 +16,10 @@ class CleanedEvent:
     entity_type: str
     created_at_utc: int
     text_normalized: str
+    response: Any = None
+    absolute_score: float = 0.0
+    conf: float = 0.0
+    label: str = "neutral"
 
 
 @dataclass(frozen=True)

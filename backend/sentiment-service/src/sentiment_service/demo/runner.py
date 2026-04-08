@@ -3,14 +3,13 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import os
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 from dotenv import load_dotenv
 
-from sentiment_service.llm_connector import FinbertClient
+from sentiment_service.llm_connector import EnsembleSentimentClient
 from sentiment_service.messaging.schemas import CleanedEvent
 from sentiment_service.objects.objects import Event, HourlyLevelScore, TickerLevelScore
 
@@ -20,8 +19,12 @@ logger = logging.getLogger(__name__)
 class Runner:
     def __init__(self):
         load_dotenv()
-        api_key = os.getenv("HUGGING_FACE_API")
-        self.fc = FinbertClient(api_key=api_key)
+        finbert_api_key = os.getenv("HUGGING_FACE_API")
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        self.fc = EnsembleSentimentClient(
+            finbert_api_key=finbert_api_key,
+            openrouter_api_key=openrouter_api_key,
+        )
 
         self.events: list[Event] = []
         self.hourly: dict[str, HourlyLevelScore] = {}
@@ -186,6 +189,7 @@ def run(
     history_path: Path,
     out_dir: Path,
     finbert_api_key: str,
+    openrouter_api_key: str,
     *,
     event_profile: str = "moderate",
     hour_profile: str = "moderate",
@@ -202,7 +206,10 @@ def run(
     )
     from sentiment_service.utils.time import bucket_epoch_seconds_to_hour
 
-    finbert = FinbertClient(api_key=finbert_api_key)
+    ensemble = EnsembleSentimentClient(
+        finbert_api_key=finbert_api_key,
+        openrouter_api_key=openrouter_api_key,
+    )
 
     # 1) Read events (JSONL) and filter KEEP
     parsed = [_parse_event_record(r) for r in read_jsonl(events_path)]
@@ -217,14 +224,14 @@ def run(
             rec["title"] + "\n\n" + rec["text"]
         ).strip()
         meta = _event_meta_from_record(rec["raw"])
-        finbert_out = finbert.score_with_confidence(text)
+        ensemble_out = ensemble.score_with_confidence(text)
 
         outputs = [
             EventModelOutput(
-                model_id="finbert",
-                label=finbert_out.get("label", "neutral"),
-                score=float(finbert_out.get("score", 0.0)),
-                confidence=float(finbert_out.get("confidence", 0.0)),
+                model_id=str(ensemble_out.get("model_id", "ensemble")),
+                label=str(ensemble_out.get("label", "neutral")),
+                score=float(ensemble_out.get("score", 0.0)),
+                confidence=float(ensemble_out.get("confidence", 0.0)),
             )
         ]
         fused = fuse_model_outputs(outputs, meta=meta, profile=event_profile)
@@ -327,12 +334,18 @@ def get_finbert_api_key() -> str:
     return os.getenv("HUGGING_FACE_API", "")
 
 
+def get_openrouter_api_key() -> str:
+    load_dotenv()
+    return os.getenv("OPENROUTER_API_KEY", "")
+
+
 def main() -> None:
     events_path = Path("./ticker-events-data.json")
     history_path = Path("./ticker_sentiment_hourly.json")
     out_dir = Path("./out")
     finbert_api_key = get_finbert_api_key()
-    run(events_path, history_path, out_dir, finbert_api_key)
+    openrouter_api_key = get_openrouter_api_key()
+    run(events_path, history_path, out_dir, finbert_api_key, openrouter_api_key)
 
 
 if __name__ == "__main__":

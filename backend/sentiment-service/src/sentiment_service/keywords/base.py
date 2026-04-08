@@ -1,0 +1,16 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Protocol
+
+
+@dataclass(frozen=True)
+class KeywordCandidate:
+    phrase: str
+    score: float
+
+
+class KeywordExtractor(Protocol):
+    def extract_candidates(self, text: str) -> list[KeywordCandidate]: ...
+
+    def extract(self, text: str) -> list[str]: ...
