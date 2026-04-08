@@ -17,7 +17,13 @@ class LexicalKeywordExtractor:
     def __init__(self, max_keywords: int = 10) -> None:
         self.max_keywords = max_keywords
 
-    def extract_candidates(self, text: str) -> list[KeywordCandidate]:
+    def extract_candidates(
+        self,
+        text: str,
+        *,
+        ticker: str | None = None,
+        source: str | None = None,
+    ) -> list[KeywordCandidate]:
         prepared = preprocess_keyword_text(text)
         tokens = [token.lower() for token in _WORD_RE.findall(prepared)]
         counts = Counter(token for token in tokens if is_keyword_phrase_valid(token))
@@ -26,8 +32,14 @@ class LexicalKeywordExtractor:
             for token, count in counts.items()
         ]
 
-    def extract(self, text: str) -> list[str]:
+    def extract(
+        self,
+        text: str,
+        *,
+        ticker: str | None = None,
+        source: str | None = None,
+    ) -> list[str]:
         return finalize_keyword_candidates(
-            self.extract_candidates(text),
+            self.extract_candidates(text, ticker=ticker, source=source),
             max_keywords=self.max_keywords,
         )

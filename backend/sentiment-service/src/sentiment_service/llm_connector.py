@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import re
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -34,6 +35,7 @@ Return only a JSON object with exactly these numeric keys:
 - negative
 The values must be probabilities between 0 and 1 and should sum to 1.
 """.strip()
+JSON_BLOCK_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL | re.IGNORECASE)
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
@@ -279,10 +281,29 @@ class OpenRouterQwenClient(ProbabilitySentimentClient):
             base_url="https://openrouter.ai/api/v1",
         )
 
+    def _headers(self) -> dict[str, str]:
+        headers: dict[str, str] = {}
+        if self.http_referer:
+            headers["HTTP-Referer"] = self.http_referer
+        if self.app_title:
+            headers["X-Title"] = self.app_title
+        return headers
+
     @staticmethod
     def _extract_message_content(content: Any) -> str:
         if isinstance(content, str):
             return content
+        if isinstance(content, dict):
+            maybe_text = content.get("text")
+            if isinstance(maybe_text, str):
+                return maybe_text
+            maybe_content = content.get("content")
+            if isinstance(maybe_content, str):
+                return maybe_content
+            try:
+                return json.dumps(content)
+            except TypeError:
+                return str(content)
         if isinstance(content, list):
             texts: list[str] = []
             for item in content:
@@ -290,8 +311,73 @@ class OpenRouterQwenClient(ProbabilitySentimentClient):
                     maybe_text = item.get("text")
                     if isinstance(maybe_text, str):
                         texts.append(maybe_text)
+                        continue
+                maybe_text = getattr(item, "text", None)
+                if isinstance(maybe_text, str):
+                    texts.append(maybe_text)
             return "".join(texts)
+        maybe_text = getattr(content, "text", None)
+        if isinstance(maybe_text, str):
+            return maybe_text
+        maybe_content = getattr(content, "content", None)
+        if isinstance(maybe_content, str):
+            return maybe_content
         return ""
+
+    @staticmethod
+    def _extract_json_object_text(content: str) -> str:
+        text = (content or "").strip()
+        if not text:
+            return ""
+        fenced = JSON_BLOCK_RE.search(text)
+        if fenced:
+            return fenced.group(1).strip()
+        if text.startswith("{") and text.endswith("}"):
+            return text
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            return text[start : end + 1]
+        return text
+
+    def chat_json(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float = 0.0,
+    ) -> dict[str, Any]:
+        if self.client is None:
+            return {}
+        response = self.client.chat.completions.create(
+            model=self.model,
+            temperature=temperature,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            extra_headers=self._headers(),
+        )
+        message = response.choices[0].message
+        parsed = getattr(message, "parsed", None)
+        if isinstance(parsed, dict):
+            return parsed
+
+        content = self._extract_message_content(message.content)
+        json_text = self._extract_json_object_text(content)
+        if not json_text:
+            refusal = getattr(message, "refusal", None)
+            raise ValueError(
+                f"OpenRouter returned empty content for JSON response model={self.model} "
+                f"finish_reason={getattr(response.choices[0], 'finish_reason', None)} "
+                f"refusal={refusal!r}"
+            )
+
+        payload = json.loads(json_text)
+        if not isinstance(payload, dict):
+            raise ValueError("OpenRouter response payload must be a JSON object")
+        return payload
 
     def assess_probs(self, text: str) -> dict[str, float]:
         if not (text or "").strip():
@@ -299,25 +385,12 @@ class OpenRouterQwenClient(ProbabilitySentimentClient):
         if self.client is None:
             return {}
 
-        headers = {}
-        if self.http_referer:
-            headers["HTTP-Referer"] = self.http_referer
-        if self.app_title:
-            headers["X-Title"] = self.app_title
-
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
+            payload = self.chat_json(
+                system_prompt=OPENROUTER_SYSTEM_PROMPT,
+                user_prompt=text,
                 temperature=0.0,
-                response_format={"type": "json_object"},
-                messages=[
-                    {"role": "system", "content": OPENROUTER_SYSTEM_PROMPT},
-                    {"role": "user", "content": text},
-                ],
-                extra_headers=headers,
             )
-            content = self._extract_message_content(response.choices[0].message.content)
-            payload = json.loads(content)
             return normalize_probs(payload)
         except Exception:
             logger.exception("Error occurred during OpenRouter Qwen text classification")

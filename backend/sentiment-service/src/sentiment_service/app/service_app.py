@@ -9,10 +9,14 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from sentiment_service.config.settings import load_kafka_settings, load_mongo_settings
+from sentiment_service.config.settings import (
+    load_kafka_settings,
+    load_keyword_settings,
+    load_mongo_settings,
+)
 from sentiment_service.messaging.kafka_consumer import KafkaConsumerRunner
 from sentiment_service.messaging.schemas import parse_cleaned_event
-from sentiment_service.keywords import build_keyword_extractor_from_env
+from sentiment_service.keywords import build_keyword_extractor
 from sentiment_service.objects.objects import HourlyLevelScore, TickerLevelScore
 from sentiment_service.observability.logging import configure_logging
 from sentiment_service.storage.hourly_repo import HourlyRepo
@@ -52,6 +56,7 @@ class SentimentServiceApp:
 
         self.kafka_settings = load_kafka_settings()
         self.mongo_settings = load_mongo_settings()
+        self.keyword_settings = load_keyword_settings()
         self.sentiment = SentimentServiceRunner()
         self.mongo = MongoClientFactory(
             MongoClientSettings(
@@ -72,7 +77,7 @@ class SentimentServiceApp:
         )
         self.signal_repo.ensure_indexes()
 
-        self.keyword_extractor = build_keyword_extractor_from_env()
+        self.keyword_extractor = build_keyword_extractor(self.keyword_settings)
 
         self.normalized_volatility: dict[str, float] = self._load_normalized_volatility()
 
@@ -427,7 +432,11 @@ class SentimentServiceApp:
         now_utc = int(time.time())
         metrics = self._extract_event_metrics(payload) if isinstance(payload, dict) else {}
         event_score = float(domain_event.absolute_score)
-        keywords = self.keyword_extractor.extract(domain_event.text_normalized or "")
+        keywords = self.keyword_extractor.extract(
+            domain_event.text_normalized or "",
+            ticker=domain_event.ticker,
+            source=domain_event.source,
+        )
         hourly_level = self._get_or_create_hourly_level(
             ticker=domain_event.ticker,
             hour_start_utc=bucket.hour_start_utc,

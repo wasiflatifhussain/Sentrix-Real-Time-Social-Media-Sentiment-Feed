@@ -11,6 +11,18 @@ class KeywordCandidate:
 
 
 class KeywordExtractor(Protocol):
-    def extract_candidates(self, text: str) -> list[KeywordCandidate]: ...
+    def extract_candidates(
+        self,
+        text: str,
+        *,
+        ticker: str | None = None,
+        source: str | None = None,
+    ) -> list[KeywordCandidate]: ...
 
-    def extract(self, text: str) -> list[str]: ...
+    def extract(
+        self,
+        text: str,
+        *,
+        ticker: str | None = None,
+        source: str | None = None,
+    ) -> list[str]: ...

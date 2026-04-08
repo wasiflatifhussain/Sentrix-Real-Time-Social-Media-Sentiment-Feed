@@ -31,6 +31,23 @@ class MongoSettings:
     hourly_ttl_days: int = 7
 
 
+@dataclass(frozen=True)
+class KeywordSettings:
+    extractor_mode: str
+    model_name: str
+    normalize_embeddings: bool
+    top_n: int
+    max_final_keywords: int
+    ngram_min: int
+    ngram_max: int
+    use_mmr: bool
+    diversity: float
+    refiner_mode: str
+    llm_model: str
+    llm_max_candidates: int
+    llm_temperature: float
+
+
 def _get_env(name: str, default: str = None) -> str:
     val = os.getenv(name, default)
     if val is None or val.strip() == "":
@@ -44,6 +61,19 @@ def _get_env_int(name: str, default: str = None) -> int:
         return int(raw)
     except ValueError as e:
         raise ValueError(f"Env var {name} must be an int, got: {raw}") from e
+
+
+def _get_env_bool(name: str, default: str | None = None) -> bool:
+    raw = _get_env(name, default).strip().lower()
+    return raw in {"1", "true", "yes", "y", "on"}
+
+
+def _get_env_float(name: str, default: str | None = None) -> float:
+    raw = _get_env(name, default)
+    try:
+        return float(raw)
+    except ValueError as e:
+        raise ValueError(f"Env var {name} must be a float, got: {raw}") from e
 
 
 def _get_optional_env(name: str, default: str | None = None) -> str | None:
@@ -104,3 +134,39 @@ def load_mongo_settings() -> MongoSettings:
         ),
         hourly_ttl_days=_get_env_int("MONGO_HOURLY_TTL_DAYS", "7"),
     )
+
+
+def load_keyword_settings() -> KeywordSettings:
+    settings = KeywordSettings(
+        extractor_mode=_get_env("KEYWORD_EXTRACTOR_MODE", "keybert").strip().lower(),
+        model_name=_get_env("KEYBERT_MODEL_NAME", "all-MiniLM-L6-v2"),
+        normalize_embeddings=_get_env_bool(
+            "KEYBERT_NORMALIZE_EMBEDDINGS",
+            "true",
+        ),
+        top_n=_get_env_int("KEYBERT_TOP_N", "20"),
+        max_final_keywords=_get_env_int("KEYWORD_MAX_FINAL", "6"),
+        ngram_min=_get_env_int("KEYBERT_NGRAM_MIN", "1"),
+        ngram_max=_get_env_int("KEYBERT_NGRAM_MAX", "3"),
+        use_mmr=_get_env_bool("KEYBERT_USE_MMR", "true"),
+        diversity=_get_env_float("KEYBERT_DIVERSITY", "0.4"),
+        refiner_mode=_get_env("KEYWORD_REFINER_MODE", "llm").strip().lower(),
+        llm_model=_get_env("KEYWORD_LLM_MODEL", "qwen/qwen-2.5-7b-instruct"),
+        llm_max_candidates=_get_env_int("KEYWORD_LLM_MAX_CANDIDATES", "15"),
+        llm_temperature=_get_env_float("KEYWORD_LLM_TEMPERATURE", "0.0"),
+    )
+    if settings.top_n <= 0:
+        raise ValueError("KEYBERT_TOP_N must be >= 1")
+    if settings.max_final_keywords <= 0:
+        raise ValueError("KEYWORD_MAX_FINAL must be >= 1")
+    if settings.llm_max_candidates <= 0:
+        raise ValueError("KEYWORD_LLM_MAX_CANDIDATES must be >= 1")
+    if settings.ngram_min <= 0:
+        raise ValueError("KEYBERT_NGRAM_MIN must be >= 1")
+    if settings.ngram_max < settings.ngram_min:
+        raise ValueError("KEYBERT_NGRAM_MAX must be >= KEYBERT_NGRAM_MIN")
+    if settings.diversity < 0.0:
+        raise ValueError("KEYBERT_DIVERSITY must be >= 0.0")
+    if settings.llm_temperature < 0.0:
+        raise ValueError("KEYWORD_LLM_TEMPERATURE must be >= 0.0")
+    return settings

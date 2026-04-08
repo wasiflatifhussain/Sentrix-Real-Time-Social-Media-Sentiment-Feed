@@ -3,21 +3,33 @@ from sentiment_service.keywords.normalizer import finalize_keyword_candidates
 from sentiment_service.keywords.base import KeywordCandidate
 
 
+class _DummyEmbeddingService:
+    model_name = "all-MiniLM-L6-v2"
+    model = object()
+
+
 def test_finalize_keyword_candidates_normalizes_and_deduplicates():
     candidates = [
         KeywordCandidate(" Earnings ", 0.92),
         KeywordCandidate("earnings", 0.85),
         KeywordCandidate("Guidance Cut", 0.80),
         KeywordCandidate("<URL>", 0.99),
+        KeywordCandidate("and", 0.98),
+        KeywordCandidate("me", 0.97),
+        KeywordCandidate("Tesla", 0.79),
+        KeywordCandidate("all", 0.78),
     ]
 
     keywords = finalize_keyword_candidates(candidates, max_keywords=5)
 
-    assert keywords == ["earnings", "guidance cut"]
+    assert keywords == ["earnings", "guidance cut", "tesla"]
 
 
 def test_keybert_extractor_falls_back_when_backend_fails(monkeypatch):
-    extractor = KeyBertKeywordExtractor(max_keywords=5)
+    extractor = KeyBertKeywordExtractor(
+        embedding_service=_DummyEmbeddingService(),
+        max_keywords=5,
+    )
 
     def raise_backend_error():
         raise RuntimeError("backend unavailable")
@@ -30,3 +42,4 @@ def test_keybert_extractor_falls_back_when_backend_fails(monkeypatch):
 
     assert "earnings" in keywords
     assert len(keywords) <= 5
+    assert extractor._fallback_count == 1
