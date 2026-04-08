@@ -1,1 +1,0 @@
-# dir for Sequence diagrams, architecture diagrams, etc
