@@ -345,7 +345,7 @@ export default function PerformanceEvaluationNotebook() {
       >
         <div className="h-[240px] w-full sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: -8, bottom: 30 }}>
+            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 18, bottom: 42 }}>
               <defs>
                 <linearGradient id="evalSuccessBg" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#0FEDBE" stopOpacity={0.1} />
@@ -361,8 +361,27 @@ export default function PerformanceEvaluationNotebook() {
                 angle={-25}
                 textAnchor="end"
                 height={48}
+                label={{
+                  value: "Run Start (UTC)",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "#9ca3af",
+                  fontSize: 10,
+                }}
               />
-              <YAxis domain={[90, 100]} tick={{ fill: "#9ca3af", fontSize: 10 }} />
+              <YAxis
+                domain={[90, 100]}
+                tick={{ fill: "#9ca3af", fontSize: 10 }}
+                label={{
+                  value: "Run Success Rate (%)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#9ca3af",
+                  dx: 12,
+                  dy: 20,
+                  fontSize: 10,
+                }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0b1220",
@@ -391,7 +410,7 @@ export default function PerformanceEvaluationNotebook() {
       >
         <div className="h-[240px] w-full sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: -8, bottom: 30 }}>
+            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 18, bottom: 42 }}>
               <defs>
                 <linearGradient id="evalLatencyBg" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#0FEDBE" stopOpacity={0.08} />
@@ -407,8 +426,27 @@ export default function PerformanceEvaluationNotebook() {
                 angle={-25}
                 textAnchor="end"
                 height={48}
+                label={{
+                  value: "Run Start (UTC)",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "#9ca3af",
+                  fontSize: 10,
+                }}
               />
-              <YAxis domain={[120, 320]} tick={{ fill: "#9ca3af", fontSize: 10 }} />
+              <YAxis
+                domain={[120, 320]}
+                tick={{ fill: "#9ca3af", fontSize: 10 }}
+                label={{
+                  value: "Run Latency (sec)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#9ca3af",
+                  dx: 12,
+                  dy: 20,
+                  fontSize: 10,
+                }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0b1220",

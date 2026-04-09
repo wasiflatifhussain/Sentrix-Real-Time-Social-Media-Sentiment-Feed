@@ -387,7 +387,7 @@ export default function SentimentPerformanceNotebook() {
       >
         <div className="h-[240px] w-full sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={evalRows} margin={{ top: 12, right: 16, left: -12, bottom: 30 }}>
+            <LineChart data={evalRows} margin={{ top: 12, right: 16, left: 18, bottom: 42 }}>
               <defs>
                 <linearGradient id="sentimentTrendBg" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#0FEDBE" stopOpacity={0.08} />
@@ -402,6 +402,13 @@ export default function SentimentPerformanceNotebook() {
                 angle={-25}
                 textAnchor="end"
                 height={48}
+                label={{
+                  value: "Time (UTC)",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "#9ca3af",
+                  fontSize: 10,
+                }}
               />
               <YAxis
                 yAxisId="sentiment"
@@ -412,7 +419,9 @@ export default function SentimentPerformanceNotebook() {
                   angle: -90,
                   position: "insideLeft",
                   fill: "#9ca3af",
-                  dx: -2,
+                  dx: 12,
+                  dy: 20,
+                  fontSize: 10,
                 }}
               />
               <YAxis
@@ -424,7 +433,9 @@ export default function SentimentPerformanceNotebook() {
                   angle: 90,
                   position: "insideRight",
                   fill: "#9ca3af",
-                  dx: 2,
+                  dx: -10,
+                  dy: 20,
+                  fontSize: 10,
                 }}
               />
               <Tooltip
@@ -477,11 +488,32 @@ export default function SentimentPerformanceNotebook() {
                     mismatch: matchBreakdown.mismatch,
                   },
                 ]}
-                margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+                margin={{ top: 10, right: 10, left: 12, bottom: 18 }}
               >
                 <CartesianGrid stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="bucket" tick={{ fill: "#9ca3af", fontSize: 10 }} />
-                <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                <XAxis
+                  dataKey="bucket"
+                  tick={{ fill: "#9ca3af", fontSize: 10 }}
+                  label={{
+                    value: "Ticker",
+                    position: "insideBottom",
+                    offset: -4,
+                    fill: "#9ca3af",
+                    fontSize: 10,
+                  }}
+                />
+                <YAxis
+                  tick={{ fill: "#9ca3af", fontSize: 10 }}
+                  label={{
+                    value: "Count",
+                    angle: -90,
+                    position: "insideLeft",
+                    fill: "#9ca3af",
+                    dx: 12,
+                    dy: 20,
+                    fontSize: 10,
+                  }}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0b1220",
@@ -497,14 +529,33 @@ export default function SentimentPerformanceNotebook() {
           </div>
           <div className="h-[220px] w-full sm:h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyRows} margin={{ top: 10, right: 10, left: -8, bottom: 10 }}>
+              <BarChart data={dailyRows} margin={{ top: 10, right: 10, left: 12, bottom: 20 }}>
                 <CartesianGrid stroke="rgba(255,255,255,0.06)" />
                 <XAxis
                   dataKey="day"
                   tick={{ fill: "#9ca3af", fontSize: 10 }}
                   tickFormatter={(d) => String(d).slice(5)}
+                  label={{
+                    value: "Day (UTC)",
+                    position: "insideBottom",
+                    offset: -4,
+                    fill: "#9ca3af",
+                    fontSize: 10,
+                  }}
                 />
-                <YAxis domain={[0, 100]} tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fill: "#9ca3af", fontSize: 10 }}
+                  label={{
+                    value: "Share (%)",
+                    angle: -90,
+                    position: "insideLeft",
+                    fill: "#9ca3af",
+                    dx: 12,
+                    dy: 20,
+                    fontSize: 10,
+                  }}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0b1220",
