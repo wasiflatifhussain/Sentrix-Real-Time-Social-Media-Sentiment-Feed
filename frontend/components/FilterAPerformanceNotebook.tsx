@@ -343,7 +343,7 @@ export default function FilterAPerformanceNotebook() {
       >
         <div className="h-[240px] w-full sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: -8, bottom: 30 }}>
+            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 18, bottom: 42 }}>
               <ReferenceArea y1={18} y2={25} fill="#0FEDBE" fillOpacity={0.08} />
               <CartesianGrid stroke="rgba(255,255,255,0.06)" />
               <XAxis
@@ -353,8 +353,27 @@ export default function FilterAPerformanceNotebook() {
                 angle={-25}
                 textAnchor="end"
                 height={48}
+                label={{
+                  value: "Run Start (UTC)",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "#9ca3af",
+                  fontSize: 10,
+                }}
               />
-              <YAxis domain={[16, 27]} tick={{ fill: "#9ca3af", fontSize: 10 }} />
+              <YAxis
+                domain={[16, 27]}
+                tick={{ fill: "#9ca3af", fontSize: 10 }}
+                label={{
+                  value: "Removal Rate (%)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#9ca3af",
+                  dx: 12,
+                  dy: 20,
+                  fontSize: 10,
+                }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0b1220",
@@ -379,7 +398,7 @@ export default function FilterAPerformanceNotebook() {
       >
         <div className="h-[240px] w-full sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: -8, bottom: 30 }}>
+            <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 18, bottom: 42 }}>
               <CartesianGrid stroke="rgba(255,255,255,0.06)" />
               <XAxis
                 dataKey="label"
@@ -388,8 +407,26 @@ export default function FilterAPerformanceNotebook() {
                 angle={-25}
                 textAnchor="end"
                 height={48}
+                label={{
+                  value: "Run Start (UTC)",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "#9ca3af",
+                  fontSize: 10,
+                }}
               />
-              <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} />
+              <YAxis
+                tick={{ fill: "#9ca3af", fontSize: 10 }}
+                label={{
+                  value: "Throughput (events/sec)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#9ca3af",
+                  dx: 12,
+                  dy: 20,
+                  fontSize: 10,
+                }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0b1220",
