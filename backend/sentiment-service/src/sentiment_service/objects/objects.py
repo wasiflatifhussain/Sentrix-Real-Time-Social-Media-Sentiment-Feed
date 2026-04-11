@@ -210,6 +210,7 @@ class TickerLevelScore:
     raw_weighted_score: float = 0.0
     normalized_volatility: float = 1.0
     adjusted_weighted_score: float = 0.0
+    keywords: list[str] = field(default_factory=list)
     startTimestamp: int = 0
     endTimestamp: int = 0
     beta: float = 1 - (2 ** (-1 / 24))  # Weighting of the new hourlevel
@@ -242,6 +243,7 @@ class TickerLevelScore:
 
         # update the timestamp
         self._update_timestamp(new = hour)
+        self._refresh_keywords()
         return
 
     def _update_absolute_score(
@@ -321,3 +323,33 @@ class TickerLevelScore:
         self.startTimestamp = self.top_hour_levels().hourStartUtc
         self.endTimestamp = new.hourEndUtc
         return
+
+    def _refresh_keywords(
+        self,
+        limit: int = 5,
+    ) -> None:
+        if limit <= 0 or len(self.hour_levels) == 0:
+            self.keywords = []
+            return
+
+        weighted_counts: dict[str, float] = {}
+        total_levels = len(self.hour_levels)
+        for index, hour in enumerate(self.hour_levels):
+            distance_from_latest = total_levels - 1 - index
+            decay = (1.0 - self.beta) ** distance_from_latest
+            reliability = hour.hour_reliability()
+            hour_weight = max(0.05, decay * reliability)
+            for keyword, count in (hour.keywordCounts or {}).items():
+                normalized = str(keyword or "").strip().lower()
+                if not normalized:
+                    continue
+                weighted_counts[normalized] = (
+                    weighted_counts.get(normalized, 0.0)
+                    + float(count) * hour_weight
+                )
+
+        ranked = sorted(
+            weighted_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+        self.keywords = [keyword for keyword, _ in ranked[:limit]]
