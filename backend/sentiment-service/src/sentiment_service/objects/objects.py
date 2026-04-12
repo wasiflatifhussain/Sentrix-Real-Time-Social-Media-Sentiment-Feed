@@ -3,6 +3,19 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+def _coerce_keyword_count(value: Any) -> float | None:
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
 @dataclass
 class Event:
     id: str
@@ -343,9 +356,12 @@ class TickerLevelScore:
                 normalized = str(keyword or "").strip().lower()
                 if not normalized:
                     continue
+                resolved_count = _coerce_keyword_count(count)
+                if resolved_count is None or resolved_count <= 0:
+                    continue
                 weighted_counts[normalized] = (
                     weighted_counts.get(normalized, 0.0)
-                    + float(count) * hour_weight
+                    + resolved_count * hour_weight
                 )
 
         ranked = sorted(

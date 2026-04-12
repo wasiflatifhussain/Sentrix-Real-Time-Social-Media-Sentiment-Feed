@@ -84,8 +84,6 @@ class SentimentServiceApp:
         self.hourly_cache: dict[str, HourlyLevelScore] = {}
         self.hourly_additive_score_sum: dict[str, float] = {}
 
-        self.last_applied_signal_hour: int | None = None
-
         self.stop_flag = threading.Event()
 
         self.runner = KafkaConsumerRunner(self.kafka_settings)
@@ -98,7 +96,6 @@ class SentimentServiceApp:
             self.mongo_settings.signal_collection,
             len(self.normalized_volatility),
         )
-
     @classmethod
     def _load_normalized_volatility(
         cls,
@@ -349,46 +346,55 @@ class SentimentServiceApp:
         max_eligible_hour_start = self._eligible_hour_start_utc(
             now_utc=now_utc, grace_seconds=SIGNAL_GRACE_SECONDS
         )
-        while True:
-            next_hour_start = self.hourly_repo.find_next_available_hour_start(
+        lookback_days = max(1, (TICKER_LEVEL_WINDOW_HOURS + 23) // 24)
+        tickers = self.hourly_repo.distinct_tickers_recent(lookback_days=lookback_days)
+        log.info(
+            "Ticker update check maxEligibleHourStartUtc=%s tickers_found=%s",
+            max_eligible_hour_start,
+            len(tickers),
+        )
+
+        existing_signals = {
+            str(doc.get("_id", "")): doc
+            for doc in self.signal_repo.find_by_tickers(tickers)
+            if doc.get("_id")
+        }
+
+        applied_count = 0
+        for ticker in tickers:
+            latest_hour_start = self.hourly_repo.find_latest_hour_start_for_ticker(
+                ticker=ticker,
                 max_hour_start_utc=max_eligible_hour_start,
-                after_hour_start_utc=self.last_applied_signal_hour,
             )
-            if next_hour_start is None:
-                return
+            if latest_hour_start is None:
+                continue
 
-            tickers = self.hourly_repo.distinct_tickers_for_hour(
-                hour_start_utc=next_hour_start
-            )
-            log.info(
-                "Ticker update check hourStartUtc=%s tickers_found=%s",
-                next_hour_start,
-                len(tickers),
-            )
+            current_signal = existing_signals.get(ticker, {})
+            current_as_of = int(current_signal.get("asOfHourStartUtc", -1) or -1)
+            if latest_hour_start <= current_as_of:
+                continue
 
-            applied_count = 0
-            for ticker in tickers:
-                ticker_level = self._build_ticker_level(
-                    ticker=ticker,
-                    as_of_hour_start_utc=next_hour_start,
-                )
-                if ticker_level is None:
-                    continue
-                applied = self._persist_ticker_signal(
-                    ticker_level=ticker_level,
-                    as_of_hour_start_utc=next_hour_start,
-                    updated_at_utc=now_utc,
-                )
-                if applied:
-                    applied_count += 1
-
-            self.last_applied_signal_hour = next_hour_start
-            log.info(
-                "Ticker update applied hourStartUtc=%s tickers=%s applied=%s",
-                next_hour_start,
-                len(tickers),
-                applied_count,
+            ticker_level = self._build_ticker_level(
+                ticker=ticker,
+                as_of_hour_start_utc=latest_hour_start,
             )
+            if ticker_level is None:
+                continue
+
+            applied = self._persist_ticker_signal(
+                ticker_level=ticker_level,
+                as_of_hour_start_utc=latest_hour_start,
+                updated_at_utc=now_utc,
+            )
+            if applied:
+                applied_count += 1
+
+        log.info(
+            "Ticker update applied maxEligibleHourStartUtc=%s tickers=%s applied=%s",
+            max_eligible_hour_start,
+            len(tickers),
+            applied_count,
+        )
 
     def _signal_updater_loop(self) -> None:
         while not self.stop_flag.is_set():

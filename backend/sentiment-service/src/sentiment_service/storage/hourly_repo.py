@@ -12,6 +12,14 @@ def _hourly_id(ticker: str, hour_start_utc: int) -> str:
     return f"{ticker}|{hour_start_utc}"
 
 
+def _sanitize_keyword_key(keyword: str) -> str:
+    normalized = (keyword or "").strip().lower()
+    if not normalized:
+        return ""
+    normalized = normalized.replace(".", " ").replace("$", " ")
+    return " ".join(normalized.split())
+
+
 class HourlyRepo:
     """
     Persists hourly aggregates into MongoDB.
@@ -98,7 +106,7 @@ class HourlyRepo:
         # Store counts for keywords (incremental)
         # keywordCounts.<kw> += 1
         for w in keywords:
-            w = (w or "").strip().lower()
+            w = _sanitize_keyword_key(w)
             if not w:
                 continue
             inc_ops[f"keywordCounts.{w}"] = inc_ops.get(f"keywordCounts.{w}", 0) + 1
@@ -218,6 +226,32 @@ class HourlyRepo:
         row = self._col.find_one(
             {"hourStartUtc": hour_filter},
             sort=[("hourStartUtc", 1)],
+            projection={"hourStartUtc": 1},
+        )
+        if row is None:
+            return None
+
+        hour_start_utc = row.get("hourStartUtc")
+        if hour_start_utc is None:
+            return None
+        return int(hour_start_utc)
+
+    def find_latest_hour_start_for_ticker(
+        self,
+        *,
+        ticker: str,
+        max_hour_start_utc: int,
+    ) -> int | None:
+        t = (ticker or "").strip().upper()
+        if not t:
+            return None
+
+        row = self._col.find_one(
+            {
+                "ticker": t,
+                "hourStartUtc": {"$lte": int(max_hour_start_utc)},
+            },
+            sort=[("hourStartUtc", -1)],
             projection={"hourStartUtc": 1},
         )
         if row is None:
