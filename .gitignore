@@ -116,4 +116,9 @@ env/
 *.tmp
 *.bak
 
+
+############################
+# Notes
+############################
+backend/ai-service/*
 /evaluation/
