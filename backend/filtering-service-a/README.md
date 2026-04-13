@@ -42,7 +42,6 @@ Recommended env files:
 - Local development: `backend/filtering-service-a/.env.local`
 - Railway deployment reference: `backend/filtering-service-a/.env.railway`
 - Templates:
-  - `backend/filtering-service-a/.env.example` (local default template)
   - `backend/filtering-service-a/.env.local.example`
   - `backend/filtering-service-a/.env.railway.example`
 

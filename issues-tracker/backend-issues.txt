@@ -1,5 +1,0 @@
-- posts are NOT all in English; might need a translator or ensure the AI model/filters are able to filter non-english texts
-- reddit search is fuzzy - need to choose between search keyword in title and search keyword in the body
-- reddit search query may need improvement for better result hits; the testing pilot is too 
-- even with testla keyword for example, title header may not be exactly about tesla (such as posts about clash of clan's game tesla tower appears)
-- posts are NOT all in English; might need a translator or ensure the AI model/filters are able to filter non-english texts

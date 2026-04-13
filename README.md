@@ -1,108 +1,95 @@
-# Real-Time Social Media Sentiment Feed for Trading Platforms
+# Sentrix: Real-Time Social Sentiment by Stock Tickers
 
-> Monorepo for the project. **Do not push directly to `main`.** Use branches and Pull Requests (PRs).
+Sentrix is a microservice-based system that ingests social media discussions, filters low-quality/manipulative content, computes ticker-level sentiment signals, and serves them to a web dashboard.
 
-⚠️ **Please read the information below on how to contribute to the repo.**
+This root README is a project map.
+Detailed setup and runtime instructions are intentionally kept inside each microservice's README.
 
----
+## What This Repository Contains
 
-## Workflow
+### Core microservices
 
-1. **Create a branch** from `main`:
-   - `feature/<short-name>` – new features
-   - `fix/<short-name>` – bug fixes
-   - `refactor/<short-name>` – code restructuring (no behavior change)
-   - `docs/<short-name>` – documentation only
-   - `chore/<short-name>` – tooling, deps, CI
-   - (optional) `hotfix/<short-name>` – urgent fix
-2. **Commit & push** your work to your branch:
-   ```bash
-   git checkout -b feature/<short-name>
-   git push -u origin feature/<short-name>
-   ```
-3. **Open a Pull Request** (PR) into main.
-4. **Review & merge:**
+| Service | Responsibility | Stack | Docs |
+|---|---|---|---|
+| Ingestor Service | Fetches source data (currently Reddit), normalizes into a common event schema, publishes to Kafka | Java + Spring Boot | `backend/ingestor-service/README.md` |
+| Filtering Service A (Hard Gate) | Deterministic quality filtering, normalization, exact dedup, near-dup metadata | Java + Spring Boot + Redis | `backend/filtering-service-a/README.md` |
+| Filtering Service B (Soft Gate) | Semantic relevance, manipulation scoring, novelty scoring, keep/reject decision | Python + FastAPI runtime + Redis + embeddings | `backend/filtering-service-b/README.md` |
+| Sentiment Service (Worker) | Consumes filtered events, builds hourly aggregates, updates latest per-ticker signal | Python + Kafka + MongoDB | `backend/sentiment-service/README.md` |
+| Sentiment Service (API) | Serves ticker sentiment and latest signal endpoints to clients | FastAPI + MongoDB | `backend/sentiment-service/README.md` |
+| Frontend | Dashboard, ticker detail view, analytics charts, watchlist sentiment monitor | Next.js + TypeScript | `frontend/README.md` |
 
-- Another contributor reviews the PR (or review by yourself incase of urgency).
-- Address comments, then squash & merge (preferred) into main.  
-  ℹ️ Branch protection on main is expected: no direct pushes.
+### Supporting directories
 
-## Repo Structure
+- `backend/` - backend service code and service-specific docs
+- `frontend/` - web application
+- `docs/` - architecture and sequence diagrams
+- `api-testing/` - service testing scripts and experiments
 
-This is the mother repo. Avoid starting projects in the root.  
-Create subfolders and keep each component isolated:
+## End-to-End Pipeline
 
-```
-/frontend/     # web app(s)
-/backend/      # services, APIs
-/model/        # AI/ML models, notebooks, training code
-/infra/        # IaC, deployment, CI/CD workflows
-/docs/         # design docs, specs, ADRs
-```
+### Data flow
 
-- Each subfolder can have its own README.md, .env.example, and tooling.
-- Use separate package managers/virtual envs inside each subproject.
-
-## Quick Commands
-
-```
-# update local main
-git checkout main
-git pull origin main
-
-# create a feature branch
-git checkout -b feature/<short-name>
-
-# work, commit, and push
-git add .
-git commit -m "feat: <message>"
-git push -u origin feature/<short-name>
+```text
+Reddit source
+  -> Ingestor Service
+  -> Kafka: sentrix.ingestor.events
+  -> Filtering Service A
+  -> Kafka: sentrix.filter-service-a.cleaned
+  -> Filtering Service B
+  -> Kafka: sentrix.filter-service-b.filtered
+  -> Sentiment Worker
+  -> MongoDB (hourly + latest signal collections)
+  -> Sentiment API
+  -> Frontend Dashboard
 ```
 
-## PR Checklist
+### Pipeline diagram image
 
-- Scope limited to one logical change
-- **Please updated docs/README in the affected subfolder during the PR push (does not have to be finalized documentation, but provide enough info to avoid potential breaks due to introduced changes in the future**
+![Sentrix Pipeline](docs/sentrix-pipeline.png)
+
+
+## Kafka Topic Contracts (Current)
+
+- `sentrix.ingestor.events`: normalized raw events from ingestor
+- `sentrix.filter-service-a.cleaned`: Service A keep output
+- `sentrix.filter-service-a.dropped`: Service A drop output
+- `sentrix.filter-service-b.filtered`: Service B keep output (consumed by Sentiment Worker)
+- `sentrix.filter-service-b.rejected`: Service B reject output
+
+## Where To Find Setup Instructions
+
+This root README does not duplicate setup steps.
+Use the docs below depending on what you need:
+- Ingestor service setup: `backend/ingestor-service/README.md`
+- Filtering Service A setup: `backend/filtering-service-a/README.md`
+- Filtering Service B setup: `backend/filtering-service-b/README.md`
+- Sentiment service setup (worker + API): `backend/sentiment-service/README.md`
+- Frontend setup: `frontend/README.md`
+
+## Current Deployment Setup
+
+Current deployment is service-based (not a single monolith deployment):
+
+- Application hosting: Railway (separate services per component)
+  - Ingestor Service: Railway monorepo deploy from `backend/ingestor-service`
+  - Filtering Service A: Railway monorepo deploy from `backend/filtering-service-a`
+  - Filtering Service B: Railway deploy from Docker image (`wasiflh/filtering-service-b`)
+  - Sentiment Worker: Railway service from `backend/sentiment-service`
+  - Sentiment API: Railway service from `backend/sentiment-service`
+  - Frontend: Railway service from `frontend`
+- Messaging backbone: Confluent Cloud Kafka (SASL/SSL in cloud)
+- Cache/state stores: Redis (used by filtering stages for dedup/repetition/novelty state)
+- Persistent analytics store: MongoDB Atlas (hourly aggregates + latest ticker signals)
+- CI/CD: GitHub Actions used for automated build/publish for Filter B Docker image
+
+## Development Workflow
+
+- Do not push directly to `main`
+- Create a branch (`feature/*`, `fix/*`, `docs/*`, etc.)
+- Open PR into `main`
+- Update the relevant service README whenever behavior/config changes
 
 ## Notes
 
-- Keep secrets out of the repo. Provide .env.example files instead.
-- Prefer conventional commits (feat, fix, chore, docs, refactor, test).
-- Discuss breaking changes in the PR description.
-
-Left:
-
-- Filtering Service B - full left - Wasif
-- Integrating Twitter and Telegram Data to Ingestor Service left; - Wasif
-- Frontend - polling needs fixing; - Wasif
-- Sentiment Service
-  - sentiment pipeline fixing left;
-  - MongoDB integration left;
-  - testing risk appetite based analysis left;
-  - different LLM testing left;
-  - correlation between type of stock (industry/company size/etc) and effect of social sentiment;
-- Evaluation/Assessment - Wasif
-- Deployment (containerization, k8s, GitHub Actions, AWS) - Wasif
-- Presentation preparation - Wasif and Jungmin
-- Webpage Design - Jungmin
-- Poster - Wasif and Jungmin
-- 1-min video - Jungmin
-
-- 16th Feb to 28th Feb:
-  - Wasif - Filtering Service B
-  - Jungmin - sentiment pipeline fixing left + MongoDB integration left
-  - Email Prof on 23rd Feb to schedule a meeting for week of 27th Feb to discuss progress and next steps
-  - Meet Prof on 27th Feb to discuss progress and next steps
-    - Agenda: 1) Progress update, 2) Feedback on work done (ESPEICALLY REPORT), 3) Expectations for final deliverables 4) Blockers or challenges
-    - Internal Catchup on 25th Feb to prepare for the meeting
-- 1st Mar to 15th Mar:
-  - Wasif - Integrating Twitter and Telegram Data to Ingestor Service left; + Deployment (containerization, k8s, GitHub Actions, AWS)
-  - Jungmin - testing risk appetite based analysis left; + different LLM testing left;
-- 16th Mar to 31st Mar:
-  - Meet Prof on week of 16th Mar to discuss progress and next steps
-  - Wasif - Frontend - polling needs fixing; + Evaluation/Assessment
-  - Jungmin - correlation between type of stock (industry/company size/etc) and effect of social sentiment; + Webpage Design
-- 1st Apr to 15th Apr:
-  - Meet Prof on week of 6th Apr to discuss progress and next steps
-  - Wasif - Presentation preparation + Deployment to AWS + Railway + Final Report
-  - Jungmin - Poster + 1-min video + Final Report
+- Secrets must stay out of git; use `.env.*.example` templates
+- Service-level environment variable details are maintained in each service README
