@@ -6,6 +6,7 @@ import time
 
 from sentiment_service.config.settings import load_kafka_settings, load_mongo_settings
 from sentiment_service.domain.scoring import StubSentimentScorer
+from sentiment_service.domain.signal_keywords import select_signal_keywords
 from sentiment_service.domain.signal_stub import placeholder_signal_score
 from sentiment_service.messaging.adapters import to_domain_event
 from sentiment_service.messaging.kafka_consumer import KafkaConsumerRunner
@@ -109,11 +110,18 @@ def main() -> None:
                             score = placeholder_signal_score(
                                 ticker=ticker, hour_start_utc=eligible_hour_start
                             )
+                            keywords = select_signal_keywords(
+                                ticker=ticker,
+                                signal_score=score,
+                                hour_start_utc=eligible_hour_start,
+                                limit=3,
+                            )
                             applied = signal_repo.upsert_signal_if_new_hour(
                                 ticker=ticker,
                                 signal_score=score,
                                 as_of_hour_start_utc=eligible_hour_start,
                                 updated_at_utc=now,
+                                keywords=keywords,
                                 half_life_hours=None,
                             )
                             if applied:
