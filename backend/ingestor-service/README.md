@@ -26,7 +26,6 @@ Available env files:
 - examples:
   - `backend/ingestor-service/.env.local.example`
   - `backend/ingestor-service/.env.railway.example`
-  - `backend/ingestor-service/.env.example` (local default template)
 
 ## Local Setup
 
@@ -269,7 +268,8 @@ Why:
 ingestor-service/
 ├── pom.xml
 ├── README.md
-├── .env.example
+├── .env.local.example
+├── .env.railway.example
 ├── src/main/java/com/sentrix/ingestor_service/
 │   ├── adapter/reddit/
 │   ├── config/
