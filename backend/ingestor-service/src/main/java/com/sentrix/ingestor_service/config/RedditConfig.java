@@ -17,4 +17,10 @@ public class RedditConfig {
 
   // User agent needed for Reddit
   private String userAgent = "sentrix-ingestor/0.1 by unknown";
+
+  // Reddit search defaults
+  // Reddit t param: hour, day, week, month, year, all
+  private String searchTimeFilter = "week";
+  private int searchLimit = 50;
+  private String searchSort = "new";
 }

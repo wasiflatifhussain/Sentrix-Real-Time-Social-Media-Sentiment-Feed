@@ -52,6 +52,11 @@ Required Reddit variables:
 - `REDDIT_USERNAME`
 - `REDDIT_PASSWORD`
 
+Optional Reddit search controls:
+- `REDDIT_SEARCH_TIME_FILTER` (`hour|day|week|month|year|all`, default `week`)
+- `REDDIT_SEARCH_LIMIT` (default `50`)
+- `REDDIT_SEARCH_SORT` (default `new`)
+
 For local Kafka:
 - `KAFKA_BOOTSTRAP_SERVERS=localhost:9092`
 - `KAFKA_SECURITY_PROTOCOL=PLAINTEXT`
@@ -59,6 +64,10 @@ For local Kafka:
 
 Runtime variable:
 - `PORT` (default `8080`)
+
+Optional scheduler controls:
+- `INGESTION_SCHEDULER_CRON` (default `0 0 * * * *`)
+- `INGESTION_SCHEDULER_ZONE` (default `UTC`)
 
 ### 2) Kafka Topic
 
@@ -134,6 +143,11 @@ Key runtime bindings:
 - `spring.kafka.producer.properties.sasl.mechanism -> KAFKA_SASL_MECHANISM`
 - `spring.kafka.producer.properties.sasl.jaas.config -> KAFKA_SASL_JAAS_CONFIG`
 - `app.kafka.topic -> KAFKA_TOPIC`
+- `reddit.search-time-filter -> REDDIT_SEARCH_TIME_FILTER`
+- `reddit.search-limit -> REDDIT_SEARCH_LIMIT`
+- `reddit.search-sort -> REDDIT_SEARCH_SORT`
+- `ingestion.scheduler.cron -> INGESTION_SCHEDULER_CRON`
+- `ingestion.scheduler.zone -> INGESTION_SCHEDULER_ZONE`
 - `server.port -> PORT`
 
 ## Architecture and Design Justifications
