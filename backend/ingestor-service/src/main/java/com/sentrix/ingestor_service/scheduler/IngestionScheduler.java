@@ -25,10 +25,11 @@ public class IngestionScheduler {
   private final IngestionOrchestrator ingestionOrchestrator;
 
   @Scheduled(
-      cron = "0 0 * * * *",
-      zone = "UTC") // At 0-th minute of every hour (format: sec min hr day month dayOfWeek)
+      cron = "${ingestion.scheduler.cron:0 0 * * * *}",
+      zone =
+          "${ingestion.scheduler.zone:UTC}")
   public void scheduleIngestionRun() {
-    log.info("[SCHED] Triggering hourly scheduled ingestion run.");
+    log.info("[SCHED] Triggering scheduled ingestion run.");
     ingestionOrchestrator.runAllIngestions();
   }
 }

@@ -22,10 +22,18 @@ reddit:
   user-agent: sentrix-ingestor/0.1 by ${REDDIT_USERNAME}
   token-url: https://www.reddit.com/api/v1/access_token
   base-oauth-url: https://oauth.reddit.com
+  search-time-filter: ${REDDIT_SEARCH_TIME_FILTER:week}
+  search-limit: ${REDDIT_SEARCH_LIMIT:50}
+  search-sort: ${REDDIT_SEARCH_SORT:new}
 
 app:
   kafka:
     topic: ${KAFKA_TOPIC:sentrix.ingestor.events}
+
+ingestion:
+  scheduler:
+    cron: ${INGESTION_SCHEDULER_CRON:0 0 * * * *}
+    zone: ${INGESTION_SCHEDULER_ZONE:UTC}
 
 logging:
   level:

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class CaptureMeta {
   private String query; // "$TSLA"
   private String sort; // "new"
-  private String timeWindow; // "week"
+  private String timeWindow; // Reddit t param: "hour", "day", "week", etc.
   private String fetchedFrom; // "r/stocks" or "telegram:channel" etc.
   private String searchMode; // "search", "stream", etc. (optional)
 }
