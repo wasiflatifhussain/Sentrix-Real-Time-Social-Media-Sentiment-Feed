@@ -3,16 +3,19 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from sentiment_service.keywords.base import KeywordCandidate
 from sentiment_service.keywords.normalizer import (
     finalize_keyword_candidates,
     finalize_keyword_phrases,
 )
-from sentiment_service.llm_connector import DEFAULT_OPENROUTER_MODEL, OpenRouterQwenClient
 
 log = logging.getLogger(__name__)
+DEFAULT_OPENROUTER_MODEL = "qwen/qwen-2.5-7b-instruct"
+
+if TYPE_CHECKING:
+    from sentiment_service.llm_connector import OpenRouterQwenClient
 
 KEYWORD_REFINER_SYSTEM_PROMPT = """
 You refine finance-related keyword candidates for a single event.
@@ -72,6 +75,8 @@ class LlmKeywordRefiner(NoopKeywordRefiner):
         super().__init__(max_keywords=max_keywords)
         self.max_candidates = max_candidates
         self.temperature = temperature
+        from sentiment_service.llm_connector import OpenRouterQwenClient
+
         self.client = OpenRouterQwenClient(
             api_key=api_key,
             model=model or os.getenv("KEYWORD_LLM_MODEL", DEFAULT_OPENROUTER_MODEL),

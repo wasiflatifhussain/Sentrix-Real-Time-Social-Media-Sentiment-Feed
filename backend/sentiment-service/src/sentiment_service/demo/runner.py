@@ -5,13 +5,15 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from dotenv import load_dotenv
 
-from sentiment_service.llm_connector import EnsembleSentimentClient
 from sentiment_service.messaging.schemas import CleanedEvent
 from sentiment_service.objects.objects import Event, HourlyLevelScore, TickerLevelScore
+
+if TYPE_CHECKING:
+    from sentiment_service.llm_connector import EnsembleSentimentClient
 
 logger = logging.getLogger(__name__)
 
@@ -19,25 +21,32 @@ logger = logging.getLogger(__name__)
 class Runner:
     def __init__(self):
         load_dotenv()
-        finbert_api_key = os.getenv("HUGGING_FACE_API")
-        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        self.fc = EnsembleSentimentClient(
-            finbert_api_key=finbert_api_key,
-            openrouter_api_key=openrouter_api_key,
-        )
+        self.fc: EnsembleSentimentClient | None = None
 
         self.events: list[Event] = []
         self.hourly: dict[str, HourlyLevelScore] = {}
         self.ticker: dict[str, TickerLevelScore] = {}
         return
 
+    def _client(self) -> "EnsembleSentimentClient":
+        if self.fc is None:
+            from sentiment_service.llm_connector import EnsembleSentimentClient
+
+            finbert_api_key = os.getenv("HUGGING_FACE_API")
+            openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+            self.fc = EnsembleSentimentClient(
+                finbert_api_key=finbert_api_key,
+                openrouter_api_key=openrouter_api_key,
+            )
+        return self.fc
+
     def assess_event_level(self, event: CleanedEvent):
-        self.fc.run_cleaned_event(event)
+        self._client().run_cleaned_event(event)
         return
 
     def run_event_level(self, data: dict):
         event = self.construct_event(data)
-        self.fc.run(event)
+        self._client().run(event)
         self.compute_event_level(event)
 
         self.events.append(event)
