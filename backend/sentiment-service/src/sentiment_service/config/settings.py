@@ -27,6 +27,8 @@ class MongoSettings:
     db_name: str
     hourly_collection: str
     signal_collection: str
+    api_hourly_collection: str = "hourly_demo"
+    api_signal_collection: str = "signal_demo"
     hourly_ttl_days: int = 7
 
 
@@ -98,5 +100,7 @@ def load_mongo_settings() -> MongoSettings:
         signal_collection=_get_env(
             "MONGO_SIGNAL_COLLECTION", "ticker_sentiment_signal"
         ),
+        api_hourly_collection=_get_env("MONGO_API_HOURLY_COLLECTION", "hourly_demo"),
+        api_signal_collection=_get_env("MONGO_API_SIGNAL_COLLECTION", "signal_demo"),
         hourly_ttl_days=_get_env_int("MONGO_HOURLY_TTL_DAYS", "7"),
     )

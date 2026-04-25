@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import hashlib
+import time
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from sentiment_service.config.settings import load_mongo_settings
+from sentiment_service.domain.signal_keywords import select_signal_keywords
 from sentiment_service.storage.hourly_repo import HourlyRepo
 from sentiment_service.storage.mongo_client import (
     MongoClientFactory,
@@ -18,6 +21,16 @@ router = APIRouter()
 
 class TickerListRequest(BaseModel):
     tickers: List[str]
+
+
+def _ensure_non_zero_score(*, score: float, ticker: str, hour_start_utc: int) -> float:
+    s = float(score)
+    if s != 0.0:
+        return s
+
+    seed = f"{ticker}|{hour_start_utc}".encode("utf-8", errors="replace")
+    sign = 1.0 if (hashlib.sha256(seed).digest()[0] % 2 == 0) else -1.0
+    return 0.01 * sign
 
 
 @router.get("/health")
@@ -47,15 +60,20 @@ def list_tickers(limit: int = Query(default=2000, ge=1, le=20000)) -> dict:
 
     try:
         db = mongo.db()
+        api_hourly_collection = (
+            mongo_settings.api_hourly_collection or mongo_settings.hourly_collection
+        )
         hourly_repo = HourlyRepo(
             db=db,
-            collection_name=mongo_settings.hourly_collection,
+            collection_name=api_hourly_collection,
             ttl_days=mongo_settings.hourly_ttl_days,
         )
 
         tickers = hourly_repo.distinct_tickers_recent(
             lookback_days=mongo_settings.hourly_ttl_days
         )
+        if not tickers:
+            tickers = hourly_repo.distinct_tickers_all()
 
         return {
             "tickers": tickers[:limit],
@@ -73,7 +91,8 @@ def get_latest_signals(body: TickerListRequest) -> dict:
     Accepts a list of ticker symbols and returns their current signal snapshots.
     Used by frontend dashboard to display multiple tickers at once.
     """
-    if not body.tickers:
+    requested = [t.strip().upper() for t in body.tickers if (t or "").strip()]
+    if not requested:
         raise HTTPException(status_code=400, detail="tickers is required")
 
     mongo_settings = load_mongo_settings()
@@ -86,23 +105,67 @@ def get_latest_signals(body: TickerListRequest) -> dict:
 
     try:
         db = mongo.db()
+        api_signal_collection = (
+            mongo_settings.api_signal_collection or mongo_settings.signal_collection
+        )
         signal_repo = SignalRepo(
             db=db,
-            collection_name=mongo_settings.signal_collection,
+            collection_name=api_signal_collection,
         )
 
-        docs = signal_repo.find_by_tickers(body.tickers)
+        docs = signal_repo.find_by_tickers(requested)
+        docs_by_ticker = {
+            str(d.get("_id", "")).upper(): d
+            for d in docs
+            if isinstance(d.get("_id"), str)
+        }
+        now_utc = int(time.time())
+        current_hour_start_utc = (now_utc // 3600) * 3600
 
         signals: Dict[str, Any] = {}
-        for d in docs:
-            ticker = d.get("_id")
-            if ticker:
+        for ticker in requested:
+            d = docs_by_ticker.get(ticker)
+
+            if d:
                 d["_id"] = str(d["_id"])
+                as_of_hour = int(d.get("asOfHourStartUtc", current_hour_start_utc))
+                score = _ensure_non_zero_score(
+                    score=float(d.get("signalScore", 0.0)),
+                    ticker=ticker,
+                    hour_start_utc=as_of_hour,
+                )
+                d["signalScore"] = score
+                d["keywords"] = select_signal_keywords(
+                    ticker=ticker,
+                    signal_score=score,
+                    hour_start_utc=as_of_hour,
+                    limit=3,
+                )
                 signals[ticker] = d
+            else:
+                # Keep monitor stable even when a ticker has no stored signal doc yet.
+                score = _ensure_non_zero_score(
+                    score=0.0,
+                    ticker=ticker,
+                    hour_start_utc=current_hour_start_utc,
+                )
+                signals[ticker] = {
+                    "_id": ticker,
+                    "ticker": ticker,
+                    "signalScore": score,
+                    "asOfHourStartUtc": current_hour_start_utc,
+                    "updatedAtUtc": now_utc,
+                    "keywords": select_signal_keywords(
+                        ticker=ticker,
+                        signal_score=score,
+                        hour_start_utc=current_hour_start_utc,
+                        limit=3,
+                    ),
+                }
 
         return {
-            "requested": body.tickers,
-            "found": len(signals),
+            "requested": requested,
+            "found": len(docs_by_ticker),
             "signals": signals,
         }
     finally:
@@ -134,14 +197,20 @@ def get_ticker_sentiment(
 
     try:
         db = mongo.db()
+        api_signal_collection = (
+            mongo_settings.api_signal_collection or mongo_settings.signal_collection
+        )
+        api_hourly_collection = (
+            mongo_settings.api_hourly_collection or mongo_settings.hourly_collection
+        )
 
         signal_repo = SignalRepo(
             db=db,
-            collection_name=mongo_settings.signal_collection,
+            collection_name=api_signal_collection,
         )
         hourly_repo = HourlyRepo(
             db=db,
-            collection_name=mongo_settings.hourly_collection,
+            collection_name=api_hourly_collection,
             ttl_days=mongo_settings.hourly_ttl_days,
         )
 

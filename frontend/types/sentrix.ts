@@ -21,3 +21,22 @@ export type SentrixLatestSignalsResponse = {
   found: number;
   signals: Record<string, SentrixSignalDoc>;
 };
+
+export type SentrixHourlyDoc = {
+  _id: string;
+  ticker: string;
+  hourStartUtc: number;
+  hourEndUtc: number;
+  count: number;
+  scoreSum: number;
+  keywordCounts?: Record<string, number>;
+  sourceBreakdown?: Record<string, number>;
+  updatedAtUtc?: number;
+  expireAtUtc?: number;
+};
+
+export type SentrixTickerSentimentResponse = {
+  ticker: string;
+  signal: SentrixSignalDoc | null;
+  hourly: SentrixHourlyDoc[];
+};

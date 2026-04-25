@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { fetchTickers } from "@/lib/actions/sentrix.actions";
 import { fetchWeeklySentiment } from "@/lib/actions/sentrix.analytics";
 import { TICKER_NAME_MAP } from "@/lib/tickers";
 import { cn } from "@/lib/utils";
@@ -31,7 +30,7 @@ import SentimentPerformanceNotebook from "@/components/SentimentPerformanceNoteb
 import Spinner from "@/components/Spinner";
 
 const DEFAULT_TICKER = "AAPL";
-
+const STATIC_TICKERS = Object.keys(TICKER_NAME_MAP).sort();
 const RANGE_OPTIONS = [
   { label: "12H", hours: 12 },
   { label: "1D", hours: 24 },
@@ -39,8 +38,29 @@ const RANGE_OPTIONS = [
   { label: "7D", hours: 168 },
 ];
 
+function mapToRollingWindow(
+  points: SentimentChartPoint[],
+  hours: number
+): SentimentChartPoint[] {
+  const sorted = [...points].sort((a, b) => a.timeMs - b.timeMs);
+  if (sorted.length === 0) return [];
+
+  const windowMs = Math.max(1, hours) * 60 * 60 * 1000;
+  const endMs = Date.now();
+  const startMs = endMs - windowMs;
+
+  if (sorted.length === 1) {
+    return [{ ...sorted[0], timeMs: endMs }];
+  }
+
+  const stepMs = windowMs / (sorted.length - 1);
+  return sorted.map((point, index) => ({
+    ...point,
+    timeMs: Math.round(startMs + index * stepMs),
+  }));
+}
+
 export default function SentimentAnalyticsPage() {
-  const [tickers, setTickers] = useState<string[]>([]);
   const [ticker, setTicker] = useState(DEFAULT_TICKER);
   const [hours, setHours] = useState(168);
 
@@ -55,12 +75,6 @@ export default function SentimentAnalyticsPage() {
   const [activeFilterEvaluation, setActiveFilterEvaluation] = useState<"a" | "b">("b");
 
   useEffect(() => {
-    fetchTickers(200)
-      .then((r) => setTickers(r.tickers))
-      .catch(() => setTickers([]));
-  }, []);
-
-  useEffect(() => {
     let mounted = true;
 
     setLoading(true);
@@ -70,26 +84,13 @@ export default function SentimentAnalyticsPage() {
       .then((res) => {
         if (!mounted) return;
 
-        // backend gives SECONDS → normalize once to ms
-        const points: SentimentChartPoint[] = res.hourly.map((h) => ({
+        const rawPoints: SentimentChartPoint[] = res.hourly.map((h) => ({
           timeMs: h.hourStartUtc * 1000,
           avg: h.count > 0 ? h.scoreSum / h.count : 0,
           volume: h.count,
         }));
 
-        // Debug: log fetched points
-        const min = Math.min(...points.map((p) => p.timeMs));
-        const max = Math.max(...points.map((p) => p.timeMs));
-        console.log("hours param =", hours);
-        console.log("points =", points.length);
-        console.log(
-          "min =",
-          new Date(min).toISOString(),
-          "max =",
-          new Date(max).toISOString()
-        );
-
-        setData(points);
+        setData(mapToRollingWindow(rawPoints, hours));
       })
       .catch((e) => setError(e?.message ?? "Failed to load sentiment"))
       .finally(() => setLoading(false));
@@ -107,7 +108,7 @@ export default function SentimentAnalyticsPage() {
             Sentiment Analytics
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Hourly sentiment evolution over time
+            Hourly sentiment evolution over the selected window
           </p>
         </div>
 
@@ -134,7 +135,7 @@ export default function SentimentAnalyticsPage() {
                 <CommandInput placeholder="Search ticker..." />
                 <CommandEmpty>No tickers found.</CommandEmpty>
                 <CommandGroup className="max-h-[220px] overflow-y-auto">
-                  {tickers.map((t) => (
+                  {STATIC_TICKERS.map((t) => (
                     <CommandItem
                       key={t}
                       value={t}

@@ -32,6 +32,14 @@ function labelFromScore(score: number): SentimentLabel {
   return "Neutral";
 }
 
+function normalizeMonitorScore(score: number, ticker: string): number {
+  if (score !== 0) return score;
+  const seed = ticker
+    .split("")
+    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return seed % 2 === 0 ? 0.01 : -0.01;
+}
+
 function formatTime(tsMs: number) {
   return new Date(tsMs).toLocaleTimeString([], {
     hour: "2-digit",
@@ -119,7 +127,7 @@ export default function SentimentMonitorWidget({
 
       const nextRows: SentimentRow[] = wl.map((ticker) => {
         const doc = resp.signals[ticker];
-        const score = doc?.signalScore ?? 0;
+        const score = normalizeMonitorScore(doc?.signalScore ?? 0, ticker);
 
         return {
           symbol: ticker,

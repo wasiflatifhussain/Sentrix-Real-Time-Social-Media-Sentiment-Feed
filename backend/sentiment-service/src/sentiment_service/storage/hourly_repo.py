@@ -164,17 +164,17 @@ class HourlyRepo:
         )
         return [t for t in raw if isinstance(t, str) and t.strip()]
 
+    def distinct_tickers_all(self) -> List[str]:
+        raw = self._col.distinct("ticker")
+        return [t for t in raw if isinstance(t, str) and t.strip()]
+
     def find_recent_by_ticker(self, *, ticker: str, hours: int) -> List[dict]:
         t = (ticker or "").strip().upper()
         if not t:
             return []
 
         hours = max(1, int(hours))
-        now = int(time.time())
-        cutoff = now - hours * 3600
-
-        return list(
-            self._col.find({"ticker": t, "hourStartUtc": {"$gte": cutoff}}).sort(
-                "hourStartUtc", 1
-            )  # ascending for charts
+        latest_desc = list(
+            self._col.find({"ticker": t}).sort("hourStartUtc", -1).limit(hours)
         )
+        return list(reversed(latest_desc))
