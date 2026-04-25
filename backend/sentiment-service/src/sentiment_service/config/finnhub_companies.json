@@ -1,0 +1,222 @@
+[
+  {
+    "ticker": "TSLA",
+    "company": "Tesla",
+    "enabled": true,
+    "queries": [
+      "$TSLA",
+      "TSLA (stock OR shares OR price OR earnings OR valuation OR buy OR sell)",
+      "Tesla stock",
+      "TSLA earnings OR \"Tesla earnings\""
+    ]
+  },
+  {
+    "ticker": "AAPL",
+    "company": "Apple",
+    "enabled": true,
+    "queries": [
+      "$AAPL",
+      "AAPL (stock OR shares OR price OR earnings OR valuation)",
+      "Apple stock",
+      "AAPL earnings OR \"Apple earnings\""
+    ]
+  },
+  {
+    "ticker": "MSFT",
+    "company": "Microsoft",
+    "enabled": true,
+    "queries": [
+      "$MSFT",
+      "MSFT (stock OR shares OR price OR earnings OR valuation)",
+      "Microsoft stock",
+      "MSFT earnings OR \"Microsoft earnings\""
+    ]
+  },
+  {
+    "ticker": "NVDA",
+    "company": "NVIDIA",
+    "enabled": true,
+    "queries": [
+      "$NVDA",
+      "NVDA (stock OR shares OR price OR earnings OR valuation)",
+      "NVIDIA stock",
+      "NVDA earnings OR \"NVIDIA earnings\""
+    ]
+  },
+  {
+    "ticker": "AMZN",
+    "company": "Amazon",
+    "enabled": true,
+    "queries": [
+      "$AMZN",
+      "AMZN (stock OR shares OR price OR earnings OR valuation)",
+      "Amazon stock",
+      "AMZN earnings OR \"Amazon earnings\""
+    ]
+  },
+  {
+    "ticker": "GOOGL",
+    "company": "Alphabet",
+    "enabled": true,
+    "queries": [
+      "$GOOGL",
+      "GOOGL (stock OR shares OR price OR earnings OR valuation)",
+      "Google stock",
+      "GOOGL earnings OR \"Google earnings\""
+    ]
+  },
+  {
+    "ticker": "META",
+    "company": "Meta",
+    "enabled": true,
+    "queries": [
+      "$META",
+      "META (stock OR shares OR price OR earnings OR valuation)",
+      "Meta stock",
+      "META earnings OR \"Meta earnings\""
+    ]
+  },
+  {
+    "ticker": "BRK.B",
+    "company": "Berkshire Hathaway",
+    "enabled": true,
+    "queries": [
+      "$BRK.B",
+      "BRK.B (stock OR shares OR price OR earnings OR valuation)",
+      "Berkshire Hathaway stock",
+      "Berkshire earnings OR \"Berkshire Hathaway earnings\""
+    ]
+  },
+  {
+    "ticker": "JPM",
+    "company": "JPMorgan Chase",
+    "enabled": true,
+    "queries": [
+      "$JPM",
+      "JPM (stock OR shares OR price OR earnings OR valuation)",
+      "JPMorgan stock",
+      "JPMorgan Chase & Co OR \"JPMorgan earnings\""
+    ]
+  },
+  {
+    "ticker": "V",
+    "company": "Visa",
+    "enabled": true,
+    "queries": [
+      "$V",
+      "Visa (stock OR shares OR price OR earnings OR valuation)",
+      "Visa stock",
+      "Visa earnings"
+    ]
+  },
+  {
+    "ticker": "MA",
+    "company": "Mastercard",
+    "enabled": true,
+    "queries": [
+      "$MA",
+      "Mastercard (stock OR shares OR price OR earnings OR valuation)",
+      "Mastercard stock",
+      "Mastercard earnings"
+    ]
+  },
+  {
+    "ticker": "WMT",
+    "company": "Walmart",
+    "enabled": true,
+    "queries": [
+      "$WMT",
+      "WMT (stock OR shares OR price OR earnings OR valuation)",
+      "Walmart stock",
+      "Walmart earnings"
+    ]
+  },
+  {
+    "ticker": "LLY",
+    "company": "Eli Lilly",
+    "enabled": true,
+    "queries": [
+      "$LLY",
+      "LLY (stock OR shares OR price OR earnings OR valuation)",
+      "Eli Lilly stock",
+      "Eli Lilly earnings"
+    ]
+  },
+  {
+    "ticker": "XOM",
+    "company": "Exxon Mobil",
+    "enabled": true,
+    "queries": [
+      "$XOM",
+      "XOM (stock OR shares OR price OR earnings OR valuation)",
+      "Exxon stock",
+      "Exxon earnings"
+    ]
+  },
+  {
+    "ticker": "JNJ",
+    "company": "Johnson & Johnson",
+    "enabled": true,
+    "queries": [
+      "$JNJ",
+      "JNJ (stock OR shares OR price OR earnings OR valuation)",
+      "Johnson & Johnson stock",
+      "Johnson & Johnson earnings"
+    ]
+  },
+  {
+    "ticker": "ORCL",
+    "company": "Oracle",
+    "enabled": true,
+    "queries": [
+      "$ORCL",
+      "ORCL (stock OR shares OR price OR earnings OR valuation)",
+      "Oracle stock",
+      "Oracle earnings"
+    ]
+  },
+  {
+    "ticker": "AVGO",
+    "company": "Broadcom",
+    "enabled": true,
+    "queries": [
+      "$AVGO",
+      "AVGO (stock OR shares OR price OR earnings OR valuation)",
+      "Broadcom stock",
+      "Broadcom earnings"
+    ]
+  },
+  {
+    "ticker": "COST",
+    "company": "Costco",
+    "enabled": true,
+    "queries": [
+      "$COST",
+      "COST (stock OR shares OR price OR earnings OR valuation)",
+      "Costco stock",
+      "Costco earnings"
+    ]
+  },
+  {
+    "ticker": "NKE",
+    "company": "Nike",
+    "enabled": true,
+    "queries": [
+      "$NKE",
+      "NKE (stock OR shares OR price OR earnings OR valuation)",
+      "Nike stock",
+      "Nike earnings"
+    ]
+  },
+  {
+    "ticker": "PFE",
+    "company": "Pfizer",
+    "enabled": true,
+    "queries": [
+      "$PFE",
+      "PFE (stock OR shares OR price OR earnings OR valuation)",
+      "Pfizer stock",
+      "Pfizer earnings"
+    ]
+  }
+]
